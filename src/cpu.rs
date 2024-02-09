@@ -101,41 +101,6 @@ impl CPU {
         }
     }
 
-    fn lda(&mut self, mode: &AddressingMode) {
-        let addr = self.get_operand_address(mode);
-        self.register_a = self.mem_read(addr);
-        self.update_zero_and_negative_flags(self.register_a);
-    }
-
-    fn tax(&mut self) {
-        self.register_x = self.register_a;
-        self.update_zero_and_negative_flags(self.register_x);
-    }
-
-    fn inx(&mut self) {
-        self.register_x = self.register_x.wrapping_add(1);
-        self.update_zero_and_negative_flags(self.register_x);
-    }
-
-    fn sta(&mut self, mode: &AddressingMode) {
-        let addr = self.get_operand_address(mode);
-        self.mem_write(addr, self.register_a);
-    }
-
-    fn update_zero_and_negative_flags(&mut self, result: u8) {
-        if result == 0 {
-            self.status.insert(CpuFlags::ZERO);
-        } else {
-            self.status.remove(CpuFlags::ZERO);
-        }
-
-        if result & 0b1000_0000 != 0 {
-            self.status.insert(CpuFlags::NEGATIV);
-        } else {
-            self.status.remove(CpuFlags::NEGATIV);
-        }
-    }
-
     pub fn reset(&mut self) {
         self.register_a = 0;
         self.register_x = 0;
@@ -163,13 +128,13 @@ impl CPU {
                 .get(&code)
                 .unwrap_or_else(|| panic!("OpCode {code:x} is not recognized"));
 
-            use Mnemonic::*;
+            use Mnemonic as M;
             match opcode.mnemonic {
-                LDA => self.lda(&opcode.mode),
-                TAX => self.tax(),
-                INX => self.inx(),
-                STA => self.sta(&opcode.mode),
-                BRK => return,
+                M::LDA => self.lda(&opcode.mode),
+                M::TAX => self.tax(),
+                M::INX => self.inx(),
+                M::STA => self.sta(&opcode.mode),
+                M::BRK => return,
                 _ => todo!(),
             }
 
@@ -183,6 +148,52 @@ impl CPU {
         self.load(program);
         self.reset();
         self.run();
+    }
+
+    fn update_zero_and_negative_flags(&mut self, result: u8) {
+        if result == 0 {
+            self.status.insert(CpuFlags::ZERO);
+        } else {
+            self.status.remove(CpuFlags::ZERO);
+        }
+
+        if result & 0b1000_0000 != 0 {
+            self.status.insert(CpuFlags::NEGATIV);
+        } else {
+            self.status.remove(CpuFlags::NEGATIV);
+        }
+    }
+
+    fn set_register_a(&mut self, value: u8) {
+        self.register_a = value;
+        self.update_zero_and_negative_flags(self.register_a);
+    }
+
+    fn and(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let data = self.mem_read(addr);
+        self.set_register_a(data & self.register_a);
+    }
+
+    fn lda(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let data = self.mem_read(addr);
+        self.set_register_a(data);
+    }
+
+    fn tax(&mut self) {
+        self.register_x = self.register_a;
+        self.update_zero_and_negative_flags(self.register_x);
+    }
+
+    fn inx(&mut self) {
+        self.register_x = self.register_x.wrapping_add(1);
+        self.update_zero_and_negative_flags(self.register_x);
+    }
+
+    fn sta(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        self.mem_write(addr, self.register_a);
     }
 }
 
@@ -215,6 +226,13 @@ impl Mem for CPU {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_and() {
+        let mut cpu = CPU::new();
+        cpu.load_and_run(vec![]);
+        assert_eq!(cpu.register_a, 0x05);
+    }
 
     #[test]
     fn test_0xa9_lda_immediate_load_data() {
