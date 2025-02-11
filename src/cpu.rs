@@ -58,6 +58,11 @@ impl CPU {
         self.update_zero_and_negative_flags(self.register_x);
     }
 
+    fn inx(&mut self) {
+        self.register_x = self.register_x.wrapping_add(1);
+        self.update_zero_and_negative_flags(self.register_x);
+    }
+
     fn update_zero_and_negative_flags(&mut self, result: u8) {
         if result == 0 {
             self.status.insert(Status::ZERO);
@@ -88,6 +93,9 @@ impl CPU {
                 }
                 0xAA /* TAX */ => {
                     self.tax();
+                }
+                0xE8 /* INX */ => {
+                    self.inx();
                 }
                 0x00 /* BRK */ => return,
                 _ => unimplemented!(),
@@ -150,5 +158,22 @@ mod tests {
         cpu.interpret(&[0xaa, 0x00]);
         assert!(!cpu.status.intersects(Status::ZERO));
         assert_eq!(cpu.status.intersection(Status::NEGATIVE), Status::NEGATIVE);
+    }
+
+    #[test]
+    fn test_5_ops_working_together() {
+        let mut cpu = CPU::new();
+        cpu.interpret(&[0xa9, 0xc0, 0xaa, 0xe8, 0x00]);
+
+        assert_eq!(cpu.register_x, 0xc1)
+    }
+
+    #[test]
+    fn test_inx_overflow() {
+        let mut cpu = CPU::new();
+        cpu.register_x = u8::MAX;
+        cpu.interpret(&[0xe8, 0xe8, 0x00]);
+
+        assert_eq!(cpu.register_x, 1)
     }
 }
