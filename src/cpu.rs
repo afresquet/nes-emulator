@@ -27,6 +27,7 @@ bitflags::bitflags! {
 #[derive(Debug)]
 pub struct CPU {
     pub register_a: u8,
+    pub register_x: u8,
     pub status: Status,
     pub program_counter: u16,
 }
@@ -35,6 +36,7 @@ impl Default for CPU {
     fn default() -> Self {
         Self {
             register_a: 0,
+            register_x: 0,
             status: Status::UNUSED,
             program_counter: 0,
         }
@@ -46,6 +48,30 @@ impl CPU {
         Self::default()
     }
 
+    fn lda(&mut self, value: u8) {
+        self.register_a = value;
+        self.update_zero_and_negative_flags(self.register_a);
+    }
+
+    fn tax(&mut self) {
+        self.register_x = self.register_a;
+        self.update_zero_and_negative_flags(self.register_x);
+    }
+
+    fn update_zero_and_negative_flags(&mut self, result: u8) {
+        if result == 0 {
+            self.status.insert(Status::ZERO);
+        } else {
+            self.status.remove(Status::ZERO);
+        }
+
+        if result & 1 << 7 != 0 {
+            self.status.insert(Status::NEGATIVE);
+        } else {
+            self.status.remove(Status::NEGATIVE);
+        }
+    }
+
     pub fn interpret(&mut self, program: &[u8]) {
         self.program_counter = 0;
 
@@ -55,21 +81,13 @@ impl CPU {
 
             match opscode {
                 0xA9 /* LDA */ => {
-                    let param = program[self.program_counter as usize];
+                    let value = program[self.program_counter as usize];
                     self.program_counter += 1;
-                    self.register_a = param;
+                    self.lda(value);
 
-                    if self.register_a == 0 {
-                        self.status.insert(Status::ZERO);
-                    } else {
-                        self.status.remove(Status::ZERO);
-                    }
-
-                    if self.register_a & 1 << 7 != 0 {
-                        self.status.insert(Status::NEGATIVE);
-                    } else {
-                        self.status.remove(Status::NEGATIVE);
-                    }
+                }
+                0xAA /* TAX */ => {
+                    self.tax();
                 }
                 0x00 /* BRK */ => return,
                 _ => unimplemented!(),
@@ -103,6 +121,33 @@ mod tests {
     fn test_0xa9_lda_negative_flag() {
         let mut cpu = CPU::new();
         cpu.interpret(&[0xa9, 0x80, 0x00]);
+        assert!(!cpu.status.intersects(Status::ZERO));
+        assert_eq!(cpu.status.intersection(Status::NEGATIVE), Status::NEGATIVE);
+    }
+
+    #[test]
+    fn test_0xaa_tax_transfer_accumulator_to_x() {
+        let mut cpu = CPU::new();
+        cpu.register_a = 0x05;
+        cpu.interpret(&[0xaa, 0x00]);
+        assert_eq!(cpu.register_x, 0x05);
+        assert!(!cpu.status.intersects(Status::ZERO));
+        assert!(!cpu.status.intersects(Status::NEGATIVE));
+    }
+
+    #[test]
+    fn test_0xaa_tax_zero_flag() {
+        let mut cpu = CPU::new();
+        cpu.interpret(&[0xaa, 0x00]);
+        assert_eq!(cpu.status.intersection(Status::ZERO), Status::ZERO);
+        assert!(!cpu.status.intersects(Status::NEGATIVE));
+    }
+
+    #[test]
+    fn test_0xaa_tax_negative_flag() {
+        let mut cpu = CPU::new();
+        cpu.register_a = 0x80;
+        cpu.interpret(&[0xaa, 0x00]);
         assert!(!cpu.status.intersects(Status::ZERO));
         assert_eq!(cpu.status.intersection(Status::NEGATIVE), Status::NEGATIVE);
     }
