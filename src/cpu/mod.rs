@@ -153,6 +153,10 @@ impl CPU {
             AM::AbsoluteY => self
                 .mem_read_u16(self.program_counter)
                 .wrapping_add(self.register_y as u16),
+            AM::Indirect => {
+                let pos = self.mem_read_u16(self.program_counter);
+                self.mem_read_u16(pos)
+            }
             AM::IndirectX => {
                 let pos = self
                     .mem_read(self.program_counter)

@@ -150,8 +150,14 @@ pub static OPCODES: LazyLock<HashMap<u8, OpCode>> = LazyLock::new(|| {
         // INY
         (iny::INY, OpCode::new(INY, Implied, 1, 2, iny)),
         // JMP
-        (0x4C, OpCode::new(JMP, Absolute, 3, 3, jmp)),
-        (0x6C, OpCode::new(JMP, Indirect, 3, 5, jmp)),
+        (
+            JMP_ABSOLUTE,
+            OpCode::new(JMP, Absolute, /* should be 3? */ 1, 3, jmp),
+        ),
+        (
+            JMP_INDIRECT,
+            OpCode::new(JMP, Indirect, /* should be 3? */ 1, 5, jmp),
+        ),
         // JSR
         (0x20, OpCode::new(JSR, Absolute, 3, 6, jsr)),
         // LDA
