@@ -98,13 +98,13 @@ pub static OPCODES: LazyLock<HashMap<u8, OpCode>> = LazyLock::new(|| {
         // BVS
         (bvs::BVS, OpCode::new(BVS, Relative, 2, 2, bvs)),
         // CLC
-        (0x18, OpCode::new(CLC, Implied, 1, 2, clc)),
+        (clc::CLC, OpCode::new(CLC, Implied, 1, 2, clc)),
         // CLD
-        (0xD8, OpCode::new(CLD, Implied, 1, 2, cld)),
+        (cld::CLD, OpCode::new(CLD, Implied, 1, 2, cld)),
         // CLI
-        (0x58, OpCode::new(CLI, Implied, 1, 2, cli)),
+        (cli::CLI, OpCode::new(CLI, Implied, 1, 2, cli)),
         // CLV
-        (0xB8, OpCode::new(CLV, Implied, 1, 2, clv)),
+        (clv::CLV, OpCode::new(CLV, Implied, 1, 2, clv)),
         // CMP
         (0xC9, OpCode::new(CMP, Immediate, 2, 2, cmp)),
         (0xC5, OpCode::new(CMP, ZeroPage, 2, 3, cmp)),
