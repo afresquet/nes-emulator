@@ -77,26 +77,26 @@ pub static OPCODES: LazyLock<HashMap<u8, OpCode>> = LazyLock::new(|| {
         (ASL_ABSOLUTE, OpCode::new(ASL, Absolute, 3, 6, asl)),
         (ASL_ABSOLUTEX, OpCode::new(ASL, AbsoluteX, 3, 7, asl)),
         // BCC
-        (0x90, OpCode::new(BCC, Relative, 2, 2, bcc)),
+        (bcc::BCC, OpCode::new(BCC, Relative, 2, 2, bcc)),
         // BCS
-        (0xB0, OpCode::new(BCS, Relative, 2, 2, bcs)),
+        (bcs::BCS, OpCode::new(BCS, Relative, 2, 2, bcs)),
         // BEQ
-        (0xF0, OpCode::new(BEQ, Relative, 2, 2, beq)),
+        (beq::BEQ, OpCode::new(BEQ, Relative, 2, 2, beq)),
         // BIT
         (0x24, OpCode::new(BIT, ZeroPage, 2, 3, bit)),
         (0x2C, OpCode::new(BIT, Absolute, 3, 4, bit)),
         // BMI
-        (0x30, OpCode::new(BMI, Relative, 2, 2, bmi)),
+        (bmi::BMI, OpCode::new(BMI, Relative, 2, 2, bmi)),
         // BNE
-        (0xD0, OpCode::new(BNE, Relative, 2, 2, bne)),
+        (bne::BNE, OpCode::new(BNE, Relative, 2, 2, bne)),
         // BPL
-        (0x10, OpCode::new(BPL, Relative, 2, 2, bpl)),
+        (bpl::BPL, OpCode::new(BPL, Relative, 2, 2, bpl)),
         // BRK
         (brk::BRK, OpCode::new(BRK, Implied, 1, 7, brk)),
         // BVC
-        (0x50, OpCode::new(BVC, Relative, 2, 2, bvc)),
+        (bvc::BVC, OpCode::new(BVC, Relative, 2, 2, bvc)),
         // BVS
-        (0x70, OpCode::new(BVS, Relative, 2, 2, bvs)),
+        (bvs::BVS, OpCode::new(BVS, Relative, 2, 2, bvs)),
         // CLC
         (0x18, OpCode::new(CLC, Implied, 1, 2, clc)),
         // CLD

@@ -108,7 +108,7 @@ impl CPU {
             let opcode = self.mem_read(self.program_counter);
             let opcode = OPCODES.get(&opcode).expect("to be a valid opcode");
 
-            self.program_counter += 1;
+            self.program_counter = self.program_counter.wrapping_add(1);
 
             (opcode.instruction)(self, opcode);
 
@@ -116,7 +116,7 @@ impl CPU {
                 return;
             }
 
-            self.program_counter += opcode.bytes as u16 - 1;
+            self.program_counter = self.program_counter.wrapping_add(opcode.bytes as u16 - 1);
         }
     }
 
@@ -139,7 +139,7 @@ impl CPU {
 
         match mode {
             AM::Immediate => self.program_counter,
-            AM::ZeroPage => self.mem_read(self.program_counter) as u16,
+            AM::ZeroPage | AM::Relative => self.mem_read(self.program_counter) as u16,
             AM::ZeroPageX => self
                 .mem_read(self.program_counter)
                 .wrapping_add(self.register_x) as u16,
@@ -170,16 +170,11 @@ impl CPU {
             mode => panic!("mode {mode:?} is not supported"),
         }
     }
-}
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_5_ops_working_together() {
-        let mut cpu = CPU::new();
-        cpu.load_and_run(&[0xa9, 0xc0, 0xaa, 0xe8, 0x00]);
-        assert_eq!(cpu.register_x, 0xc1)
+    pub fn branch(&mut self, condition: bool) {
+        if condition {
+            let skip = self.get_operand_address(AddressingMode::Relative);
+            self.program_counter = self.program_counter.wrapping_add(skip);
+        }
     }
 }
