@@ -184,14 +184,14 @@ pub static OPCODES: LazyLock<HashMap<u8, OpCode>> = LazyLock::new(|| {
         // NOP
         (nop::NOP, OpCode::new(NOP, Implied, 1, 2, nop)),
         // ORA
-        (0x09, OpCode::new(ORA, Immediate, 2, 2, ora)),
-        (0x05, OpCode::new(ORA, ZeroPage, 2, 3, ora)),
-        (0x15, OpCode::new(ORA, ZeroPageX, 2, 4, ora)),
-        (0x0D, OpCode::new(ORA, Absolute, 3, 4, ora)),
-        (0x1D, OpCode::new(ORA, AbsoluteX, 3, 4, ora)),
-        (0x19, OpCode::new(ORA, AbsoluteY, 3, 4, ora)),
-        (0x01, OpCode::new(ORA, IndirectX, 2, 6, ora)),
-        (0x11, OpCode::new(ORA, IndirectY, 2, 5, ora)),
+        (ORA_IMMEDIATE, OpCode::new(ORA, Immediate, 2, 2, ora)),
+        (ORA_ZEROPAGE, OpCode::new(ORA, ZeroPage, 2, 3, ora)),
+        (ORA_ZEROPAGEX, OpCode::new(ORA, ZeroPageX, 2, 4, ora)),
+        (ORA_ABSOLUTE, OpCode::new(ORA, Absolute, 3, 4, ora)),
+        (ORA_ABSOLUTEX, OpCode::new(ORA, AbsoluteX, 3, 4, ora)),
+        (ORA_ABSOLUTEY, OpCode::new(ORA, AbsoluteY, 3, 4, ora)),
+        (ORA_INDIRECTX, OpCode::new(ORA, IndirectX, 2, 6, ora)),
+        (ORA_INDIRECTY, OpCode::new(ORA, IndirectY, 2, 5, ora)),
         // PHA
         (0x48, OpCode::new(PHA, Implied, 1, 3, pha)),
         // PHP
