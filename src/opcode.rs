@@ -123,14 +123,14 @@ pub static OPCODES: LazyLock<HashMap<u8, OpCode>> = LazyLock::new(|| {
         (CPY_ZEROPAGE, OpCode::new(CPY, ZeroPage, 2, 3, cpy)),
         (CPY_ABSOLUTE, OpCode::new(CPY, Absolute, 3, 4, cpy)),
         // DEC
-        (0xC6, OpCode::new(DEC, ZeroPage, 2, 5, dec)),
-        (0xD6, OpCode::new(DEC, ZeroPageX, 2, 6, dec)),
-        (0xCE, OpCode::new(DEC, Absolute, 3, 6, dec)),
-        (0xDE, OpCode::new(DEC, AbsoluteX, 3, 7, dec)),
+        (DEC_ZEROPAGE, OpCode::new(DEC, ZeroPage, 2, 5, dec)),
+        (DEC_ZEROPAGEX, OpCode::new(DEC, ZeroPageX, 2, 6, dec)),
+        (DEC_ABSOLUTE, OpCode::new(DEC, Absolute, 3, 6, dec)),
+        (DEC_ABSOLUTEX, OpCode::new(DEC, AbsoluteX, 3, 7, dec)),
         // DEX
-        (0xCA, OpCode::new(DEX, Implied, 1, 2, dex)),
+        (dex::DEX, OpCode::new(DEX, Implied, 1, 2, dex)),
         // DEY
-        (0x88, OpCode::new(DEY, Implied, 1, 2, dey)),
+        (dey::DEY, OpCode::new(DEY, Implied, 1, 2, dey)),
         // EOR
         (0x49, OpCode::new(EOR, Immediate, 2, 2, eor)),
         (0x45, OpCode::new(EOR, ZeroPage, 2, 3, eor)),
