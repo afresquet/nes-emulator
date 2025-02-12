@@ -2,6 +2,7 @@ use std::{collections::HashMap, sync::LazyLock};
 
 use crate::{instructions::*, CPU};
 
+#[derive(Debug, Clone)]
 pub struct OpCode {
     pub ty: OpCodeType,
     pub mode: AddressingMode,
@@ -231,13 +232,13 @@ pub static OPCODES: LazyLock<HashMap<u8, OpCode>> = LazyLock::new(|| {
         // SEI
         (0x78, OpCode::new(SEI, Implied, 1, 2, sei)),
         // STA
-        (0x85, OpCode::new(STA, ZeroPage, 2, 3, sta)),
-        (0x95, OpCode::new(STA, ZeroPageX, 2, 4, sta)),
-        (0x8D, OpCode::new(STA, Absolute, 3, 4, sta)),
-        (0x9D, OpCode::new(STA, AbsoluteX, 3, 5, sta)),
-        (0x99, OpCode::new(STA, AbsoluteY, 3, 5, sta)),
-        (0x81, OpCode::new(STA, IndirectX, 2, 6, sta)),
-        (0x91, OpCode::new(STA, IndirectY, 2, 6, sta)),
+        (STA_ZEROPAGE, OpCode::new(STA, ZeroPage, 2, 3, sta)),
+        (STA_ZEROPAGEX, OpCode::new(STA, ZeroPageX, 2, 4, sta)),
+        (STA_ABSOLUTE, OpCode::new(STA, Absolute, 3, 4, sta)),
+        (STA_ABSOLUTEX, OpCode::new(STA, AbsoluteX, 3, 5, sta)),
+        (STA_ABSOLUTEY, OpCode::new(STA, AbsoluteY, 3, 5, sta)),
+        (STA_INDIRECTX, OpCode::new(STA, IndirectX, 2, 6, sta)),
+        (STA_INDIRECTY, OpCode::new(STA, IndirectY, 2, 6, sta)),
         // STX
         (0x86, OpCode::new(STX, ZeroPage, 2, 3, stx)),
         (0x96, OpCode::new(STX, ZeroPageY, 2, 4, stx)),
@@ -261,6 +262,7 @@ pub static OPCODES: LazyLock<HashMap<u8, OpCode>> = LazyLock::new(|| {
     ])
 });
 
+#[derive(Debug, Clone, Copy)]
 pub enum OpCodeType {
     ADC,
     AND,
