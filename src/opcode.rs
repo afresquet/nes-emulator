@@ -247,7 +247,7 @@ pub static OPCODES: LazyLock<HashMap<u8, OpCode>> = LazyLock::new(|| {
         (0x94, OpCode::new(STY, ZeroPageY, 2, 4, sty)),
         (0x8C, OpCode::new(STY, Absolute, 3, 4, sty)),
         // TAX
-        (0xAA, OpCode::new(TAX, Implied, 1, 2, tax)),
+        (tax::TAX, OpCode::new(TAX, Implied, 1, 2, tax)),
         // TAY
         (0xA8, OpCode::new(TAY, Implied, 1, 2, tay)),
         // TSX
