@@ -19,6 +19,6 @@ mod tests {
         assert_eq!(cpu.register_a, 0);
         assert_eq!(cpu.register_x, 0);
         assert_eq!(cpu.register_y, 0);
-        assert_eq!(cpu.status, Status::UNUSED);
+        assert_eq!(cpu.status, Status::UNUSED | Status::BREAK_COMMAND);
     }
 }

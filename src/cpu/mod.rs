@@ -1,4 +1,4 @@
-use crate::{AddressingMode, OPCODES};
+use crate::{AddressingMode, OpCodeType, OPCODES};
 
 pub mod instructions;
 
@@ -110,9 +110,10 @@ impl CPU {
 
             self.program_counter += 1;
 
-            match opcode.ty {
-                crate::OpCodeType::BRK => return,
-                _ => (opcode.instruction)(self, opcode),
+            (opcode.instruction)(self, opcode);
+
+            if let OpCodeType::BRK = opcode.ty {
+                return;
             }
 
             self.program_counter += opcode.bytes as u16 - 1;
