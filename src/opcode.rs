@@ -132,14 +132,14 @@ pub static OPCODES: LazyLock<HashMap<u8, OpCode>> = LazyLock::new(|| {
         // DEY
         (dey::DEY, OpCode::new(DEY, Implied, 1, 2, dey)),
         // EOR
-        (0x49, OpCode::new(EOR, Immediate, 2, 2, eor)),
-        (0x45, OpCode::new(EOR, ZeroPage, 2, 3, eor)),
-        (0x55, OpCode::new(EOR, ZeroPageX, 2, 4, eor)),
-        (0x4D, OpCode::new(EOR, Absolute, 3, 4, eor)),
-        (0x5D, OpCode::new(EOR, AbsoluteX, 3, 4, eor)),
-        (0x59, OpCode::new(EOR, AbsoluteY, 3, 4, eor)),
-        (0x41, OpCode::new(EOR, IndirectX, 2, 6, eor)),
-        (0x51, OpCode::new(EOR, IndirectY, 2, 5, eor)),
+        (EOR_IMMEDIATE, OpCode::new(EOR, Immediate, 2, 2, eor)),
+        (EOR_ZEROPAGE, OpCode::new(EOR, ZeroPage, 2, 3, eor)),
+        (EOR_ZEROPAGEX, OpCode::new(EOR, ZeroPageX, 2, 4, eor)),
+        (EOR_ABSOLUTE, OpCode::new(EOR, Absolute, 3, 4, eor)),
+        (EOR_ABSOLUTEX, OpCode::new(EOR, AbsoluteX, 3, 4, eor)),
+        (EOR_ABSOLUTEY, OpCode::new(EOR, AbsoluteY, 3, 4, eor)),
+        (EOR_INDIRECTX, OpCode::new(EOR, IndirectX, 2, 6, eor)),
+        (EOR_INDIRECTY, OpCode::new(EOR, IndirectY, 2, 5, eor)),
         // INC
         (0xE6, OpCode::new(INC, ZeroPage, 2, 5, inc)),
         (0xF6, OpCode::new(INC, ZeroPageX, 2, 6, inc)),

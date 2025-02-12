@@ -33,10 +33,10 @@ mod tests {
     #[test_case(AND_ABSOLUTEY, 0x16, 0x20 ; "absolute_y")]
     #[test_case(AND_INDIRECTX, 0x40, 0x4A ; "indirect_x")]
     #[test_case(AND_INDIRECTY, 0x60, 0x6A ; "indirect_y")]
-    fn and(instruction: u8, load: u8, negative: u8) {
+    fn and(instruction: u8, and: u8, negative: u8) {
         // Setup
         let mut cpu = CPU::new();
-        cpu.load(&[instruction, load, BRK]);
+        cpu.load(&[instruction, and, BRK]);
         cpu.reset();
         cpu.register_a = 0b1000_1010;
         cpu.register_x = 0x10;
@@ -52,7 +52,7 @@ mod tests {
         cpu.mem_write_u16(0x60, 0x16);
         cpu.mem_write_u16(0x6A, 0x20);
 
-        // OR
+        // AND
         cpu.run();
         assert_eq!(cpu.register_a, 0b1010);
         assert!(!cpu.status.intersects(Status::ZERO));
