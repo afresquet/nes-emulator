@@ -1,3 +1,5 @@
+use crate::AddressingMode;
+
 bitflags::bitflags! {
     /// 7  bit  0
     /// ---- ----
@@ -146,23 +148,25 @@ impl CPU {
     }
 
     fn get_operand_address(&mut self, mode: AddressingMode) -> u16 {
+        use AddressingMode as AM;
+
         match mode {
-            AddressingMode::Immediate => self.program_counter,
-            AddressingMode::ZeroPage => self.mem_read(self.program_counter) as u16,
-            AddressingMode::Absolute => self.mem_read_u16(self.program_counter),
-            AddressingMode::ZeroPageX => self
+            AM::Immediate => self.program_counter,
+            AM::ZeroPage => self.mem_read(self.program_counter) as u16,
+            AM::Absolute => self.mem_read_u16(self.program_counter),
+            AM::ZeroPageX => self
                 .mem_read(self.program_counter)
                 .wrapping_add(self.register_x) as u16,
-            AddressingMode::ZeroPageY => self
+            AM::ZeroPageY => self
                 .mem_read(self.program_counter)
                 .wrapping_add(self.register_y) as u16,
-            AddressingMode::AbsoluteX => self
+            AM::AbsoluteX => self
                 .mem_read_u16(self.program_counter)
                 .wrapping_add(self.register_x as u16),
-            AddressingMode::AbsoluteY => self
+            AM::AbsoluteY => self
                 .mem_read_u16(self.program_counter)
                 .wrapping_add(self.register_y as u16),
-            AddressingMode::IndirectX => {
+            AM::IndirectX => {
                 let pos = self
                     .mem_read(self.program_counter)
                     .wrapping_add(self.register_x);
@@ -170,29 +174,15 @@ impl CPU {
                 let hi = self.mem_read(pos.wrapping_add(1) as u16);
                 u16::from_le_bytes([lo, hi])
             }
-            AddressingMode::IndirectY => {
+            AM::IndirectY => {
                 let pos = self.mem_read(self.program_counter);
                 let lo = self.mem_read(pos as u16);
                 let hi = self.mem_read(pos.wrapping_add(1) as u16);
                 u16::from_le_bytes([lo, hi]).wrapping_add(self.register_y as u16)
             }
-            AddressingMode::NoneAddressing => panic!("mode {mode:?} is not supported"),
+            mode => panic!("mode {mode:?} is not supported"),
         }
     }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum AddressingMode {
-    Immediate,
-    ZeroPage,
-    ZeroPageX,
-    ZeroPageY,
-    Absolute,
-    AbsoluteX,
-    AbsoluteY,
-    IndirectX,
-    IndirectY,
-    NoneAddressing,
 }
 
 #[cfg(test)]
