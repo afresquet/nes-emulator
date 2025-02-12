@@ -157,15 +157,12 @@ impl CPU {
                 let pos = self
                     .mem_read(self.program_counter)
                     .wrapping_add(self.register_x);
-                let lo = self.mem_read(pos as u16);
-                let hi = self.mem_read(pos.wrapping_add(1) as u16);
-                u16::from_le_bytes([lo, hi])
+                self.mem_read_u16(pos as u16)
             }
             AM::IndirectY => {
                 let pos = self.mem_read(self.program_counter);
-                let lo = self.mem_read(pos as u16);
-                let hi = self.mem_read(pos.wrapping_add(1) as u16);
-                u16::from_le_bytes([lo, hi]).wrapping_add(self.register_y as u16)
+                self.mem_read_u16(pos as u16)
+                    .wrapping_add(self.register_y as u16)
             }
             mode => panic!("mode {mode:?} is not supported"),
         }
