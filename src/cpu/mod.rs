@@ -174,4 +174,17 @@ impl CPU {
             self.program_counter = self.program_counter.wrapping_add(skip);
         }
     }
+
+    pub fn compare(&mut self, value: u8, mode: AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let data = self.mem_read(addr);
+
+        if value >= data {
+            self.status.insert(Status::CARRY);
+        } else {
+            self.status.remove(Status::CARRY);
+        }
+
+        self.update_zero_and_negative_flags(value.wrapping_sub(data));
+    }
 }
