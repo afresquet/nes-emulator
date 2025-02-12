@@ -154,14 +154,14 @@ pub static OPCODES: LazyLock<HashMap<u8, OpCode>> = LazyLock::new(|| {
         // JSR
         (0x20, OpCode::new(JSR, Absolute, 3, 6, jsr)),
         // LDA
-        (0xA9, OpCode::new(LDA, Immediate, 2, 2, lda)),
-        (0xA5, OpCode::new(LDA, ZeroPage, 2, 3, lda)),
-        (0xB5, OpCode::new(LDA, ZeroPageX, 2, 4, lda)),
-        (0xAD, OpCode::new(LDA, Absolute, 3, 4, lda)),
-        (0xBD, OpCode::new(LDA, AbsoluteX, 3, 4, lda)),
-        (0xB9, OpCode::new(LDA, AbsoluteY, 3, 4, lda)),
-        (0xA1, OpCode::new(LDA, IndirectX, 2, 6, lda)),
-        (0xB1, OpCode::new(LDA, IndirectY, 2, 5, lda)),
+        (LDA_IMMEDIATE, OpCode::new(LDA, Immediate, 2, 2, lda)),
+        (LDA_ZEROPAGE, OpCode::new(LDA, ZeroPage, 2, 3, lda)),
+        (LDA_ZEROPAGEX, OpCode::new(LDA, ZeroPageX, 2, 4, lda)),
+        (LDA_ABSOLUTE, OpCode::new(LDA, Absolute, 3, 4, lda)),
+        (LDA_ABSOLUTEX, OpCode::new(LDA, AbsoluteX, 3, 4, lda)),
+        (LDA_ABSOLUTEY, OpCode::new(LDA, AbsoluteY, 3, 4, lda)),
+        (LDA_INDIRECTX, OpCode::new(LDA, IndirectX, 2, 6, lda)),
+        (LDA_INDIRECTY, OpCode::new(LDA, IndirectY, 2, 5, lda)),
         // LDX
         (0xA2, OpCode::new(LDX, Immediate, 2, 2, ldx)),
         (0xA6, OpCode::new(LDX, ZeroPage, 2, 3, ldx)),
