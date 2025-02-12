@@ -76,12 +76,20 @@ impl CPU {
         self.mem_write(pos.wrapping_add(1), hi);
     }
 
+    pub fn reset_status(&mut self) {
+        self.status = Status::UNUSED;
+    }
+
+    pub fn reset_program_counter(&mut self) {
+        self.program_counter = self.mem_read_u16(0xFFFC);
+    }
+
     pub fn reset(&mut self) {
-        *self = Self {
-            program_counter: self.mem_read_u16(0xFFFC),
-            memory: self.memory,
-            ..Default::default()
-        }
+        self.register_a = 0;
+        self.register_x = 0;
+        self.register_y = 0;
+        self.reset_status();
+        self.reset_program_counter();
     }
 
     pub fn load(&mut self, program: &[u8]) {
@@ -131,13 +139,13 @@ impl CPU {
         match mode {
             AM::Immediate => self.program_counter,
             AM::ZeroPage => self.mem_read(self.program_counter) as u16,
-            AM::Absolute => self.mem_read_u16(self.program_counter),
             AM::ZeroPageX => self
                 .mem_read(self.program_counter)
                 .wrapping_add(self.register_x) as u16,
             AM::ZeroPageY => self
                 .mem_read(self.program_counter)
                 .wrapping_add(self.register_y) as u16,
+            AM::Absolute => self.mem_read_u16(self.program_counter),
             AM::AbsoluteX => self
                 .mem_read_u16(self.program_counter)
                 .wrapping_add(self.register_x as u16),

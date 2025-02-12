@@ -52,14 +52,14 @@ pub static OPCODES: LazyLock<HashMap<u8, OpCode>> = LazyLock::new(|| {
 
     HashMap::from([
         // ADC
-        (0x69, OpCode::new(ADC, Immediate, 2, 2, adc)),
-        (0x65, OpCode::new(ADC, ZeroPage, 2, 3, adc)),
-        (0x75, OpCode::new(ADC, ZeroPageX, 2, 4, adc)),
-        (0x6D, OpCode::new(ADC, Absolute, 3, 4, adc)),
-        (0x7D, OpCode::new(ADC, AbsoluteX, 3, 4, adc)),
-        (0x79, OpCode::new(ADC, AbsoluteY, 3, 4, adc)),
-        (0x61, OpCode::new(ADC, IndirectX, 2, 6, adc)),
-        (0x71, OpCode::new(ADC, IndirectY, 2, 5, adc)),
+        (ADC_IMMEDIATE, OpCode::new(ADC, Immediate, 2, 2, adc)),
+        (ADC_ZEROPAGE, OpCode::new(ADC, ZeroPage, 2, 3, adc)),
+        (ADC_ZEROPAGEX, OpCode::new(ADC, ZeroPageX, 2, 4, adc)),
+        (ADC_ABSOLUTE, OpCode::new(ADC, Absolute, 3, 4, adc)),
+        (ADC_ABSOLUTEX, OpCode::new(ADC, AbsoluteX, 3, 4, adc)),
+        (ADC_ABSOLUTEY, OpCode::new(ADC, AbsoluteY, 3, 4, adc)),
+        (ADC_INDIRECTX, OpCode::new(ADC, IndirectX, 2, 6, adc)),
+        (ADC_INDIRECTY, OpCode::new(ADC, IndirectY, 2, 5, adc)),
         // AND
         (0x29, OpCode::new(AND, Immediate, 2, 2, and)),
         (0x25, OpCode::new(AND, ZeroPage, 2, 3, and)),
@@ -91,7 +91,7 @@ pub static OPCODES: LazyLock<HashMap<u8, OpCode>> = LazyLock::new(|| {
         // BPL
         (0x10, OpCode::new(BPL, Relative, 2, 2, bpl)),
         // BRK
-        (0x00, OpCode::new(BRK, Implied, 1, 7, brk)),
+        (brk::BRK, OpCode::new(BRK, Implied, 1, 7, brk)),
         // BVC
         (0x50, OpCode::new(BVC, Relative, 2, 2, bvc)),
         // BVS
