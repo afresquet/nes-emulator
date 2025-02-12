@@ -71,11 +71,11 @@ pub static OPCODES: LazyLock<HashMap<u8, OpCode>> = LazyLock::new(|| {
         (AND_INDIRECTX, OpCode::new(AND, IndirectX, 2, 6, and)),
         (AND_INDIRECTY, OpCode::new(AND, IndirectY, 2, 5, and)),
         // ASL
-        (0x0A, OpCode::new(ASL, Accumulator, 1, 2, asl)),
-        (0x06, OpCode::new(ASL, ZeroPage, 2, 5, asl)),
-        (0x16, OpCode::new(ASL, ZeroPageX, 2, 6, asl)),
-        (0x0E, OpCode::new(ASL, Absolute, 3, 6, asl)),
-        (0x1E, OpCode::new(ASL, AbsoluteX, 3, 7, asl)),
+        (ASL_ACCUMULATOR, OpCode::new(ASL, Accumulator, 1, 2, asl)),
+        (ASL_ZEROPAGE, OpCode::new(ASL, ZeroPage, 2, 5, asl)),
+        (ASL_ZEROPAGEX, OpCode::new(ASL, ZeroPageX, 2, 6, asl)),
+        (ASL_ABSOLUTE, OpCode::new(ASL, Absolute, 3, 6, asl)),
+        (ASL_ABSOLUTEX, OpCode::new(ASL, AbsoluteX, 3, 7, asl)),
         // BCC
         (0x90, OpCode::new(BCC, Relative, 2, 2, bcc)),
         // BCS
