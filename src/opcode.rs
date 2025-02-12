@@ -83,8 +83,8 @@ pub static OPCODES: LazyLock<HashMap<u8, OpCode>> = LazyLock::new(|| {
         // BEQ
         (beq::BEQ, OpCode::new(BEQ, Relative, 2, 2, beq)),
         // BIT
-        (0x24, OpCode::new(BIT, ZeroPage, 2, 3, bit)),
-        (0x2C, OpCode::new(BIT, Absolute, 3, 4, bit)),
+        (BIT_ZEROPAGE, OpCode::new(BIT, ZeroPage, 2, 3, bit)),
+        (BIT_ABSOLUTE, OpCode::new(BIT, Absolute, 3, 4, bit)),
         // BMI
         (bmi::BMI, OpCode::new(BMI, Relative, 2, 2, bmi)),
         // BNE
