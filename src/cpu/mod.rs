@@ -1,4 +1,6 @@
-use crate::AddressingMode;
+use crate::{AddressingMode, OPCODES};
+
+pub mod instructions;
 
 bitflags::bitflags! {
     /// 7  bit  0
@@ -96,41 +98,17 @@ impl CPU {
     pub fn run(&mut self) {
         loop {
             let opcode = self.mem_read(self.program_counter);
+            let opcode = OPCODES.get(&opcode).expect("to be a valid opcode");
 
             self.program_counter += 1;
 
-            match opcode {
-                0xA9 => {
-                    self.lda(AddressingMode::Immediate);
-                    self.program_counter += 1;
-                }
-                0xA5 => {
-                    self.lda(AddressingMode::ZeroPage);
-                    self.program_counter += 1;
-                }
-                0xAA => self.tax(),
-                0xE8 => self.inx(),
-                0x00 => return,
-                _ => unimplemented!(),
+            match opcode.ty {
+                crate::OpCodeType::BRK => return,
+                _ => (opcode.instruction)(self, opcode),
             }
+
+            self.program_counter += opcode.bytes as u16 - 1;
         }
-    }
-
-    fn lda(&mut self, mode: AddressingMode) {
-        let addr = self.get_operand_address(mode);
-        let value = self.mem_read(addr);
-        self.register_a = value;
-        self.update_zero_and_negative_flags(self.register_a);
-    }
-
-    fn tax(&mut self) {
-        self.register_x = self.register_a;
-        self.update_zero_and_negative_flags(self.register_x);
-    }
-
-    fn inx(&mut self) {
-        self.register_x = self.register_x.wrapping_add(1);
-        self.update_zero_and_negative_flags(self.register_x);
     }
 
     fn update_zero_and_negative_flags(&mut self, result: u8) {
@@ -189,90 +167,10 @@ impl CPU {
 mod tests {
     use super::*;
 
-    mod lda {
-        use super::*;
-
-        #[test]
-        fn test_0xa9_lda_immediate_load_data() {
-            let mut cpu = CPU::new();
-            cpu.load_and_run(&[0xa9, 0x05, 0x00]);
-            assert_eq!(cpu.register_a, 0x05);
-            assert!(!cpu.status.intersects(Status::ZERO));
-            assert!(!cpu.status.intersects(Status::NEGATIVE));
-        }
-
-        #[test]
-        fn test_0xa9_lda_zero_flag() {
-            let mut cpu = CPU::new();
-            cpu.load_and_run(&[0xa9, 0x00, 0x00]);
-            assert_eq!(cpu.status.intersection(Status::ZERO), Status::ZERO);
-            assert!(!cpu.status.intersects(Status::NEGATIVE));
-        }
-
-        #[test]
-        fn test_0xa9_lda_negative_flag() {
-            let mut cpu = CPU::new();
-            cpu.load_and_run(&[0xa9, 0x80, 0x00]);
-            assert!(!cpu.status.intersects(Status::ZERO));
-            assert_eq!(cpu.status.intersection(Status::NEGATIVE), Status::NEGATIVE);
-        }
-
-        #[test]
-        fn test_lda_from_memory() {
-            let mut cpu = CPU::new();
-            cpu.mem_write(0x10, 0x55);
-
-            cpu.load_and_run(&[0xa5, 0x10, 0x00]);
-
-            assert_eq!(cpu.register_a, 0x55);
-        }
-    }
-
-    #[test]
-    fn test_0xaa_tax_transfer_accumulator_to_x() {
-        let mut cpu = CPU::new();
-        cpu.load(&[0xaa, 0x00]);
-        cpu.reset();
-        cpu.register_a = 0x05;
-        cpu.run();
-        assert_eq!(cpu.register_x, 0x05);
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
-    }
-
-    #[test]
-    fn test_0xaa_tax_zero_flag() {
-        let mut cpu = CPU::new();
-        cpu.load_and_run(&[0xaa, 0x00]);
-        assert_eq!(cpu.status.intersection(Status::ZERO), Status::ZERO);
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
-    }
-
-    #[test]
-    fn test_0xaa_tax_negative_flag() {
-        let mut cpu = CPU::new();
-        cpu.load(&[0xaa, 0x00]);
-        cpu.reset();
-        cpu.register_a = 0x80;
-        cpu.run();
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert_eq!(cpu.status.intersection(Status::NEGATIVE), Status::NEGATIVE);
-    }
-
     #[test]
     fn test_5_ops_working_together() {
         let mut cpu = CPU::new();
         cpu.load_and_run(&[0xa9, 0xc0, 0xaa, 0xe8, 0x00]);
         assert_eq!(cpu.register_x, 0xc1)
-    }
-
-    #[test]
-    fn test_inx_overflow() {
-        let mut cpu = CPU::new();
-        cpu.load(&[0xe8, 0xe8, 0x00]);
-        cpu.reset();
-        cpu.register_x = u8::MAX;
-        cpu.run();
-        assert_eq!(cpu.register_x, 1)
     }
 }
