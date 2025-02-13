@@ -29,7 +29,7 @@ mod tests {
     #[test_case(STA_ABSOLUTEY, 0x00, 0x1A ; "absolute_y")]
     #[test_case(STA_INDIRECTX, 0x00, 0x00 ; "indirect_x")]
     #[test_case(STA_INDIRECTY, 0x00, 0x1A ; "indirect_y")]
-    fn lda(instruction: u8, arg: u8, addr: usize) {
+    fn sta(instruction: u8, arg: u8, addr: usize) {
         // Setup
         let mut cpu = CPU::new();
         cpu.load(&[instruction, arg, BRK]);

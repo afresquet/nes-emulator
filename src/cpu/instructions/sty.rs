@@ -1,5 +1,37 @@
 use crate::{OpCode, CPU};
 
-pub fn sty(_cpu: &mut CPU, _opcode: &OpCode) {
-    todo!()
+pub const STY_ZEROPAGE: u8 = 0x84;
+pub const STY_ZEROPAGEX: u8 = 0x94;
+pub const STY_ABSOLUTE: u8 = 0x8C;
+
+/// Stores the contents of the Y register into memory.
+pub fn sty(cpu: &mut CPU, opcode: &OpCode) {
+    let addr = cpu.get_operand_address(opcode.mode);
+    cpu.mem_write(addr, cpu.register_y);
+}
+
+#[cfg(test)]
+mod tests {
+    use test_case::test_case;
+
+    use crate::instructions::BRK;
+
+    use super::*;
+
+    #[test_case(STY_ZEROPAGE, 0x00, 0x00 ; "zero_page")]
+    #[test_case(STY_ZEROPAGEX, 0x00, 0x10 ; "zero_page_x")]
+    #[test_case(STY_ABSOLUTE, 0x00, 0x00 ; "absolute")]
+    fn sty(instruction: u8, arg: u8, addr: usize) {
+        // Setup
+        let mut cpu = CPU::new();
+        cpu.load(&[instruction, arg, BRK]);
+        cpu.reset();
+        cpu.register_x = 0x10;
+        cpu.mem_write_u16(0x10, 0x00);
+
+        // Store
+        cpu.register_y = 0xFF;
+        cpu.run();
+        assert_eq!(cpu.memory[addr], 0xFF);
+    }
 }
