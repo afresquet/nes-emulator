@@ -13,7 +13,7 @@ pub fn brk(cpu: &mut CPU, _opcode: &OpCode) {
 #[cfg(test)]
 mod tests {
 
-    use crate::Status;
+    use crate::{Status, PROGRAM};
 
     use super::*;
 
@@ -29,7 +29,7 @@ mod tests {
         let status = cpu.stack_pull();
         assert_eq!(Status::from_bits_retain(status), Status::UNUSED);
         let program_counter = cpu.stack_pull_u16();
-        assert_eq!(program_counter, 0x8001);
+        assert_eq!(program_counter, PROGRAM + 1);
         assert!(cpu.status.intersects(Status::BREAK_COMMAND));
     }
 }

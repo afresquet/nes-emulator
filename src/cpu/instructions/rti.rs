@@ -14,7 +14,7 @@ mod tests {
 
     use crate::{
         instructions::{BRK, INX},
-        Status,
+        Status, PROGRAM,
     };
 
     use super::*;
@@ -25,7 +25,7 @@ mod tests {
         let mut cpu = CPU::new();
         cpu.load(&[RTI, BRK, INX, BRK]);
         cpu.reset();
-        cpu.stack_push_u16(0x8002);
+        cpu.stack_push_u16(PROGRAM + 2);
         cpu.stack_push(0b0101_0101);
 
         // Break

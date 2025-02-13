@@ -13,7 +13,7 @@ pub fn jsr(cpu: &mut CPU, opcode: &OpCode) {
 mod tests {
     use crate::{
         instructions::{BRK, INX},
-        STACK,
+        PROGRAM, STACK,
     };
 
     use super::*;
@@ -29,6 +29,6 @@ mod tests {
         cpu.run();
         let lo = cpu.memory[STACK + cpu.stack_pointer as usize + 5];
         let hi = cpu.memory[STACK + cpu.stack_pointer as usize + 4];
-        assert_eq!(u16::from_le_bytes([lo, hi]), 0x8003);
+        assert_eq!(u16::from_le_bytes([lo, hi]), PROGRAM + 3);
     }
 }

@@ -11,24 +11,39 @@ pub fn jmp(cpu: &mut CPU, opcode: &OpCode) {
 
 #[cfg(test)]
 mod tests {
+    mod jmp {
+        use crate::{
+            instructions::{BRK, INX},
+            PROGRAM,
+        };
 
-    use test_case::test_case;
+        use super::super::*;
 
-    use crate::instructions::{BRK, INX};
+        #[test]
+        fn absolute() {
+            // Setup
+            let mut cpu = CPU::new();
+            let [lo, hi] = (PROGRAM + 4).to_le_bytes();
+            cpu.load(&[JMP_ABSOLUTE, lo, hi, INX, INX, BRK, INX, INX, INX, INX, BRK]);
+            cpu.reset();
+            cpu.mem_write_u16(0x1000, PROGRAM + 4);
 
-    use super::*;
+            // Jump
+            cpu.run();
+            assert_eq!(cpu.register_x, 1);
+        }
 
-    #[test_case(JMP_ABSOLUTE, 0x04, 0x80 ; "absolute")]
-    #[test_case(JMP_INDIRECT, 0x00, 0x10 ; "indirect")]
-    fn jmp(instruction: u8, lo: u8, hi: u8) {
-        // Setup
-        let mut cpu = CPU::new();
-        cpu.load(&[instruction, lo, hi, INX, INX, BRK, INX, INX, INX, INX, BRK]);
-        cpu.reset();
-        cpu.mem_write_u16(0x1000, 0x8004);
+        #[test]
+        fn indirect() {
+            // Setup
+            let mut cpu = CPU::new();
+            cpu.load(&[JMP_INDIRECT, 0, 0, INX, INX, BRK, INX, INX, INX, INX, BRK]);
+            cpu.reset();
+            cpu.mem_write_u16(0, PROGRAM + 4);
 
-        // Jump
-        cpu.run();
-        assert_eq!(cpu.register_x, 1);
+            // Jump
+            cpu.run();
+            assert_eq!(cpu.register_x, 1);
+        }
     }
 }

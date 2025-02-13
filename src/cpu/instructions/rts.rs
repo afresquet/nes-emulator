@@ -12,7 +12,7 @@ pub fn rts(cpu: &mut CPU, _opcode: &OpCode) {
 mod tests {
     use crate::{
         instructions::{BRK, INX},
-        STACK,
+        PROGRAM, STACK,
     };
 
     use super::*;
@@ -23,9 +23,10 @@ mod tests {
         let mut cpu = CPU::new();
         cpu.load(&[RTS, INX, INX, BRK, INX, INX, INX, INX, BRK]);
         cpu.reset();
-        cpu.memory[STACK + cpu.stack_pointer as usize] = 0x02;
+        let [lo, hi] = (PROGRAM + 2).to_le_bytes();
+        cpu.memory[STACK + cpu.stack_pointer as usize] = lo;
         cpu.stack_pointer -= 1;
-        cpu.memory[STACK + cpu.stack_pointer as usize] = 0x80;
+        cpu.memory[STACK + cpu.stack_pointer as usize] = hi;
         cpu.stack_pointer -= 1;
 
         // Jump
