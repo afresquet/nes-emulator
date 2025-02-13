@@ -207,17 +207,17 @@ pub static OPCODES: LazyLock<HashMap<u8, OpCode>> = LazyLock::new(|| {
         // PLP
         (0x28, OpCode::new(PLP, Implied, 1, 4, plp)),
         // ROL
-        (0x2A, OpCode::new(ROL, Accumulator, 1, 2, rol)),
-        (0x26, OpCode::new(ROL, ZeroPage, 2, 5, rol)),
-        (0x36, OpCode::new(ROL, ZeroPageX, 2, 6, rol)),
-        (0x2E, OpCode::new(ROL, Absolute, 3, 6, rol)),
-        (0x3E, OpCode::new(ROL, AbsoluteX, 3, 7, rol)),
+        (ROL_ACCUMULATOR, OpCode::new(ROL, Accumulator, 1, 2, rol)),
+        (ROL_ZEROPAGE, OpCode::new(ROL, ZeroPage, 2, 5, rol)),
+        (ROL_ZEROPAGEX, OpCode::new(ROL, ZeroPageX, 2, 6, rol)),
+        (ROL_ABSOLUTE, OpCode::new(ROL, Absolute, 3, 6, rol)),
+        (ROL_ABSOLUTEX, OpCode::new(ROL, AbsoluteX, 3, 7, rol)),
         // ROR
-        (0x6A, OpCode::new(ROR, Accumulator, 1, 2, ror)),
-        (0x66, OpCode::new(ROR, ZeroPage, 2, 5, ror)),
-        (0x76, OpCode::new(ROR, ZeroPageX, 2, 6, ror)),
-        (0x6E, OpCode::new(ROR, Absolute, 3, 6, ror)),
-        (0x7E, OpCode::new(ROR, AbsoluteX, 3, 7, ror)),
+        (ROR_ACCUMULATOR, OpCode::new(ROR, Accumulator, 1, 2, ror)),
+        (ROR_ZEROPAGE, OpCode::new(ROR, ZeroPage, 2, 5, ror)),
+        (ROR_ZEROPAGEX, OpCode::new(ROR, ZeroPageX, 2, 6, ror)),
+        (ROR_ABSOLUTE, OpCode::new(ROR, Absolute, 3, 6, ror)),
+        (ROR_ABSOLUTEX, OpCode::new(ROR, AbsoluteX, 3, 7, ror)),
         // RTI
         (0x40, OpCode::new(RTI, Implied, 1, 6, rti)),
         // RTS
