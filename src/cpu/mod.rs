@@ -94,6 +94,22 @@ impl CPU {
         self.stack_pointer = self.stack_pointer.checked_sub(1).expect("STACK OVERFLOW");
     }
 
+    fn stack_pull_u16(&mut self) -> u16 {
+        self.stack_pointer = self.stack_pointer.checked_add(1).expect("STACK OVERFLOW");
+        let hi = self.memory[STACK + self.stack_pointer as usize];
+        self.stack_pointer = self.stack_pointer.checked_add(1).expect("STACK OVERFLOW");
+        let lo = self.memory[STACK + self.stack_pointer as usize];
+        u16::from_le_bytes([lo, hi])
+    }
+
+    fn stack_push_u16(&mut self, data: u16) {
+        let [lo, hi] = data.to_le_bytes();
+        self.memory[STACK + self.stack_pointer as usize] = lo;
+        self.stack_pointer = self.stack_pointer.checked_sub(1).expect("STACK OVERFLOW");
+        self.memory[STACK + self.stack_pointer as usize] = hi;
+        self.stack_pointer = self.stack_pointer.checked_sub(1).expect("STACK OVERFLOW");
+    }
+
     pub fn reset_status(&mut self) {
         self.status = Status::UNUSED;
     }

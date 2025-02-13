@@ -152,14 +152,17 @@ pub static OPCODES: LazyLock<HashMap<u8, OpCode>> = LazyLock::new(|| {
         // JMP
         (
             JMP_ABSOLUTE,
-            OpCode::new(JMP, Absolute, /* should be 3? */ 1, 3, jmp),
+            OpCode::new(JMP, Absolute, /* should be 3 */ 1, 3, jmp),
         ),
         (
             JMP_INDIRECT,
-            OpCode::new(JMP, Indirect, /* should be 3? */ 1, 5, jmp),
+            OpCode::new(JMP, Indirect, /* should be 3 */ 1, 5, jmp),
         ),
         // JSR
-        (0x20, OpCode::new(JSR, Absolute, 3, 6, jsr)),
+        (
+            jsr::JSR,
+            OpCode::new(JSR, Absolute, /* should be 3 */ 1, 6, jsr),
+        ),
         // LDA
         (LDA_IMMEDIATE, OpCode::new(LDA, Immediate, 2, 2, lda)),
         (LDA_ZEROPAGE, OpCode::new(LDA, ZeroPage, 2, 3, lda)),
@@ -221,7 +224,7 @@ pub static OPCODES: LazyLock<HashMap<u8, OpCode>> = LazyLock::new(|| {
         // RTI
         (0x40, OpCode::new(RTI, Implied, 1, 6, rti)),
         // RTS
-        (0x60, OpCode::new(RTS, Implied, 1, 6, rts)),
+        (rts::RTS, OpCode::new(RTS, Implied, 1, 6, rts)),
         // SBC
         (SBC_IMMEDIATE, OpCode::new(SBC, Immediate, 2, 2, sbc)),
         (SBC_ZEROPAGE, OpCode::new(SBC, ZeroPage, 2, 3, sbc)),
