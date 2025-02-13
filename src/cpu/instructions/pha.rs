@@ -27,8 +27,8 @@ mod tests {
 
         // Push
         cpu.run();
-        assert_eq!(cpu.memory[STACK + cpu.stack_pointer as usize + 2], 0x10);
-        assert_eq!(cpu.memory[STACK + cpu.stack_pointer as usize + 1], 0x20);
+        assert_eq!(cpu.memory[STACK + cpu.stack_pointer as usize + 5], 0x10);
+        assert_eq!(cpu.memory[STACK + cpu.stack_pointer as usize + 4], 0x20);
     }
 
     #[test]

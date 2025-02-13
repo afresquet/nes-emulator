@@ -222,7 +222,7 @@ pub static OPCODES: LazyLock<HashMap<u8, OpCode>> = LazyLock::new(|| {
         (ROR_ABSOLUTE, OpCode::new(ROR, Absolute, 3, 6, ror)),
         (ROR_ABSOLUTEX, OpCode::new(ROR, AbsoluteX, 3, 7, ror)),
         // RTI
-        (0x40, OpCode::new(RTI, Implied, 1, 6, rti)),
+        (rti::RTI, OpCode::new(RTI, Implied, 1, 6, rti)),
         // RTS
         (rts::RTS, OpCode::new(RTS, Implied, 1, 6, rts)),
         // SBC

@@ -27,8 +27,8 @@ mod tests {
 
         // Jump
         cpu.run();
-        let lo = cpu.memory[STACK + cpu.stack_pointer as usize + 2];
-        let hi = cpu.memory[STACK + cpu.stack_pointer as usize + 1];
+        let lo = cpu.memory[STACK + cpu.stack_pointer as usize + 5];
+        let hi = cpu.memory[STACK + cpu.stack_pointer as usize + 4];
         assert_eq!(u16::from_le_bytes([lo, hi]), 0x8003);
     }
 }
