@@ -261,11 +261,11 @@ pub static OPCODES: LazyLock<HashMap<u8, OpCode>> = LazyLock::new(|| {
         // TAY
         (tay::TAY, OpCode::new(TAY, Implied, 1, 2, tay)),
         // TSX
-        (0xBA, OpCode::new(TSX, Implied, 1, 2, tsx)),
+        (tsx::TSX, OpCode::new(TSX, Implied, 1, 2, tsx)),
         // TXA
         (txa::TXA, OpCode::new(TXA, Implied, 1, 2, txa)),
         // TXS
-        (0x9A, OpCode::new(TXS, Implied, 1, 2, txs)),
+        (txs::TXS, OpCode::new(TXS, Implied, 1, 2, txs)),
         // TYA
         (tya::TYA, OpCode::new(TYA, Implied, 1, 2, tya)),
     ])
