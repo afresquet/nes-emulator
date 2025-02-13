@@ -1,4 +1,4 @@
-use crate::{OpCode, CPU};
+use crate::{Mem, OpCode, CPU};
 
 pub const STY_ZEROPAGE: u8 = 0x84;
 pub const STY_ZEROPAGEX: u8 = 0x94;
@@ -21,7 +21,7 @@ mod tests {
     #[test_case(STY_ZEROPAGE, 0x00, 0x00 ; "zero_page")]
     #[test_case(STY_ZEROPAGEX, 0x00, 0x10 ; "zero_page_x")]
     #[test_case(STY_ABSOLUTE, 0x00, 0x00 ; "absolute")]
-    fn sty(instruction: u8, arg: u8, addr: usize) {
+    fn sty(instruction: u8, arg: u8, addr: u16) {
         // Setup
         let mut cpu = CPU::new();
         cpu.load(&[instruction, arg, BRK]);
@@ -32,6 +32,6 @@ mod tests {
         // Store
         cpu.register_y = 0xFF;
         cpu.run();
-        assert_eq!(cpu.memory[addr], 0xFF);
+        assert_eq!(cpu.mem_read(addr), 0xFF);
     }
 }

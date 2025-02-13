@@ -1,4 +1,6 @@
-use crate::{AddressingMode, OpCode, Status, CPU};
+use crate::{AddressingMode, Mem, OpCode, Status, CPU};
+
+use super::Address;
 
 pub const ROL_ACCUMULATOR: u8 = 0x2A;
 pub const ROL_ZEROPAGE: u8 = 0x26;
@@ -9,26 +11,33 @@ pub const ROL_ABSOLUTEX: u8 = 0x3E;
 /// Move each of the bits in either A or M one place to the left.
 /// Bit 0 is filled with the current value of the carry flag whilst the old bit 7 becomes the new carry flag value.
 pub fn rol(cpu: &mut CPU, opcode: &OpCode) {
-    let ptr = match opcode.mode {
-        AddressingMode::Accumulator => &mut cpu.register_a,
+    let addr = match opcode.mode {
+        AddressingMode::Accumulator => Address::Accumulator(cpu.register_a),
         mode => {
             let addr = cpu.get_operand_address(mode);
-            &mut cpu.memory[addr as usize]
+            Address::Memory {
+                addr,
+                value: cpu.mem_read(addr),
+            }
         }
     };
 
     let bit_zero = cpu.status.intersects(Status::CARRY);
-    let carry = *ptr & 0b1000_0000;
+    let carry = addr.value() & 0b1000_0000;
 
-    let shifted = *ptr << 1 | bit_zero as u8;
+    let shifted = addr.value() << 1 | bit_zero as u8;
 
     cpu.status.set(Status::CARRY, carry > 0);
 
-    *ptr = shifted;
-
-    match opcode.mode {
-        AddressingMode::Accumulator => cpu.update_zero_and_negative_flags(shifted),
-        _ => cpu.update_negative_flag(shifted),
+    match addr {
+        Address::Accumulator(_) => {
+            cpu.register_a = shifted;
+            cpu.update_zero_and_negative_flags(shifted);
+        }
+        Address::Memory { addr, .. } => {
+            cpu.mem_write(addr, shifted);
+            cpu.update_negative_flag(shifted);
+        }
     }
 }
 

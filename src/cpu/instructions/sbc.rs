@@ -1,4 +1,4 @@
-use crate::{OpCode, CPU};
+use crate::{Mem, OpCode, CPU};
 
 pub const SBC_IMMEDIATE: u8 = 0xE9;
 pub const SBC_ZEROPAGE: u8 = 0xE5;

@@ -111,3 +111,16 @@ pub use tsx::*;
 pub use txa::*;
 pub use txs::*;
 pub use tya::*;
+
+pub enum Address {
+    Accumulator(u8),
+    Memory { addr: u16, value: u8 },
+}
+
+impl Address {
+    pub fn value(&self) -> u8 {
+        match self {
+            Address::Accumulator(value) | Address::Memory { value, .. } => *value,
+        }
+    }
+}

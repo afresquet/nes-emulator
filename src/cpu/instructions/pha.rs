@@ -9,10 +9,7 @@ pub fn pha(cpu: &mut CPU, _opcode: &OpCode) {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        instructions::{BRK, TXA},
-        STACK,
-    };
+    use crate::instructions::{BRK, TXA};
 
     use super::*;
 
@@ -27,8 +24,10 @@ mod tests {
 
         // Push
         cpu.run();
-        assert_eq!(cpu.memory[STACK + cpu.stack_pointer as usize + 5], 0x10);
-        assert_eq!(cpu.memory[STACK + cpu.stack_pointer as usize + 4], 0x20);
+        cpu.stack_pull(); // BRK Status
+        cpu.stack_pull_u16(); // BRK Program Counter
+        assert_eq!(cpu.stack_pull(), 0x20);
+        assert_eq!(cpu.stack_pull(), 0x10);
     }
 
     #[test]

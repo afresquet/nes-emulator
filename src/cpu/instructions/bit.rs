@@ -1,4 +1,4 @@
-use crate::{OpCode, Status, CPU};
+use crate::{Mem, OpCode, Status, CPU};
 
 pub const BIT_ZEROPAGE: u8 = 0x24;
 pub const BIT_ABSOLUTE: u8 = 0x2C;
@@ -29,12 +29,14 @@ mod tests {
     #[test_case(BIT_ZEROPAGE ; "zero_page")]
     #[test_case(BIT_ABSOLUTE ; "absolute")]
     fn bit(instruction: u8) {
+        // Setup
         let mut cpu = CPU::new();
-        cpu.mem_write(0x10, 0b0101_0101);
-        cpu.mem_write(0x20, 0b1001_0101);
+        cpu.mem_write(0x10, 0);
+        cpu.mem_write(0x20, 0b0101_0101);
+        cpu.mem_write(0x30, 0b1001_0101);
 
         // Zero Flag
-        cpu.load(&[instruction, 0x00, BRK]);
+        cpu.load(&[instruction, 0x10, BRK]);
         cpu.reset_program_counter();
         cpu.reset_status();
         cpu.register_a = 0b0100_1000;
@@ -44,7 +46,7 @@ mod tests {
         assert!(!cpu.status.intersects(Status::NEGATIVE));
 
         // Overflow Flag
-        cpu.load(&[instruction, 0x10, BRK]);
+        cpu.load(&[instruction, 0x20, BRK]);
         cpu.reset_program_counter();
         cpu.reset_status();
         cpu.register_a = 0b0110_0101;
@@ -54,7 +56,7 @@ mod tests {
         assert!(!cpu.status.intersects(Status::NEGATIVE));
 
         // Negative Flag
-        cpu.load(&[instruction, 0x20, BRK]);
+        cpu.load(&[instruction, 0x30, BRK]);
         cpu.reset_program_counter();
         cpu.reset_status();
         cpu.register_a = 0b1100_0011;

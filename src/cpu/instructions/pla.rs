@@ -11,7 +11,7 @@ pub fn pla(cpu: &mut CPU, _opcode: &OpCode) {
 
 #[cfg(test)]
 mod tests {
-    use crate::{instructions::BRK, Status, STACK, STACK_SIZE};
+    use crate::{instructions::BRK, Status, STACK_SIZE};
 
     use super::*;
 
@@ -21,8 +21,7 @@ mod tests {
         let mut cpu = CPU::new();
         cpu.load(&[PLA, BRK]);
         cpu.reset();
-        cpu.memory[STACK + cpu.stack_pointer as usize] = 0x20;
-        cpu.stack_pointer -= 1;
+        cpu.stack_push(0x20);
 
         // Push
         cpu.run();
@@ -33,8 +32,7 @@ mod tests {
         // Zero Flag
         cpu.reset();
         cpu.register_a = 0x20;
-        cpu.memory[STACK + cpu.stack_pointer as usize] = 0;
-        cpu.stack_pointer -= 1;
+        cpu.stack_push(0);
         cpu.run();
         assert_eq!(cpu.register_a, 0);
         assert!(cpu.status.intersects(Status::ZERO));
@@ -42,8 +40,7 @@ mod tests {
 
         // Negative Flag
         cpu.reset();
-        cpu.memory[STACK + cpu.stack_pointer as usize] = 0b1000_0000;
-        cpu.stack_pointer -= 1;
+        cpu.stack_push(0b1000_0000);
         cpu.run();
         assert_eq!(cpu.register_a, 0b1000_0000);
         assert!(!cpu.status.intersects(Status::ZERO));

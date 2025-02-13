@@ -1,4 +1,4 @@
-use crate::{AddressingMode, OpCodeType, OPCODES};
+use crate::{AddressingMode, Bus, Mem, OpCodeType, OPCODES};
 
 pub mod instructions;
 
@@ -28,21 +28,21 @@ bitflags::bitflags! {
     }
 }
 
-pub const STACK: usize = 0x0100;
+pub const STACK: u16 = 0x0100;
 pub const STACK_SIZE: u8 = 0xFF;
 
 pub const PROGRAM: u16 = 0x0600;
-pub const PROGRAM_START: u16 = 0xFFFC;
+pub const PROGRAM_START: u16 = 0x1FFC;
 
 #[derive(Debug)]
 pub struct CPU {
-    pub register_a: u8,
-    pub register_x: u8,
-    pub register_y: u8,
-    pub status: Status,
-    pub program_counter: u16,
-    pub stack_pointer: u8,
-    memory: [u8; 0xFFFF],
+    register_a: u8,
+    register_x: u8,
+    register_y: u8,
+    status: Status,
+    program_counter: u16,
+    stack_pointer: u8,
+    bus: Bus,
 }
 
 impl Default for CPU {
@@ -54,7 +54,7 @@ impl Default for CPU {
             status: Status::UNUSED,
             program_counter: 0,
             stack_pointer: STACK_SIZE,
-            memory: [0; 0xFFFF],
+            bus: Bus::default(),
         }
     }
 }
@@ -64,33 +64,13 @@ impl CPU {
         Self::default()
     }
 
-    pub fn mem_read(&self, addr: u16) -> u8 {
-        self.memory[addr as usize]
-    }
-
-    pub fn mem_write(&mut self, addr: u16, data: u8) {
-        self.memory[addr as usize] = data;
-    }
-
-    pub fn mem_read_u16(&mut self, pos: u16) -> u16 {
-        let lo = self.mem_read(pos);
-        let hi = self.mem_read(pos.wrapping_add(1));
-        u16::from_le_bytes([lo, hi])
-    }
-
-    pub fn mem_write_u16(&mut self, pos: u16, data: u16) {
-        let [lo, hi] = data.to_le_bytes();
-        self.mem_write(pos, lo);
-        self.mem_write(pos.wrapping_add(1), hi);
-    }
-
     pub fn stack_pull(&mut self) -> u8 {
         self.stack_pointer = self.stack_pointer.checked_add(1).expect("STACK OVERFLOW");
-        self.memory[STACK + self.stack_pointer as usize]
+        self.mem_read(STACK + self.stack_pointer as u16)
     }
 
     pub fn stack_push(&mut self, data: u8) {
-        self.memory[STACK + self.stack_pointer as usize] = data;
+        self.mem_write(STACK + self.stack_pointer as u16, data);
         self.stack_pointer = self.stack_pointer.checked_sub(1).expect("STACK OVERFLOW");
     }
 
@@ -111,7 +91,7 @@ impl CPU {
     }
 
     pub fn reset_program_counter(&mut self) {
-        self.program_counter = self.mem_read_u16(0xFFFC);
+        self.program_counter = self.mem_read_u16(PROGRAM_START);
     }
 
     pub fn reset_stack_pointer(&mut self) {
@@ -128,7 +108,9 @@ impl CPU {
     }
 
     pub fn load(&mut self, program: &[u8]) {
-        self.memory[PROGRAM as usize..(PROGRAM as usize + program.len())].copy_from_slice(program);
+        for (i, byte) in program.iter().enumerate() {
+            self.mem_write(PROGRAM + i as u16, *byte);
+        }
         self.mem_write_u16(PROGRAM_START, PROGRAM);
     }
 
@@ -272,5 +254,15 @@ impl CPU {
 
         self.register_a = result;
         self.update_zero_and_negative_flags(self.register_a);
+    }
+}
+
+impl Mem for CPU {
+    fn mem_read(&self, addr: u16) -> u8 {
+        self.bus.mem_read(addr)
+    }
+
+    fn mem_write(&mut self, addr: u16, data: u8) {
+        self.bus.mem_write(addr, data);
     }
 }

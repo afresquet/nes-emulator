@@ -1,4 +1,6 @@
-use crate::{AddressingMode, OpCode, Status, CPU};
+use crate::{AddressingMode, Mem, OpCode, Status, CPU};
+
+use super::Address;
 
 pub const ASL_ACCUMULATOR: u8 = 0x0A;
 pub const ASL_ZEROPAGE: u8 = 0x06;
@@ -10,21 +12,33 @@ pub const ASL_ABSOLUTEX: u8 = 0x1E;
 /// Bit 0 is set to 0 and bit 7 is placed in the carry flag.
 /// The effect of this operation is to multiply the memory contents by 2 (ignoring 2's complement considerations), setting the carry if the result will not fit in 8 bits.
 pub fn asl(cpu: &mut CPU, opcode: &OpCode) {
-    let ptr = match opcode.mode {
-        AddressingMode::Accumulator => &mut cpu.register_a,
+    let addr = match opcode.mode {
+        AddressingMode::Accumulator => Address::Accumulator(cpu.register_a),
         mode => {
             let addr = cpu.get_operand_address(mode);
-            &mut cpu.memory[addr as usize]
+            Address::Memory {
+                addr,
+                value: cpu.mem_read(addr),
+            }
         }
     };
 
-    let shifted = (*ptr as u16) << 1;
+    let shifted = (addr.value() as u16) << 1;
 
     cpu.status.set(Status::CARRY, shifted > u8::MAX as u16);
 
-    *ptr = shifted as u8;
+    let shifted = shifted as u8;
 
-    cpu.update_zero_and_negative_flags(shifted as u8);
+    match addr {
+        Address::Accumulator(_) => {
+            cpu.register_a = shifted;
+        }
+        Address::Memory { addr, .. } => {
+            cpu.mem_write(addr, shifted);
+        }
+    }
+
+    cpu.update_zero_and_negative_flags(shifted);
 }
 
 #[cfg(test)]

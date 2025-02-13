@@ -14,7 +14,7 @@ mod tests {
     mod jmp {
         use crate::{
             instructions::{BRK, INX},
-            PROGRAM,
+            Mem, PROGRAM,
         };
 
         use super::super::*;
@@ -24,9 +24,8 @@ mod tests {
             // Setup
             let mut cpu = CPU::new();
             let [lo, hi] = (PROGRAM + 4).to_le_bytes();
-            cpu.load(&[JMP_ABSOLUTE, lo, hi, INX, INX, BRK, INX, INX, INX, INX, BRK]);
+            cpu.load(&[JMP_ABSOLUTE, lo, hi, INX, INX, BRK, INX, INX, INX, BRK]);
             cpu.reset();
-            cpu.mem_write_u16(0x1000, PROGRAM + 4);
 
             // Jump
             cpu.run();
@@ -37,9 +36,9 @@ mod tests {
         fn indirect() {
             // Setup
             let mut cpu = CPU::new();
-            cpu.load(&[JMP_INDIRECT, 0, 0, INX, INX, BRK, INX, INX, INX, INX, BRK]);
+            cpu.load(&[JMP_INDIRECT, 0x10, 0, INX, INX, BRK, INX, INX, INX, BRK]);
             cpu.reset();
-            cpu.mem_write_u16(0, PROGRAM + 4);
+            cpu.mem_write_u16(0x10, PROGRAM + 4);
 
             // Jump
             cpu.run();

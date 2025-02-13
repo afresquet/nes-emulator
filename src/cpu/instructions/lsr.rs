@@ -1,4 +1,6 @@
-use crate::{AddressingMode, OpCode, Status, CPU};
+use crate::{AddressingMode, Mem, OpCode, Status, CPU};
+
+use super::Address;
 
 pub const LSR_ACCUMULATOR: u8 = 0x4A;
 pub const LSR_ZEROPAGE: u8 = 0x46;
@@ -10,19 +12,29 @@ pub const LSR_ABSOLUTEX: u8 = 0x5E;
 /// The bit that was in bit 0 is shifted into the carry flag.
 /// Bit 7 is set to zero.
 pub fn lsr(cpu: &mut CPU, opcode: &OpCode) {
-    let ptr = match opcode.mode {
-        AddressingMode::Accumulator => &mut cpu.register_a,
+    let addr = match opcode.mode {
+        AddressingMode::Accumulator => Address::Accumulator(cpu.register_a),
         mode => {
             let addr = cpu.get_operand_address(mode);
-            &mut cpu.memory[addr as usize]
+            Address::Memory {
+                addr,
+                value: cpu.mem_read(addr),
+            }
         }
     };
 
-    cpu.status.set(Status::CARRY, *ptr & 1 != 0);
+    cpu.status.set(Status::CARRY, addr.value() & 1 != 0);
 
-    let shifted = *ptr >> 1;
+    let shifted = addr.value() >> 1;
 
-    *ptr = shifted;
+    match addr {
+        Address::Accumulator(_) => {
+            cpu.register_a = shifted;
+        }
+        Address::Memory { addr, .. } => {
+            cpu.mem_write(addr, shifted);
+        }
+    }
 
     cpu.update_zero_and_negative_flags(shifted);
 }

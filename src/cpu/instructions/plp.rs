@@ -11,7 +11,7 @@ pub fn plp(cpu: &mut CPU, _opcode: &OpCode) {
 
 #[cfg(test)]
 mod tests {
-    use crate::{instructions::BRK, Status, STACK, STACK_SIZE};
+    use crate::{instructions::BRK, Status, STACK_SIZE};
 
     use super::*;
 
@@ -21,8 +21,7 @@ mod tests {
         let mut cpu = CPU::new();
         cpu.load(&[PLP, BRK]);
         cpu.reset();
-        cpu.memory[STACK + cpu.stack_pointer as usize] = 0b0101_0101;
-        cpu.stack_pointer -= 1;
+        cpu.stack_push(0b0101_0101);
 
         // Push
         cpu.run();

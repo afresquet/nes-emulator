@@ -1,4 +1,4 @@
-use crate::{OpCode, CPU};
+use crate::{Mem, OpCode, CPU};
 
 pub const ADC_IMMEDIATE: u8 = 0x69;
 pub const ADC_ZEROPAGE: u8 = 0x65;
@@ -23,18 +23,18 @@ mod tests {
 
     use super::*;
 
-    #[test_case(&[ADC_IMMEDIATE, 0x40, BRK] ; "immediate")]
-    #[test_case(&[ADC_ZEROPAGE, 0x10, BRK] ; "zero_page")]
-    #[test_case(&[ADC_ZEROPAGEX, 0x00, BRK] ; "zero_page_x")]
-    #[test_case(&[ADC_ABSOLUTE, 0x1A, BRK] ; "absolute")]
-    #[test_case(&[ADC_ABSOLUTEX, 0x00, BRK] ; "absolute_x")]
-    #[test_case(&[ADC_ABSOLUTEY, 0x00, BRK] ; "absolute_y")]
-    #[test_case(&[ADC_INDIRECTX, 0x0A, BRK] ; "indirect_x")]
-    #[test_case(&[ADC_INDIRECTY, 0x4A, BRK] ; "indirect_y")]
-    fn adc(program: &[u8]) {
+    #[test_case(ADC_IMMEDIATE, 0x40 ; "immediate")]
+    #[test_case(ADC_ZEROPAGE, 0x10 ; "zero_page")]
+    #[test_case(ADC_ZEROPAGEX, 0x00 ; "zero_page_x")]
+    #[test_case(ADC_ABSOLUTE, 0x1A ; "absolute")]
+    #[test_case(ADC_ABSOLUTEX, 0x00 ; "absolute_x")]
+    #[test_case(ADC_ABSOLUTEY, 0x00 ; "absolute_y")]
+    #[test_case(ADC_INDIRECTX, 0x0A ; "indirect_x")]
+    #[test_case(ADC_INDIRECTY, 0x4A ; "indirect_y")]
+    fn adc(instruction: u8, addr: u8) {
         // Setup
         let mut cpu = CPU::new();
-        cpu.load(program);
+        cpu.load(&[instruction, addr, BRK]);
         cpu.register_x = 0x10;
         cpu.register_y = 0x1A;
         cpu.mem_write(0x10, 0x40);

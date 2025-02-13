@@ -18,7 +18,7 @@ pub fn cmp(cpu: &mut CPU, opcode: &OpCode) {
 mod tests {
     use test_case::test_case;
 
-    use crate::{instructions::BRK, Status};
+    use crate::{instructions::BRK, Mem, Status};
 
     use super::*;
 

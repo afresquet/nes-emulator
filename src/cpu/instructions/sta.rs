@@ -1,4 +1,4 @@
-use crate::{OpCode, CPU};
+use crate::{Mem, OpCode, CPU};
 
 pub const STA_ZEROPAGE: u8 = 0x85;
 pub const STA_ZEROPAGEX: u8 = 0x95;
@@ -22,25 +22,26 @@ mod tests {
 
     use super::*;
 
-    #[test_case(STA_ZEROPAGE, 0x00, 0x00 ; "zero_page")]
+    #[test_case(STA_ZEROPAGE, 0x10, 0x10 ; "zero_page")]
     #[test_case(STA_ZEROPAGEX, 0x00, 0x10 ; "zero_page_x")]
-    #[test_case(STA_ABSOLUTE, 0x00, 0x00 ; "absolute")]
+    #[test_case(STA_ABSOLUTE, 0x10, 0x10 ; "absolute")]
     #[test_case(STA_ABSOLUTEX, 0x00, 0x10 ; "absolute_x")]
     #[test_case(STA_ABSOLUTEY, 0x00, 0x1A ; "absolute_y")]
-    #[test_case(STA_INDIRECTX, 0x00, 0x00 ; "indirect_x")]
-    #[test_case(STA_INDIRECTY, 0x00, 0x1A ; "indirect_y")]
-    fn sta(instruction: u8, arg: u8, addr: usize) {
+    #[test_case(STA_INDIRECTX, 0x02, 0x10 ; "indirect_x")]
+    #[test_case(STA_INDIRECTY, 0x14, 0x1A ; "indirect_y")]
+    fn sta(instruction: u8, arg: u8, addr: u16) {
         // Setup
         let mut cpu = CPU::new();
         cpu.load(&[instruction, arg, BRK]);
         cpu.reset();
         cpu.register_x = 0x10;
         cpu.register_y = 0x1A;
-        cpu.mem_write_u16(0x10, 0x00);
+        cpu.mem_write_u16(0x12, 0x10);
+        cpu.mem_write_u16(0x14, 0x00);
 
         // Store
         cpu.register_a = 0xFF;
         cpu.run();
-        assert_eq!(cpu.memory[addr], 0xFF);
+        assert_eq!(cpu.mem_read(addr), 0xFF);
     }
 }

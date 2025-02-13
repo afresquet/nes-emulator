@@ -1,4 +1,4 @@
-use crate::{OpCode, CPU};
+use crate::{Mem, OpCode, CPU};
 
 pub const INC_ZEROPAGE: u8 = 0xE6;
 pub const INC_ZEROPAGEX: u8 = 0xF6;
@@ -21,13 +21,13 @@ mod tests {
 
     use super::*;
 
-    #[test_case(INC_ZEROPAGE, 0x00, 0x00 ; "zero_page")]
+    #[test_case(INC_ZEROPAGE, 0x10, 0x10 ; "zero_page")]
     #[test_case(INC_ZEROPAGEX, 0x00, 0x10 ; "zero_page_x")]
-    #[test_case(INC_ABSOLUTE, 0x00, 0x00 ; "absolute")]
+    #[test_case(INC_ABSOLUTE, 0x10, 0x10 ; "absolute")]
     #[test_case(INC_ABSOLUTEX, 0x00, 0x10 ; "absolute_x")]
-    fn inc(instruction: u8, addr: u16, target: u16) {
+    fn inc(instruction: u8, addr: u8, target: u16) {
         let mut cpu = CPU::new();
-        cpu.load(&[instruction, addr as u8, BRK]);
+        cpu.load(&[instruction, addr, BRK]);
         cpu.reset();
         cpu.register_x = 0x10;
 
@@ -38,7 +38,7 @@ mod tests {
         assert!(!cpu.status.intersects(Status::NEGATIVE));
 
         // Overflow
-        cpu.load(&[instruction, addr as u8, BRK]);
+        cpu.load(&[instruction, addr, BRK]);
         cpu.reset_program_counter();
         cpu.reset_status();
         cpu.mem_write(target, u8::MAX);
@@ -48,7 +48,7 @@ mod tests {
         assert!(!cpu.status.intersects(Status::NEGATIVE));
 
         // Zero Flag
-        cpu.load(&[instruction, addr as u8, BRK]);
+        cpu.load(&[instruction, addr, BRK]);
         cpu.reset_program_counter();
         cpu.reset_status();
         cpu.mem_write(target, u8::MAX);
@@ -58,7 +58,7 @@ mod tests {
         assert!(!cpu.status.intersects(Status::NEGATIVE));
 
         // Negative Flag
-        cpu.load(&[instruction, addr as u8, BRK]);
+        cpu.load(&[instruction, addr, BRK]);
         cpu.reset_program_counter();
         cpu.reset_status();
         cpu.mem_write(target, u8::MAX - 1);

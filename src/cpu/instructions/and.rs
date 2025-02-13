@@ -1,4 +1,4 @@
-use crate::{OpCode, CPU};
+use crate::{Mem, OpCode, CPU};
 
 pub const AND_IMMEDIATE: u8 = 0x29;
 pub const AND_ZEROPAGE: u8 = 0x25;

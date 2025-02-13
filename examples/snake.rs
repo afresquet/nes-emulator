@@ -1,6 +1,6 @@
 use std::{thread, time::Duration};
 
-use nes_emulator::CPU;
+use nes_emulator::{Mem, CPU};
 use rand::Rng;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;

@@ -1,4 +1,4 @@
-use crate::{OpCode, CPU};
+use crate::{Mem, OpCode, CPU};
 
 pub const DEC_ZEROPAGE: u8 = 0xC6;
 pub const DEC_ZEROPAGEX: u8 = 0xD6;
