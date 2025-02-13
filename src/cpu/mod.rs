@@ -191,4 +191,30 @@ impl CPU {
 
         self.update_zero_and_negative_flags(value.wrapping_sub(data));
     }
+
+    pub fn sum(&mut self, value: u8) {
+        let sum =
+            self.register_a as u16 + value as u16 + self.status.contains(Status::CARRY) as u16;
+
+        if sum > u8::MAX as u16 {
+            self.status.insert(Status::CARRY);
+        } else {
+            self.status.remove(Status::CARRY);
+        }
+
+        let result = sum as u8;
+
+        let value_mask = value ^ result;
+        let acc_mask = self.register_a ^ result;
+        let sign_bit = value_mask & acc_mask & 0x80;
+
+        if sign_bit != 0 {
+            self.status.insert(Status::OVERFLOW);
+        } else {
+            self.status.remove(Status::OVERFLOW);
+        }
+
+        self.register_a = result;
+        self.update_zero_and_negative_flags(self.register_a);
+    }
 }

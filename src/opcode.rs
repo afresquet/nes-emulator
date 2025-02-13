@@ -223,14 +223,14 @@ pub static OPCODES: LazyLock<HashMap<u8, OpCode>> = LazyLock::new(|| {
         // RTS
         (0x60, OpCode::new(RTS, Implied, 1, 6, rts)),
         // SBC
-        (0xE9, OpCode::new(SBC, Immediate, 2, 2, sbc)),
-        (0xE5, OpCode::new(SBC, ZeroPage, 2, 3, sbc)),
-        (0xF5, OpCode::new(SBC, ZeroPageX, 2, 4, sbc)),
-        (0xED, OpCode::new(SBC, Absolute, 3, 4, sbc)),
-        (0xFD, OpCode::new(SBC, AbsoluteX, 3, 4, sbc)),
-        (0xF9, OpCode::new(SBC, AbsoluteY, 3, 4, sbc)),
-        (0xE1, OpCode::new(SBC, IndirectX, 2, 6, sbc)),
-        (0xF1, OpCode::new(SBC, IndirectY, 2, 5, sbc)),
+        (SBC_IMMEDIATE, OpCode::new(SBC, Immediate, 2, 2, sbc)),
+        (SBC_ZEROPAGE, OpCode::new(SBC, ZeroPage, 2, 3, sbc)),
+        (SBC_ZEROPAGEX, OpCode::new(SBC, ZeroPageX, 2, 4, sbc)),
+        (SBC_ABSOLUTE, OpCode::new(SBC, Absolute, 3, 4, sbc)),
+        (SBC_ABSOLUTEX, OpCode::new(SBC, AbsoluteX, 3, 4, sbc)),
+        (SBC_ABSOLUTEY, OpCode::new(SBC, AbsoluteY, 3, 4, sbc)),
+        (SBC_INDIRECTX, OpCode::new(SBC, IndirectX, 2, 6, sbc)),
+        (SBC_INDIRECTY, OpCode::new(SBC, IndirectY, 2, 5, sbc)),
         // SEC
         (0x38, OpCode::new(SEC, Implied, 1, 2, sec)),
         // SED

@@ -1,4 +1,4 @@
-use crate::{OpCode, Status, CPU};
+use crate::{OpCode, CPU};
 
 pub const ADC_IMMEDIATE: u8 = 0x69;
 pub const ADC_ZEROPAGE: u8 = 0x65;
@@ -12,34 +12,13 @@ pub const ADC_INDIRECTY: u8 = 0x71;
 /// This instruction adds the contents of a memory location to the accumulator together with the carry bit. If overflow occurs the carry bit is set, this enables multiple byte addition to be performed.
 pub fn adc(cpu: &mut CPU, opcode: &OpCode) {
     let addr = cpu.get_operand_address(opcode.mode);
-    let data = cpu.mem_read(addr);
-    let sum = cpu.register_a as u16 + data as u16 + cpu.status.contains(Status::CARRY) as u16;
-
-    if sum > u8::MAX as u16 {
-        cpu.status.insert(Status::CARRY);
-    } else {
-        cpu.status.remove(Status::CARRY);
-    }
-
-    let result = sum as u8;
-
-    let data_mask = data ^ result;
-    let acc_mask = cpu.register_a ^ result;
-    let sign_bit = data_mask & acc_mask & 0x80;
-
-    if sign_bit != 0 {
-        cpu.status.insert(Status::OVERFLOW);
-    } else {
-        cpu.status.remove(Status::OVERFLOW);
-    }
-
-    cpu.register_a = result;
-    cpu.update_zero_and_negative_flags(cpu.register_a);
+    let value = cpu.mem_read(addr);
+    cpu.sum(value);
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::instructions::BRK;
+    use crate::{instructions::BRK, Status};
     use test_case::test_case;
 
     use super::*;
