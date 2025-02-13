@@ -64,37 +64,37 @@ impl CPU {
         Self::default()
     }
 
-    fn mem_read(&self, addr: u16) -> u8 {
+    pub fn mem_read(&self, addr: u16) -> u8 {
         self.memory[addr as usize]
     }
 
-    fn mem_write(&mut self, addr: u16, data: u8) {
+    pub fn mem_write(&mut self, addr: u16, data: u8) {
         self.memory[addr as usize] = data;
     }
 
-    fn mem_read_u16(&mut self, pos: u16) -> u16 {
+    pub fn mem_read_u16(&mut self, pos: u16) -> u16 {
         let lo = self.mem_read(pos);
         let hi = self.mem_read(pos.wrapping_add(1));
         u16::from_le_bytes([lo, hi])
     }
 
-    fn mem_write_u16(&mut self, pos: u16, data: u16) {
+    pub fn mem_write_u16(&mut self, pos: u16, data: u16) {
         let [lo, hi] = data.to_le_bytes();
         self.mem_write(pos, lo);
         self.mem_write(pos.wrapping_add(1), hi);
     }
 
-    fn stack_pull(&mut self) -> u8 {
+    pub fn stack_pull(&mut self) -> u8 {
         self.stack_pointer = self.stack_pointer.checked_add(1).expect("STACK OVERFLOW");
         self.memory[STACK + self.stack_pointer as usize]
     }
 
-    fn stack_push(&mut self, data: u8) {
+    pub fn stack_push(&mut self, data: u8) {
         self.memory[STACK + self.stack_pointer as usize] = data;
         self.stack_pointer = self.stack_pointer.checked_sub(1).expect("STACK OVERFLOW");
     }
 
-    fn stack_pull_u16(&mut self) -> u16 {
+    pub fn stack_pull_u16(&mut self) -> u16 {
         self.stack_pointer = self.stack_pointer.checked_add(1).expect("STACK OVERFLOW");
         let hi = self.memory[STACK + self.stack_pointer as usize];
         self.stack_pointer = self.stack_pointer.checked_add(1).expect("STACK OVERFLOW");
@@ -102,7 +102,7 @@ impl CPU {
         u16::from_le_bytes([lo, hi])
     }
 
-    fn stack_push_u16(&mut self, data: u16) {
+    pub fn stack_push_u16(&mut self, data: u16) {
         let [lo, hi] = data.to_le_bytes();
         self.memory[STACK + self.stack_pointer as usize] = lo;
         self.stack_pointer = self.stack_pointer.checked_sub(1).expect("STACK OVERFLOW");
