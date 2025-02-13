@@ -205,7 +205,25 @@ impl CPU {
                 .wrapping_add(self.register_y as u16),
             AM::Indirect => {
                 let pos = self.mem_read_u16(self.program_counter);
-                self.mem_read_u16(pos)
+
+                // The 6502 microprocessor has a known bug
+                // related to indirect addressing modes that involve page boundaries.
+                //
+                // Specifically, the bug occurs when using the indirect JMP instruction across a page boundary.
+                //
+                // For example, if the instruction is JMP ($10FF)
+                // and the memory location $10FF holds $34, and $1100 holds $12,
+                // the destination address should normally be $1234.
+                //
+                // However, due to the bug, the 6502 reads the addresses $10FF and $1000 instead of $10FF and $1100,
+                // leading to an incorrect destination address of $3400.
+                if pos & 0xFF == 0xFF {
+                    let lo = self.mem_read(pos);
+                    let hi = self.mem_read(pos + 0xFF00);
+                    u16::from_le_bytes([lo, hi])
+                } else {
+                    self.mem_read_u16(pos)
+                }
             }
             AM::IndirectX => {
                 let pos = self
