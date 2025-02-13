@@ -260,7 +260,7 @@ impl CPU {
         let sum =
             self.register_a as u16 + value as u16 + self.status.contains(Status::CARRY) as u16;
 
-        self.status.set(Status::CARRY, sum > u8::MAX as u16);
+        self.status.set(Status::CARRY, sum > 0xFF);
 
         let result = sum as u8;
 

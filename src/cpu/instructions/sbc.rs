@@ -14,8 +14,7 @@ pub const SBC_INDIRECTY: u8 = 0xF1;
 pub fn sbc(cpu: &mut CPU, opcode: &OpCode) {
     let addr = cpu.get_operand_address(opcode.mode);
     let value = cpu.mem_read(addr);
-    let value = value.wrapping_neg();
-    cpu.sum(value);
+    cpu.sum((value as i8).wrapping_neg().wrapping_sub(1) as u8);
 }
 
 #[cfg(test)]
@@ -48,7 +47,7 @@ mod tests {
         cpu.reset_status();
         cpu.reset_program_counter();
         cpu.run();
-        assert_eq!(cpu.register_a, 0xC0);
+        assert_eq!(cpu.register_a, 0xBF);
         assert!(!cpu.status.intersects(Status::ZERO));
         assert!(cpu.status.intersects(Status::NEGATIVE));
         assert!(!cpu.status.intersects(Status::CARRY));
@@ -57,7 +56,7 @@ mod tests {
         // From existing value
         cpu.reset_status();
         cpu.reset_program_counter();
-        cpu.register_a = 0x41;
+        cpu.register_a = 0x42;
         cpu.run();
         assert_eq!(cpu.register_a, 1);
         assert!(!cpu.status.intersects(Status::ZERO));
@@ -68,7 +67,7 @@ mod tests {
         // Carry Flag
         cpu.reset_status();
         cpu.reset_program_counter();
-        cpu.register_a = 0x40;
+        cpu.register_a = 0x41;
         cpu.run();
         assert_eq!(cpu.register_a, 0);
         assert!(cpu.status.intersects(Status::ZERO));
@@ -81,7 +80,7 @@ mod tests {
         cpu.reset_program_counter();
         cpu.register_a = 0x20;
         cpu.run();
-        assert_eq!(cpu.register_a, 0xE0);
+        assert_eq!(cpu.register_a, 0xDF);
         assert!(!cpu.status.intersects(Status::ZERO));
         assert!(cpu.status.intersects(Status::NEGATIVE));
         assert!(!cpu.status.intersects(Status::CARRY));
