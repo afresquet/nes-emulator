@@ -22,11 +22,7 @@ pub fn rol(cpu: &mut CPU, opcode: &OpCode) {
 
     let shifted = *ptr << 1 | bit_zero as u8;
 
-    if carry > 0 {
-        cpu.status.insert(Status::CARRY);
-    } else {
-        cpu.status.remove(Status::CARRY);
-    }
+    cpu.status.set(Status::CARRY, carry > 0);
 
     *ptr = shifted;
 

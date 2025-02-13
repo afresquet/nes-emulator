@@ -22,11 +22,7 @@ pub fn ror(cpu: &mut CPU, opcode: &OpCode) {
 
     let shifted = *ptr >> 1 | (bit_seven as u8) << 7;
 
-    if carry > 0 {
-        cpu.status.insert(Status::CARRY);
-    } else {
-        cpu.status.remove(Status::CARRY);
-    }
+    cpu.status.set(Status::CARRY, carry > 0);
 
     *ptr = shifted;
 

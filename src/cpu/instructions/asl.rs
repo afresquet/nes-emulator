@@ -20,11 +20,7 @@ pub fn asl(cpu: &mut CPU, opcode: &OpCode) {
 
     let shifted = (*ptr as u16) << 1;
 
-    if shifted > u8::MAX as u16 {
-        cpu.status.insert(Status::CARRY);
-    } else {
-        cpu.status.remove(Status::CARRY);
-    }
+    cpu.status.set(Status::CARRY, shifted > u8::MAX as u16);
 
     *ptr = shifted as u8;
 

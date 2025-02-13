@@ -160,17 +160,9 @@ impl CPU {
     }
 
     fn update_zero_and_negative_flags(&mut self, result: u8) {
-        if result == 0 {
-            self.status.insert(Status::ZERO);
-        } else {
-            self.status.remove(Status::ZERO);
-        }
+        self.status.set(Status::ZERO, result == 0);
 
-        if result & 1 << 7 != 0 {
-            self.status.insert(Status::NEGATIVE);
-        } else {
-            self.status.remove(Status::NEGATIVE);
-        }
+        self.status.set(Status::NEGATIVE, result & 1 << 7 != 0);
     }
 
     fn get_operand_address(&mut self, mode: AddressingMode) -> u16 {
@@ -222,11 +214,7 @@ impl CPU {
         let addr = self.get_operand_address(mode);
         let data = self.mem_read(addr);
 
-        if value >= data {
-            self.status.insert(Status::CARRY);
-        } else {
-            self.status.remove(Status::CARRY);
-        }
+        self.status.set(Status::CARRY, value >= data);
 
         self.update_zero_and_negative_flags(value.wrapping_sub(data));
     }
@@ -235,11 +223,7 @@ impl CPU {
         let sum =
             self.register_a as u16 + value as u16 + self.status.contains(Status::CARRY) as u16;
 
-        if sum > u8::MAX as u16 {
-            self.status.insert(Status::CARRY);
-        } else {
-            self.status.remove(Status::CARRY);
-        }
+        self.status.set(Status::CARRY, sum > u8::MAX as u16);
 
         let result = sum as u8;
 
@@ -247,11 +231,7 @@ impl CPU {
         let acc_mask = self.register_a ^ result;
         let sign_bit = value_mask & acc_mask & 0x80;
 
-        if sign_bit != 0 {
-            self.status.insert(Status::OVERFLOW);
-        } else {
-            self.status.remove(Status::OVERFLOW);
-        }
+        self.status.set(Status::OVERFLOW, sign_bit != 0);
 
         self.register_a = result;
         self.update_zero_and_negative_flags(self.register_a);

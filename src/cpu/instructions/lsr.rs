@@ -18,11 +18,7 @@ pub fn lsr(cpu: &mut CPU, opcode: &OpCode) {
         }
     };
 
-    if *ptr & 1 != 0 {
-        cpu.status.insert(Status::CARRY);
-    } else {
-        cpu.status.remove(Status::CARRY);
-    }
+    cpu.status.set(Status::CARRY, *ptr & 1 != 0);
 
     let shifted = *ptr >> 1;
 
