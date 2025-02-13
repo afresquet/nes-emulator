@@ -232,11 +232,11 @@ pub static OPCODES: LazyLock<HashMap<u8, OpCode>> = LazyLock::new(|| {
         (SBC_INDIRECTX, OpCode::new(SBC, IndirectX, 2, 6, sbc)),
         (SBC_INDIRECTY, OpCode::new(SBC, IndirectY, 2, 5, sbc)),
         // SEC
-        (0x38, OpCode::new(SEC, Implied, 1, 2, sec)),
+        (sec::SEC, OpCode::new(SEC, Implied, 1, 2, sec)),
         // SED
-        (0xF8, OpCode::new(SED, Implied, 1, 2, sed)),
+        (sed::SED, OpCode::new(SED, Implied, 1, 2, sed)),
         // SEI
-        (0x78, OpCode::new(SEI, Implied, 1, 2, sei)),
+        (sei::SEI, OpCode::new(SEI, Implied, 1, 2, sei)),
         // STA
         (STA_ZEROPAGE, OpCode::new(STA, ZeroPage, 2, 3, sta)),
         (STA_ZEROPAGEX, OpCode::new(STA, ZeroPageX, 2, 4, sta)),
