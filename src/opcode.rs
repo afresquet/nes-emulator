@@ -199,13 +199,13 @@ pub static OPCODES: LazyLock<HashMap<u8, OpCode>> = LazyLock::new(|| {
         (ORA_INDIRECTX, OpCode::new(ORA, IndirectX, 2, 6, ora)),
         (ORA_INDIRECTY, OpCode::new(ORA, IndirectY, 2, 5, ora)),
         // PHA
-        (0x48, OpCode::new(PHA, Implied, 1, 3, pha)),
+        (pha::PHA, OpCode::new(PHA, Implied, 1, 3, pha)),
         // PHP
-        (0x08, OpCode::new(PHP, Implied, 1, 3, php)),
+        (php::PHP, OpCode::new(PHP, Implied, 1, 3, php)),
         // PLA
-        (0x68, OpCode::new(PLA, Implied, 1, 4, pla)),
+        (pla::PLA, OpCode::new(PLA, Implied, 1, 4, pla)),
         // PLP
-        (0x28, OpCode::new(PLP, Implied, 1, 4, plp)),
+        (plp::PLP, OpCode::new(PLP, Implied, 1, 4, plp)),
         // ROL
         (ROL_ACCUMULATOR, OpCode::new(ROL, Accumulator, 1, 2, rol)),
         (ROL_ZEROPAGE, OpCode::new(ROL, ZeroPage, 2, 5, rol)),

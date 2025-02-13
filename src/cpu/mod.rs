@@ -28,6 +28,12 @@ bitflags::bitflags! {
     }
 }
 
+pub const STACK: usize = 0x0100;
+pub const STACK_SIZE: u8 = 0xFF;
+
+pub const PROGRAM: u16 = 0x8000;
+pub const PROGRAM_START: u16 = 0xFFFC;
+
 #[derive(Debug)]
 pub struct CPU {
     pub register_a: u8,
@@ -35,6 +41,7 @@ pub struct CPU {
     pub register_y: u8,
     pub status: Status,
     pub program_counter: u16,
+    pub stack_pointer: u8,
     memory: [u8; 0xFFFF],
 }
 
@@ -46,6 +53,7 @@ impl Default for CPU {
             register_y: 0,
             status: Status::UNUSED,
             program_counter: 0,
+            stack_pointer: STACK_SIZE,
             memory: [0; 0xFFFF],
         }
     }
@@ -76,6 +84,16 @@ impl CPU {
         self.mem_write(pos.wrapping_add(1), hi);
     }
 
+    fn stack_pull(&mut self) -> u8 {
+        self.stack_pointer = self.stack_pointer.checked_add(1).expect("STACK OVERFLOW");
+        self.memory[STACK + self.stack_pointer as usize]
+    }
+
+    fn stack_push(&mut self, data: u8) {
+        self.memory[STACK + self.stack_pointer as usize] = data;
+        self.stack_pointer = self.stack_pointer.checked_sub(1).expect("STACK OVERFLOW");
+    }
+
     pub fn reset_status(&mut self) {
         self.status = Status::UNUSED;
     }
@@ -84,17 +102,22 @@ impl CPU {
         self.program_counter = self.mem_read_u16(0xFFFC);
     }
 
+    pub fn reset_stack_pointer(&mut self) {
+        self.stack_pointer = STACK_SIZE;
+    }
+
     pub fn reset(&mut self) {
         self.register_a = 0;
         self.register_x = 0;
         self.register_y = 0;
         self.reset_status();
         self.reset_program_counter();
+        self.reset_stack_pointer();
     }
 
     pub fn load(&mut self, program: &[u8]) {
-        self.memory[0x8000..(0x8000 + program.len())].copy_from_slice(program);
-        self.mem_write_u16(0xFFFC, 0x8000);
+        self.memory[PROGRAM as usize..(PROGRAM as usize + program.len())].copy_from_slice(program);
+        self.mem_write_u16(PROGRAM_START, PROGRAM);
     }
 
     pub fn load_and_run(&mut self, program: &[u8]) {
