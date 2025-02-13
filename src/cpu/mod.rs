@@ -31,7 +31,7 @@ bitflags::bitflags! {
 pub const STACK: usize = 0x0100;
 pub const STACK_SIZE: u8 = 0xFF;
 
-pub const PROGRAM: u16 = 0x8000;
+pub const PROGRAM: u16 = 0x0600;
 pub const PROGRAM_START: u16 = 0xFFFC;
 
 #[derive(Debug)]

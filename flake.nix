@@ -60,6 +60,9 @@
 
                   packages = with pkgs; [
                     bacon
+                    gcc
+                    SDL2
+                    SDL2.dev
                   ];
                 }
               )
