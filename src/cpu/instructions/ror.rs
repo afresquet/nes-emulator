@@ -26,7 +26,10 @@ pub fn ror(cpu: &mut CPU, opcode: &OpCode) {
 
     *ptr = shifted;
 
-    cpu.update_zero_and_negative_flags(shifted);
+    match opcode.mode {
+        AddressingMode::Accumulator => cpu.update_zero_and_negative_flags(shifted),
+        _ => cpu.update_negative_flag(shifted),
+    }
 }
 
 #[cfg(test)]
@@ -80,6 +83,15 @@ mod tests {
             assert!(cpu.status.intersects(Status::ZERO));
             assert!(!cpu.status.intersects(Status::NEGATIVE));
             assert!(cpu.status.intersects(Status::CARRY));
+
+            // Negative Flag
+            cpu.reset();
+            cpu.status.insert(Status::CARRY);
+            cpu.run();
+            assert_eq!(cpu.register_a, 0b1000_0000);
+            assert!(!cpu.status.intersects(Status::ZERO));
+            assert!(cpu.status.intersects(Status::NEGATIVE));
+            assert!(!cpu.status.intersects(Status::CARRY));
         }
 
         #[test_case(ROR_ZEROPAGE, 0x40 ; "zero_page")]
@@ -98,7 +110,6 @@ mod tests {
             cpu.mem_write(0x40, 0b1000_0101);
             cpu.run();
             assert_eq!(cpu.mem_read(0x40), 0b0100_0010);
-            assert!(!cpu.status.intersects(Status::ZERO));
             assert!(!cpu.status.intersects(Status::NEGATIVE));
             assert!(cpu.status.intersects(Status::CARRY));
 
@@ -109,7 +120,6 @@ mod tests {
             cpu.status.insert(Status::CARRY);
             cpu.run();
             assert_eq!(cpu.mem_read(0x40), 0b1100_0010);
-            assert!(!cpu.status.intersects(Status::ZERO));
             assert!(cpu.status.intersects(Status::NEGATIVE));
             assert!(cpu.status.intersects(Status::CARRY));
 
@@ -119,19 +129,18 @@ mod tests {
             cpu.mem_write(0x40, 0b0101);
             cpu.run();
             assert_eq!(cpu.mem_read(0x40), 0b0010);
-            assert!(!cpu.status.intersects(Status::ZERO));
             assert!(!cpu.status.intersects(Status::NEGATIVE));
             assert!(cpu.status.intersects(Status::CARRY));
 
-            // Zero Flag
+            // Negative Flag
             cpu.reset_status();
             cpu.reset_program_counter();
-            cpu.mem_write(0x40, 0b0001);
+            cpu.mem_write(0x40, 0);
+            cpu.status.insert(Status::CARRY);
             cpu.run();
-            assert_eq!(cpu.mem_read(0x40), 0);
-            assert!(cpu.status.intersects(Status::ZERO));
-            assert!(!cpu.status.intersects(Status::NEGATIVE));
-            assert!(cpu.status.intersects(Status::CARRY));
+            assert_eq!(cpu.mem_read(0x40), 0b1000_0000);
+            assert!(cpu.status.intersects(Status::NEGATIVE));
+            assert!(!cpu.status.intersects(Status::CARRY));
         }
     }
 }

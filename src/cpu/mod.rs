@@ -169,6 +169,10 @@ impl CPU {
     fn update_zero_and_negative_flags(&mut self, result: u8) {
         self.status.set(Status::ZERO, result == 0);
 
+        self.update_negative_flag(result);
+    }
+
+    fn update_negative_flag(&mut self, result: u8) {
         self.status.set(Status::NEGATIVE, result & 1 << 7 != 0);
     }
 

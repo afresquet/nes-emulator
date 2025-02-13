@@ -26,7 +26,10 @@ pub fn rol(cpu: &mut CPU, opcode: &OpCode) {
 
     *ptr = shifted;
 
-    cpu.update_zero_and_negative_flags(shifted);
+    match opcode.mode {
+        AddressingMode::Accumulator => cpu.update_zero_and_negative_flags(shifted),
+        _ => cpu.update_negative_flag(shifted),
+    }
 }
 
 #[cfg(test)]
@@ -107,7 +110,6 @@ mod tests {
             cpu.mem_write(0x40, 0b1010_0101);
             cpu.run();
             assert_eq!(cpu.mem_read(0x40), 0b0100_1010);
-            assert!(!cpu.status.intersects(Status::ZERO));
             assert!(!cpu.status.intersects(Status::NEGATIVE));
             assert!(cpu.status.intersects(Status::CARRY));
 
@@ -118,7 +120,6 @@ mod tests {
             cpu.status.insert(Status::CARRY);
             cpu.run();
             assert_eq!(cpu.mem_read(0x40), 0b0100_1011);
-            assert!(!cpu.status.intersects(Status::ZERO));
             assert!(!cpu.status.intersects(Status::NEGATIVE));
             assert!(cpu.status.intersects(Status::CARRY));
 
@@ -128,17 +129,6 @@ mod tests {
             cpu.mem_write(0x40, 0b1000_0101);
             cpu.run();
             assert_eq!(cpu.mem_read(0x40), 0b1010);
-            assert!(!cpu.status.intersects(Status::ZERO));
-            assert!(!cpu.status.intersects(Status::NEGATIVE));
-            assert!(cpu.status.intersects(Status::CARRY));
-
-            // Zero Flag
-            cpu.reset_status();
-            cpu.reset_program_counter();
-            cpu.mem_write(0x40, 0b1000_0000);
-            cpu.run();
-            assert_eq!(cpu.mem_read(0x40), 0);
-            assert!(cpu.status.intersects(Status::ZERO));
             assert!(!cpu.status.intersects(Status::NEGATIVE));
             assert!(cpu.status.intersects(Status::CARRY));
 
@@ -148,7 +138,6 @@ mod tests {
             cpu.mem_write(0x40, 0b0100_0000);
             cpu.run();
             assert_eq!(cpu.mem_read(0x40), 0b1000_0000);
-            assert!(!cpu.status.intersects(Status::ZERO));
             assert!(cpu.status.intersects(Status::NEGATIVE));
             assert!(!cpu.status.intersects(Status::CARRY));
         }
