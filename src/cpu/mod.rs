@@ -149,12 +149,12 @@ impl CPU {
         let opcodes = std::sync::LazyLock::force(&OPCODES);
 
         loop {
-            callback(self);
-
             let opcode = self.mem_read(self.program_counter);
             let opcode = opcodes.get(&opcode).expect("to be a valid opcode");
 
             self.program_counter = self.program_counter.wrapping_add(1);
+
+            let pc_state = self.program_counter;
 
             (opcode.instruction)(self, opcode);
 
@@ -162,7 +162,11 @@ impl CPU {
                 return;
             }
 
-            self.program_counter = self.program_counter.wrapping_add(opcode.bytes as u16 - 1);
+            if self.program_counter == pc_state {
+                self.program_counter = self.program_counter.wrapping_add(opcode.bytes as u16 - 1);
+            }
+
+            callback(self);
         }
     }
 
@@ -185,7 +189,7 @@ impl CPU {
 
         match mode {
             AM::Immediate => self.program_counter,
-            AM::ZeroPage | AM::Relative => self.mem_read(self.program_counter) as u16,
+            AM::ZeroPage => self.mem_read(self.program_counter) as u16,
             AM::ZeroPageX => self
                 .mem_read(self.program_counter)
                 .wrapping_add(self.register_x) as u16,
@@ -220,8 +224,8 @@ impl CPU {
 
     pub fn branch(&mut self, condition: bool) {
         if condition {
-            let skip = self.get_operand_address(AddressingMode::Relative);
-            self.program_counter = self.program_counter.wrapping_add(skip);
+            let skip = self.mem_read(self.program_counter) as i8;
+            self.program_counter = self.program_counter.wrapping_add_signed(skip as i16 + 1);
         }
     }
 
