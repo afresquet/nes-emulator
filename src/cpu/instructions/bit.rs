@@ -12,9 +12,10 @@ pub fn bit(cpu: &mut CPU, opcode: &OpCode) {
 
     let result = cpu.register_a & data;
 
-    cpu.status.set(Status::OVERFLOW, result & 1 << 6 != 0);
+    cpu.update_zero_flag(result);
 
-    cpu.update_zero_and_negative_flags(result);
+    cpu.status.set(Status::OVERFLOW, data & 1 << 6 != 0);
+    cpu.update_negative_flag(data);
 }
 
 #[cfg(test)]
