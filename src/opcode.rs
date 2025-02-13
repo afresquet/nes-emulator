@@ -182,11 +182,11 @@ pub static OPCODES: LazyLock<HashMap<u8, OpCode>> = LazyLock::new(|| {
         (LDY_ABSOLUTE, OpCode::new(LDY, Absolute, 3, 4, ldy)),
         (LDY_ABSOLUTEX, OpCode::new(LDY, AbsoluteX, 3, 4, ldy)),
         // LSR
-        (0x4A, OpCode::new(LSR, Accumulator, 1, 2, lsr)),
-        (0x46, OpCode::new(LSR, ZeroPage, 2, 5, lsr)),
-        (0x56, OpCode::new(LSR, ZeroPageX, 2, 6, lsr)),
-        (0x4E, OpCode::new(LSR, Absolute, 3, 6, lsr)),
-        (0x5E, OpCode::new(LSR, AbsoluteX, 3, 7, lsr)),
+        (LSR_ACCUMULATOR, OpCode::new(LSR, Accumulator, 1, 2, lsr)),
+        (LSR_ZEROPAGE, OpCode::new(LSR, ZeroPage, 2, 5, lsr)),
+        (LSR_ZEROPAGEX, OpCode::new(LSR, ZeroPageX, 2, 6, lsr)),
+        (LSR_ABSOLUTE, OpCode::new(LSR, Absolute, 3, 6, lsr)),
+        (LSR_ABSOLUTEX, OpCode::new(LSR, AbsoluteX, 3, 7, lsr)),
         // NOP
         (nop::NOP, OpCode::new(NOP, Implied, 1, 2, nop)),
         // ORA
