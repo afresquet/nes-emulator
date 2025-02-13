@@ -143,9 +143,20 @@ impl CPU {
     }
 
     pub fn run(&mut self) {
+        self.run_with_callback(|_| {});
+    }
+
+    pub fn run_with_callback<F>(&mut self, mut callback: F)
+    where
+        F: FnMut(&mut Self),
+    {
+        let opcodes = std::sync::LazyLock::force(&OPCODES);
+
         loop {
+            callback(self);
+
             let opcode = self.mem_read(self.program_counter);
-            let opcode = OPCODES.get(&opcode).expect("to be a valid opcode");
+            let opcode = opcodes.get(&opcode).expect("to be a valid opcode");
 
             self.program_counter = self.program_counter.wrapping_add(1);
 
