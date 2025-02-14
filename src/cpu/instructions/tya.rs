@@ -1,9 +1,9 @@
-use crate::{OpCode, CPU};
+use crate::{Bus, OpCode, Rom, CPU};
 
 pub const TYA: u8 = 0x98;
 
 /// Copies the current contents of the Y register into the accumulator and sets the zero and negative flags as appropriate.
-pub fn tya(cpu: &mut CPU, _opcode: &OpCode) {
+pub fn tya(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
     cpu.register_a = cpu.register_y;
     cpu.update_zero_and_negative_flags(cpu.register_a);
 }
@@ -16,11 +16,9 @@ mod tests {
 
     #[test]
     fn tya() {
-        let mut cpu = CPU::new();
-        cpu.load(&[TYA, BRK]);
+        let mut cpu = CPU::new().insert_test_rom(&[TYA, BRK]);
 
         // Transfer
-        cpu.reset();
         cpu.register_y = 0x05;
         cpu.run();
         assert_eq!(cpu.register_a, 0x05);

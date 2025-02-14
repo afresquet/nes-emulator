@@ -1,9 +1,9 @@
-use crate::{OpCode, CPU};
+use crate::{Bus, OpCode, Rom, CPU};
 
 /// The NOP instruction causes no changes to the processor other than the normal incrementing of the program counter to the next instruction.
 pub const NOP: u8 = 0xEA;
 
-pub fn nop(_cpu: &mut CPU, _opcode: &OpCode) {}
+pub fn nop(_cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {}
 
 #[cfg(test)]
 mod tests {
@@ -13,8 +13,8 @@ mod tests {
 
     #[test]
     fn nop() {
-        let mut cpu = CPU::new();
-        cpu.load_and_run(&[NOP, BRK]);
+        let mut cpu = CPU::new().insert_test_rom(&[NOP, BRK]);
+        cpu.run();
         assert_eq!(cpu.program_counter, PROGRAM + 2);
         assert_eq!(cpu.register_a, 0);
         assert_eq!(cpu.register_x, 0);

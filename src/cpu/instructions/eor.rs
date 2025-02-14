@@ -1,4 +1,4 @@
-use crate::{Mem, OpCode, CPU};
+use crate::{Bus, Mem, OpCode, Rom, CPU};
 
 pub const EOR_IMMEDIATE: u8 = 0x49;
 pub const EOR_ZEROPAGE: u8 = 0x45;
@@ -10,7 +10,7 @@ pub const EOR_INDIRECTX: u8 = 0x41;
 pub const EOR_INDIRECTY: u8 = 0x51;
 
 /// An exclusive OR is performed, bit by bit, on the accumulator contents using the contents of a byte of memory.
-pub fn eor(cpu: &mut CPU, opcode: &OpCode) {
+pub fn eor(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
     let addr = cpu.get_operand_address(opcode.mode);
     let data = cpu.mem_read(addr);
     cpu.register_a ^= data;
@@ -35,9 +35,7 @@ mod tests {
     #[test_case(EOR_INDIRECTY, 0x20, 0x22, 0x24 ; "indirect_y")]
     fn eor(instruction: u8, eor: u8, zero: u8, negative: u8) {
         // Setup
-        let mut cpu = CPU::new();
-        cpu.load(&[instruction, eor, BRK]);
-        cpu.reset();
+        let mut cpu = CPU::new().insert_test_rom(&[instruction, eor, BRK]);
         cpu.register_a = 0b1000_1010;
         cpu.register_x = 0x03;
         cpu.register_y = 0x04;
@@ -60,8 +58,7 @@ mod tests {
         assert!(!cpu.status.intersects(Status::NEGATIVE));
 
         // Zero Flag
-        cpu.load(&[instruction, zero, BRK]);
-        cpu.reset_program_counter();
+        cpu.swap_test_rom(&[instruction, zero, BRK]);
         cpu.reset_status();
         cpu.register_a = 0;
         cpu.run();
@@ -70,8 +67,7 @@ mod tests {
         assert!(!cpu.status.intersects(Status::NEGATIVE));
 
         // Negative Flag
-        cpu.load(&[instruction, negative, BRK]);
-        cpu.reset_program_counter();
+        cpu.swap_test_rom(&[instruction, negative, BRK]);
         cpu.reset_status();
         cpu.register_a = 0b1010;
         cpu.run();

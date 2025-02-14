@@ -1,9 +1,9 @@
-use crate::{OpCode, Status, CPU};
+use crate::{Bus, OpCode, Rom, Status, CPU};
 
 pub const SEC: u8 = 0x38;
 
 /// Set the carry flag to one.
-pub fn sec(cpu: &mut CPU, _opcode: &OpCode) {
+pub fn sec(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
     cpu.status.insert(Status::CARRY);
 }
 
@@ -15,9 +15,7 @@ mod tests {
 
     #[test]
     fn sec() {
-        let mut cpu = CPU::new();
-        cpu.load(&[SEC, BRK]);
-        cpu.reset();
+        let mut cpu = CPU::new().insert_test_rom(&[SEC, BRK]);
         cpu.run();
         assert!(cpu.status.intersects(Status::CARRY));
     }

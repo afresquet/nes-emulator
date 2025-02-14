@@ -1,4 +1,4 @@
-use crate::{Mem, OpCode, CPU};
+use crate::{Bus, Mem, OpCode, Rom, CPU};
 
 pub const DEC_ZEROPAGE: u8 = 0xC6;
 pub const DEC_ZEROPAGEX: u8 = 0xD6;
@@ -6,7 +6,7 @@ pub const DEC_ABSOLUTE: u8 = 0xCE;
 pub const DEC_ABSOLUTEX: u8 = 0xDE;
 
 /// Subtracts one from the value held at a specified memory location setting the zero and negative flags as appropriate.
-pub fn dec(cpu: &mut CPU, opcode: &OpCode) {
+pub fn dec(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
     let addr = cpu.get_operand_address(opcode.mode);
     let result = cpu.mem_read(addr).wrapping_sub(1);
     cpu.mem_write(addr, result);
@@ -27,13 +27,10 @@ mod tests {
     #[test_case(DEC_ABSOLUTEX, 0x0D ; "absolute_x")]
     fn dec(instruction: u8, addr: u8) {
         // Setup
-        let mut cpu = CPU::new();
-        cpu.load(&[instruction, addr, BRK]);
+        let mut cpu = CPU::new().insert_test_rom(&[instruction, addr, BRK]);
         cpu.register_x = 0x03;
 
         // Decrement
-        cpu.reset_program_counter();
-        cpu.reset_status();
         cpu.mem_write(0x10, 2);
         cpu.run();
         assert_eq!(cpu.mem_read(0x10), 1);

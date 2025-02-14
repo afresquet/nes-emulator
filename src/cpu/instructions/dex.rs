@@ -1,9 +1,9 @@
-use crate::{OpCode, CPU};
+use crate::{Bus, OpCode, Rom, CPU};
 
 pub const DEX: u8 = 0xCA;
 
 /// Subtracts one from the X register setting the zero and negative flags as appropriate.
-pub fn dex(cpu: &mut CPU, _opcode: &OpCode) {
+pub fn dex(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
     let result = cpu.register_x.wrapping_sub(1);
     cpu.register_x = result;
     cpu.update_zero_and_negative_flags(result);
@@ -18,11 +18,9 @@ mod tests {
     #[test]
     fn dex() {
         // Setup
-        let mut cpu = CPU::new();
-        cpu.load(&[DEX, BRK]);
+        let mut cpu = CPU::new().insert_test_rom(&[DEX, BRK]);
 
         // Decrement
-        cpu.reset();
         cpu.register_x = 2;
         cpu.run();
         assert_eq!(cpu.register_x, 1);

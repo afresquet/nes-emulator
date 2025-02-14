@@ -1,9 +1,9 @@
-use crate::{OpCode, Status, CPU};
+use crate::{Bus, OpCode, Rom, Status, CPU};
 
 pub const BNE: u8 = 0xD0;
 
 /// If the zero flag is clear then add the relative displacement to the program counter to cause a branch to a new location.
-pub fn bne(cpu: &mut CPU, _opcode: &OpCode) {
+pub fn bne(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
     cpu.branch(!cpu.status.intersects(Status::ZERO));
 }
 
@@ -15,9 +15,7 @@ mod tests {
 
     #[test]
     fn bne() {
-        let mut cpu = CPU::new();
-        cpu.load(&[BNE, 0x01, INX, INX, BRK]);
-        cpu.reset();
+        let mut cpu = CPU::new().insert_test_rom(&[BNE, 0x01, INX, INX, BRK]);
 
         // Zero Flag Set
         cpu.status.insert(Status::ZERO);

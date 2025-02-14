@@ -1,4 +1,4 @@
-use crate::{Mem, OpCode, CPU};
+use crate::{Bus, Mem, OpCode, Rom, CPU};
 
 pub const AND_IMMEDIATE: u8 = 0x29;
 pub const AND_ZEROPAGE: u8 = 0x25;
@@ -10,7 +10,7 @@ pub const AND_INDIRECTX: u8 = 0x21;
 pub const AND_INDIRECTY: u8 = 0x31;
 
 /// A logical AND is performed, bit by bit, on the accumulator contents using the contents of a byte of memory.
-pub fn and(cpu: &mut CPU, opcode: &OpCode) {
+pub fn and(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
     let addr = cpu.get_operand_address(opcode.mode);
     let data = cpu.mem_read(addr);
     cpu.register_a &= data;
@@ -35,9 +35,7 @@ mod tests {
     #[test_case(AND_INDIRECTY, 0x60, 0x6A ; "indirect_y")]
     fn and(instruction: u8, and: u8, negative: u8) {
         // Setup
-        let mut cpu = CPU::new();
-        cpu.load(&[instruction, and, BRK]);
-        cpu.reset();
+        let mut cpu = CPU::new().insert_test_rom(&[instruction, and, BRK]);
         cpu.register_a = 0b1000_1010;
         cpu.register_x = 0x10;
         cpu.register_y = 0x0A;
@@ -59,8 +57,7 @@ mod tests {
         assert!(!cpu.status.intersects(Status::NEGATIVE));
 
         // Zero Flag
-        cpu.load(&[instruction, 0, BRK]);
-        cpu.reset_program_counter();
+        cpu.swap_test_rom(&[instruction, 0, BRK]);
         cpu.reset_status();
         cpu.register_a = 0;
         cpu.run();
@@ -69,8 +66,7 @@ mod tests {
         assert!(!cpu.status.intersects(Status::NEGATIVE));
 
         // Negative Flag
-        cpu.load(&[instruction, negative, BRK]);
-        cpu.reset_program_counter();
+        cpu.swap_test_rom(&[instruction, negative, BRK]);
         cpu.reset_status();
         cpu.register_a = 0b1000_1010;
         cpu.run();

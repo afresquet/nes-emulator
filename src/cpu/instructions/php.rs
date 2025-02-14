@@ -1,9 +1,9 @@
-use crate::{OpCode, CPU};
+use crate::{Bus, OpCode, Rom, CPU};
 
 pub const PHP: u8 = 0x08;
 
 /// Pushes a copy of the status flags on to the stack.
-pub fn php(cpu: &mut CPU, _opcode: &OpCode) {
+pub fn php(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
     cpu.stack_push(cpu.status.bits());
 }
 
@@ -16,9 +16,7 @@ mod tests {
     #[test]
     fn php() {
         // Setup
-        let mut cpu = CPU::new();
-        cpu.load(&[PHP, BRK]);
-        cpu.reset();
+        let mut cpu = CPU::new().insert_test_rom(&[PHP, BRK]);
         cpu.status = Status::from_bits_retain(0b1010_1010);
 
         // Push
@@ -31,9 +29,7 @@ mod tests {
     #[test]
     #[should_panic = "STACK OVERFLOW"]
     fn stack_overflow() {
-        let mut cpu = CPU::new();
-        cpu.load(&[PHP, BRK]);
-        cpu.reset();
+        let mut cpu = CPU::new().insert_test_rom(&[PHP, BRK]);
         cpu.stack_pointer = 0;
         cpu.run();
     }

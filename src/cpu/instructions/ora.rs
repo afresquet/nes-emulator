@@ -1,4 +1,4 @@
-use crate::{Mem, OpCode, CPU};
+use crate::{Bus, Mem, OpCode, Rom, CPU};
 
 pub const ORA_IMMEDIATE: u8 = 0x09;
 pub const ORA_ZEROPAGE: u8 = 0x05;
@@ -10,7 +10,7 @@ pub const ORA_INDIRECTX: u8 = 0x01;
 pub const ORA_INDIRECTY: u8 = 0x11;
 
 /// An inclusive OR is performed, bit by bit, on the accumulator contents using the contents of a byte of memory.
-pub fn ora(cpu: &mut CPU, opcode: &OpCode) {
+pub fn ora(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
     let addr = cpu.get_operand_address(opcode.mode);
     let data = cpu.mem_read(addr);
     cpu.register_a |= data;
@@ -35,9 +35,7 @@ mod tests {
     #[test_case(ORA_INDIRECTY, 0x1C, 0x1E, 0x20 ; "indirect_y")]
     fn ora(instruction: u8, load: u8, zero: u8, negative: u8) {
         // Setup
-        let mut cpu = CPU::new();
-        cpu.load(&[instruction, load, BRK]);
-        cpu.reset();
+        let mut cpu = CPU::new().insert_test_rom(&[instruction, load, BRK]);
         cpu.register_a = 0b1010;
         cpu.register_x = 0x03;
         cpu.register_y = 0x04;
@@ -58,8 +56,7 @@ mod tests {
         assert!(!cpu.status.intersects(Status::NEGATIVE));
 
         // Zero Flag
-        cpu.load(&[instruction, zero, BRK]);
-        cpu.reset_program_counter();
+        cpu.swap_test_rom(&[instruction, zero, BRK]);
         cpu.reset_status();
         cpu.register_a = 0;
         cpu.run();
@@ -68,8 +65,7 @@ mod tests {
         assert!(!cpu.status.intersects(Status::NEGATIVE));
 
         // Negative Flag
-        cpu.load(&[instruction, negative, BRK]);
-        cpu.reset_program_counter();
+        cpu.swap_test_rom(&[instruction, negative, BRK]);
         cpu.reset_status();
         cpu.register_a = 0b1010;
         cpu.run();

@@ -1,10 +1,10 @@
-use crate::{OpCode, CPU};
+use crate::{Bus, OpCode, Rom, CPU};
 
 pub const PLA: u8 = 0x68;
 
 /// Pulls an 8 bit value from the stack and into the accumulator.
 /// The zero and negative flags are set as appropriate.
-pub fn pla(cpu: &mut CPU, _opcode: &OpCode) {
+pub fn pla(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
     cpu.register_a = cpu.stack_pull();
     cpu.update_zero_and_negative_flags(cpu.register_a);
 }
@@ -18,9 +18,7 @@ mod tests {
     #[test]
     fn pla() {
         // Setup
-        let mut cpu = CPU::new();
-        cpu.load(&[PLA, BRK]);
-        cpu.reset();
+        let mut cpu = CPU::new().insert_test_rom(&[PLA, BRK]);
         cpu.stack_push(0x20);
 
         // Push
@@ -50,9 +48,7 @@ mod tests {
     #[test]
     #[should_panic = "STACK OVERFLOW"]
     fn stack_overflow() {
-        let mut cpu = CPU::new();
-        cpu.load(&[PLA, BRK]);
-        cpu.reset();
+        let mut cpu = CPU::new().insert_test_rom(&[PLA, BRK]);
         cpu.stack_pointer = STACK_SIZE;
         cpu.run();
     }

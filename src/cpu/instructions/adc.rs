@@ -1,4 +1,4 @@
-use crate::{Mem, OpCode, CPU};
+use crate::{Bus, Mem, OpCode, Rom, CPU};
 
 pub const ADC_IMMEDIATE: u8 = 0x69;
 pub const ADC_ZEROPAGE: u8 = 0x65;
@@ -10,7 +10,7 @@ pub const ADC_INDIRECTX: u8 = 0x61;
 pub const ADC_INDIRECTY: u8 = 0x71;
 
 /// This instruction adds the contents of a memory location to the accumulator together with the carry bit. If overflow occurs the carry bit is set, this enables multiple byte addition to be performed.
-pub fn adc(cpu: &mut CPU, opcode: &OpCode) {
+pub fn adc(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
     let addr = cpu.get_operand_address(opcode.mode);
     let value = cpu.mem_read(addr);
     cpu.sum(value);
@@ -33,8 +33,7 @@ mod tests {
     #[test_case(ADC_INDIRECTY, 0x4A ; "indirect_y")]
     fn adc(instruction: u8, addr: u8) {
         // Setup
-        let mut cpu = CPU::new();
-        cpu.load(&[instruction, addr, BRK]);
+        let mut cpu = CPU::new().insert_test_rom(&[instruction, addr, BRK]);
         cpu.register_x = 0x10;
         cpu.register_y = 0x1A;
         cpu.mem_write(0x10, 0x40);
@@ -43,8 +42,6 @@ mod tests {
         cpu.mem_write_u16(0x4A, 0x26);
 
         // From 0
-        cpu.reset_status();
-        cpu.reset_program_counter();
         cpu.run();
         assert_eq!(cpu.register_a, 0x40);
         assert!(!cpu.status.intersects(Status::ZERO));

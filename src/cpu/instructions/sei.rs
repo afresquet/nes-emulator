@@ -1,9 +1,9 @@
-use crate::{OpCode, Status, CPU};
+use crate::{Bus, OpCode, Rom, Status, CPU};
 
 pub const SEI: u8 = 0x78;
 
 /// Set the interrupt disable flag to one.
-pub fn sei(cpu: &mut CPU, _opcode: &OpCode) {
+pub fn sei(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
     cpu.status.insert(Status::INTERRUPT_DISABLE);
 }
 
@@ -15,9 +15,7 @@ mod tests {
 
     #[test]
     fn sei() {
-        let mut cpu = CPU::new();
-        cpu.load(&[SEI, BRK]);
-        cpu.reset();
+        let mut cpu = CPU::new().insert_test_rom(&[SEI, BRK]);
         cpu.run();
         assert!(cpu.status.intersects(Status::INTERRUPT_DISABLE));
     }

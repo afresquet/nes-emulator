@@ -1,4 +1,4 @@
-use crate::{Mem, OpCode, CPU};
+use crate::{Bus, Mem, OpCode, Rom, CPU};
 
 pub const LDA_IMMEDIATE: u8 = 0xA9;
 pub const LDA_ZEROPAGE: u8 = 0xA5;
@@ -10,7 +10,7 @@ pub const LDA_INDIRECTX: u8 = 0xA1;
 pub const LDA_INDIRECTY: u8 = 0xB1;
 
 /// Loads a byte of memory into the accumulator setting the zero and negative flags as appropriate.
-pub fn lda(cpu: &mut CPU, opcode: &OpCode) {
+pub fn lda(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
     let addr = cpu.get_operand_address(opcode.mode);
     let value = cpu.mem_read(addr);
     cpu.register_a = value;
@@ -35,8 +35,7 @@ mod tests {
     #[test_case(LDA_INDIRECTY, 0x1C, 0x1E, 0x20 ; "indirect_y")]
     fn lda(instruction: u8, load: u8, zero: u8, negative: u8) {
         // Setup
-        let mut cpu = CPU::new();
-        cpu.load(&[instruction, load, BRK]);
+        let mut cpu = CPU::new().insert_test_rom(&[instruction, load, BRK]);
         cpu.register_x = 0x03;
         cpu.register_y = 0x04;
         cpu.mem_write_u16(0x10, 0x00);
@@ -50,8 +49,6 @@ mod tests {
         cpu.mem_write_u16(0x20, 0x10);
 
         // Load
-        cpu.reset_status();
-        cpu.reset_program_counter();
         cpu.run();
         assert_eq!(cpu.register_a, 0x05);
         assert!(!cpu.status.intersects(Status::ZERO));
@@ -67,17 +64,15 @@ mod tests {
         assert!(!cpu.status.intersects(Status::NEGATIVE));
 
         // Zero Flag
-        cpu.load(&[instruction, zero, BRK]);
+        cpu.swap_test_rom(&[instruction, zero, BRK]);
         cpu.reset_status();
-        cpu.reset_program_counter();
         cpu.run();
         assert!(cpu.status.intersects(Status::ZERO));
         assert!(!cpu.status.intersects(Status::NEGATIVE));
 
         // Negative Flag
-        cpu.load(&[instruction, negative, BRK]);
+        cpu.swap_test_rom(&[instruction, negative, BRK]);
         cpu.reset_status();
-        cpu.reset_program_counter();
         cpu.run();
         assert!(!cpu.status.intersects(Status::ZERO));
         assert!(cpu.status.intersects(Status::NEGATIVE));

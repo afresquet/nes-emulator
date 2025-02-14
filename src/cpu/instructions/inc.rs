@@ -1,4 +1,4 @@
-use crate::{Mem, OpCode, CPU};
+use crate::{Bus, Mem, OpCode, Rom, CPU};
 
 pub const INC_ZEROPAGE: u8 = 0xE6;
 pub const INC_ZEROPAGEX: u8 = 0xF6;
@@ -6,7 +6,7 @@ pub const INC_ABSOLUTE: u8 = 0xEE;
 pub const INC_ABSOLUTEX: u8 = 0xFE;
 
 /// Adds one to the value held at a specified memory location setting the zero and negative flags as appropriate.
-pub fn inc(cpu: &mut CPU, opcode: &OpCode) {
+pub fn inc(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
     let addr = cpu.get_operand_address(opcode.mode);
     let result = cpu.mem_read(addr).wrapping_add(1);
     cpu.mem_write(addr, result);
@@ -26,9 +26,7 @@ mod tests {
     #[test_case(INC_ABSOLUTE, 0x10, 0x10 ; "absolute")]
     #[test_case(INC_ABSOLUTEX, 0x00, 0x10 ; "absolute_x")]
     fn inc(instruction: u8, addr: u8, target: u16) {
-        let mut cpu = CPU::new();
-        cpu.load(&[instruction, addr, BRK]);
-        cpu.reset();
+        let mut cpu = CPU::new().insert_test_rom(&[instruction, addr, BRK]);
         cpu.register_x = 0x10;
 
         // Increments
@@ -38,8 +36,7 @@ mod tests {
         assert!(!cpu.status.intersects(Status::NEGATIVE));
 
         // Overflow
-        cpu.load(&[instruction, addr, BRK]);
-        cpu.reset_program_counter();
+        cpu.swap_test_rom(&[instruction, addr, BRK]);
         cpu.reset_status();
         cpu.mem_write(target, u8::MAX);
         cpu.run();
@@ -48,8 +45,7 @@ mod tests {
         assert!(!cpu.status.intersects(Status::NEGATIVE));
 
         // Zero Flag
-        cpu.load(&[instruction, addr, BRK]);
-        cpu.reset_program_counter();
+        cpu.swap_test_rom(&[instruction, addr, BRK]);
         cpu.reset_status();
         cpu.mem_write(target, u8::MAX);
         cpu.run();
@@ -58,8 +54,7 @@ mod tests {
         assert!(!cpu.status.intersects(Status::NEGATIVE));
 
         // Negative Flag
-        cpu.load(&[instruction, addr, BRK]);
-        cpu.reset_program_counter();
+        cpu.swap_test_rom(&[instruction, addr, BRK]);
         cpu.reset_status();
         cpu.mem_write(target, u8::MAX - 1);
         cpu.run();

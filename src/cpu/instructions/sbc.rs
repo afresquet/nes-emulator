@@ -1,4 +1,4 @@
-use crate::{Mem, OpCode, CPU};
+use crate::{Bus, Mem, OpCode, Rom, CPU};
 
 pub const SBC_IMMEDIATE: u8 = 0xE9;
 pub const SBC_ZEROPAGE: u8 = 0xE5;
@@ -11,7 +11,7 @@ pub const SBC_INDIRECTY: u8 = 0xF1;
 
 /// This instruction subtracts the contents of a memory location to the accumulator together with the not of the carry bit.
 /// If overflow occurs the carry bit is clear, this enables multiple byte subtraction to be performed.
-pub fn sbc(cpu: &mut CPU, opcode: &OpCode) {
+pub fn sbc(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
     let addr = cpu.get_operand_address(opcode.mode);
     let value = cpu.mem_read(addr);
     cpu.sum((value as i8).wrapping_neg().wrapping_sub(1) as u8);
@@ -34,8 +34,7 @@ mod tests {
     #[test_case(&[SBC_INDIRECTY, 0x4A, BRK] ; "indirect_y")]
     fn sbc(program: &[u8]) {
         // Setup
-        let mut cpu = CPU::new();
-        cpu.load(program);
+        let mut cpu = CPU::new().insert_test_rom(program);
         cpu.register_x = 0x10;
         cpu.register_y = 0x1A;
         cpu.mem_write(0x10, 0x40);
@@ -44,8 +43,6 @@ mod tests {
         cpu.mem_write_u16(0x4A, 0x26);
 
         // From 0
-        cpu.reset_status();
-        cpu.reset_program_counter();
         cpu.run();
         assert_eq!(cpu.register_a, 0xBF);
         assert!(!cpu.status.intersects(Status::ZERO));

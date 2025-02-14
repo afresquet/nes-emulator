@@ -1,9 +1,9 @@
-use crate::{OpCode, CPU};
+use crate::{Bus, OpCode, Rom, CPU};
 
 pub const TAY: u8 = 0xA8;
 
 /// Copies the current contents of the accumulator into the Y register and sets the zero and negative flags as appropriate.
-pub fn tay(cpu: &mut CPU, _opcode: &OpCode) {
+pub fn tay(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
     cpu.register_y = cpu.register_a;
     cpu.update_zero_and_negative_flags(cpu.register_y);
 }
@@ -16,11 +16,9 @@ mod tests {
 
     #[test]
     fn tay() {
-        let mut cpu = CPU::new();
-        cpu.load(&[TAY, BRK]);
+        let mut cpu = CPU::new().insert_test_rom(&[TAY, BRK]);
 
         // Transfer
-        cpu.reset();
         cpu.register_a = 0x05;
         cpu.run();
         assert_eq!(cpu.register_y, 0x05);

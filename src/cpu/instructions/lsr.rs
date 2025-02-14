@@ -1,4 +1,4 @@
-use crate::{AddressingMode, Mem, OpCode, Status, CPU};
+use crate::{AddressingMode, Bus, Mem, OpCode, Rom, Status, CPU};
 
 use super::Address;
 
@@ -11,7 +11,7 @@ pub const LSR_ABSOLUTEX: u8 = 0x5E;
 /// Each of the bits in A or M is shift one place to the right.
 /// The bit that was in bit 0 is shifted into the carry flag.
 /// Bit 7 is set to zero.
-pub fn lsr(cpu: &mut CPU, opcode: &OpCode) {
+pub fn lsr(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
     let addr = match opcode.mode {
         AddressingMode::Accumulator => Address::Accumulator(cpu.register_a),
         mode => {
@@ -51,11 +51,9 @@ mod tests {
         #[test]
         fn accumulator() {
             // Setup
-            let mut cpu = CPU::new();
-            cpu.load(&[LSR_ACCUMULATOR, BRK]);
+            let mut cpu = CPU::new().insert_test_rom(&[LSR_ACCUMULATOR, BRK]);
 
             // Shift
-            cpu.reset();
             cpu.register_a = 0b1010;
             cpu.run();
             assert_eq!(cpu.register_a, 0b0101);
@@ -88,13 +86,10 @@ mod tests {
         #[test_case(LSR_ABSOLUTEX, 0x30 ; "absolute_x")]
         fn memory(instruction: u8, addr: u8) {
             // Setup
-            let mut cpu = CPU::new();
-            cpu.load(&[instruction, addr, BRK]);
+            let mut cpu = CPU::new().insert_test_rom(&[instruction, addr, BRK]);
             cpu.register_x = 0x10;
 
             // Shift
-            cpu.reset_status();
-            cpu.reset_program_counter();
             cpu.mem_write(0x40, 0b1010);
             cpu.run();
             assert_eq!(cpu.mem_read(0x40), 0b0101);

@@ -1,4 +1,4 @@
-use crate::{Mem, OpCode, CPU};
+use crate::{Bus, Mem, OpCode, Rom, CPU};
 
 pub const STA_ZEROPAGE: u8 = 0x85;
 pub const STA_ZEROPAGEX: u8 = 0x95;
@@ -9,7 +9,7 @@ pub const STA_INDIRECTX: u8 = 0x81;
 pub const STA_INDIRECTY: u8 = 0x91;
 
 /// Stores the contents of the accumulator into memory.
-pub fn sta(cpu: &mut CPU, opcode: &OpCode) {
+pub fn sta(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
     let addr = cpu.get_operand_address(opcode.mode);
     cpu.mem_write(addr, cpu.register_a);
 }
@@ -31,9 +31,7 @@ mod tests {
     #[test_case(STA_INDIRECTY, 0x14, 0x1A ; "indirect_y")]
     fn sta(instruction: u8, arg: u8, addr: u16) {
         // Setup
-        let mut cpu = CPU::new();
-        cpu.load(&[instruction, arg, BRK]);
-        cpu.reset();
+        let mut cpu = CPU::new().insert_test_rom(&[instruction, arg, BRK]);
         cpu.register_x = 0x10;
         cpu.register_y = 0x1A;
         cpu.mem_write_u16(0x12, 0x10);

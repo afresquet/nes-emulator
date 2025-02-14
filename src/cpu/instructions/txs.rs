@@ -1,9 +1,9 @@
-use crate::{OpCode, CPU};
+use crate::{Bus, OpCode, Rom, CPU};
 
 pub const TXS: u8 = 0x9A;
 
 /// Copies the current contents of the X register into the stack register.
-pub fn txs(cpu: &mut CPU, _opcode: &OpCode) {
+pub fn txs(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
     cpu.stack_push(cpu.register_x);
 }
 
@@ -16,9 +16,7 @@ mod tests {
     #[test]
     fn txs() {
         // Setup
-        let mut cpu = CPU::new();
-        cpu.load(&[TXS, BRK]);
-        cpu.reset();
+        let mut cpu = CPU::new().insert_test_rom(&[TXS, BRK]);
         cpu.register_x = 0x05;
 
         // Transfer

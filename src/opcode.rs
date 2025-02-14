@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::LazyLock};
 
-use crate::{instructions::*, CPU};
+use crate::{instructions::*, Bus, Rom, CPU};
 
 #[derive(Debug, Clone)]
 pub struct OpCode {
@@ -8,7 +8,7 @@ pub struct OpCode {
     pub mode: AddressingMode,
     pub bytes: u8,
     pub cycles: u8,
-    pub instruction: fn(&mut CPU, &Self),
+    pub instruction: fn(&mut CPU<Bus<Rom>>, &Self),
 }
 
 impl OpCode {
@@ -17,7 +17,7 @@ impl OpCode {
         mode: AddressingMode,
         bytes: u8,
         cycles: u8,
-        instruction: fn(&mut CPU, &Self),
+        instruction: fn(&mut CPU<Bus<Rom>>, &Self),
     ) -> Self {
         Self {
             ty,

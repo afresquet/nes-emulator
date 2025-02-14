@@ -1,9 +1,9 @@
-use crate::{OpCode, Status, CPU};
+use crate::{Bus, OpCode, Rom, Status, CPU};
 
 pub const CLV: u8 = 0xB8;
 
 /// Clears the overflow flag.
-pub fn clv(cpu: &mut CPU, _opcode: &OpCode) {
+pub fn clv(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
     cpu.status.remove(Status::OVERFLOW);
 }
 
@@ -15,9 +15,7 @@ mod tests {
 
     #[test]
     fn clv() {
-        let mut cpu = CPU::new();
-        cpu.load(&[CLV, BRK]);
-        cpu.reset();
+        let mut cpu = CPU::new().insert_test_rom(&[CLV, BRK]);
         cpu.status.insert(Status::OVERFLOW);
         cpu.run();
         assert!(!cpu.status.intersects(Status::OVERFLOW))

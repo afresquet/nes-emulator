@@ -1,4 +1,4 @@
-use crate::{AddressingMode, Mem, OpCode, Status, CPU};
+use crate::{AddressingMode, Bus, Mem, OpCode, Rom, Status, CPU};
 
 use super::Address;
 
@@ -10,7 +10,7 @@ pub const ROR_ABSOLUTEX: u8 = 0x7E;
 
 /// Move each of the bits in either A or M one place to the right.
 /// Bit 7 is filled with the current value of the carry flag whilst the old bit 0 becomes the new carry flag value.
-pub fn ror(cpu: &mut CPU, opcode: &OpCode) {
+pub fn ror(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
     let addr = match opcode.mode {
         AddressingMode::Accumulator => Address::Accumulator(cpu.register_a),
         mode => {
@@ -53,11 +53,9 @@ mod tests {
         #[test]
         fn accumulator() {
             // Setup
-            let mut cpu = CPU::new();
-            cpu.load(&[ROR_ACCUMULATOR, BRK]);
+            let mut cpu = CPU::new().insert_test_rom(&[ROR_ACCUMULATOR, BRK]);
 
             // Shift
-            cpu.reset();
             cpu.register_a = 0b1000_0101;
             cpu.run();
             assert_eq!(cpu.register_a, 0b0100_0010);
@@ -109,13 +107,10 @@ mod tests {
         #[test_case(ROR_ABSOLUTEX, 0x30 ; "absolute_x")]
         fn memory(instruction: u8, addr: u8) {
             // Setup
-            let mut cpu = CPU::new();
-            cpu.load(&[instruction, addr, BRK]);
+            let mut cpu = CPU::new().insert_test_rom(&[instruction, addr, BRK]);
             cpu.register_x = 0x10;
 
             // Shift
-            cpu.reset_status();
-            cpu.reset_program_counter();
             cpu.mem_write(0x40, 0b1000_0101);
             cpu.run();
             assert_eq!(cpu.mem_read(0x40), 0b0100_0010);

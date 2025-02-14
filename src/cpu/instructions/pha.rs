@@ -1,9 +1,9 @@
-use crate::{OpCode, CPU};
+use crate::{Bus, OpCode, Rom, CPU};
 
 pub const PHA: u8 = 0x48;
 
 /// Pushes a copy of the accumulator on to the stack.
-pub fn pha(cpu: &mut CPU, _opcode: &OpCode) {
+pub fn pha(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
     cpu.stack_push(cpu.register_a);
 }
 
@@ -16,9 +16,7 @@ mod tests {
     #[test]
     fn pha() {
         // Setup
-        let mut cpu = CPU::new();
-        cpu.load(&[PHA, TXA, PHA, BRK]);
-        cpu.reset();
+        let mut cpu = CPU::new().insert_test_rom(&[PHA, TXA, PHA, BRK]);
         cpu.register_a = 0x10;
         cpu.register_x = 0x20;
 
@@ -33,9 +31,7 @@ mod tests {
     #[test]
     #[should_panic = "STACK OVERFLOW"]
     fn stack_overflow() {
-        let mut cpu = CPU::new();
-        cpu.load(&[PHA, BRK]);
-        cpu.reset();
+        let mut cpu = CPU::new().insert_test_rom(&[PHA, BRK]);
         cpu.stack_pointer = 0;
         cpu.run();
     }

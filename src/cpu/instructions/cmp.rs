@@ -1,4 +1,4 @@
-use crate::{OpCode, CPU};
+use crate::{Bus, OpCode, Rom, CPU};
 
 pub const CMP_IMMEDIATE: u8 = 0xC9;
 pub const CMP_ZEROPAGE: u8 = 0xC5;
@@ -10,7 +10,7 @@ pub const CMP_INDIRECTX: u8 = 0xC1;
 pub const CMP_INDIRECTY: u8 = 0xD1;
 
 /// This instruction compares the contents of the accumulator with another memory held value and sets the zero and carry flags as appropriate.
-pub fn cmp(cpu: &mut CPU, opcode: &OpCode) {
+pub fn cmp(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
     cpu.compare(cpu.register_a, opcode.mode);
 }
 
@@ -32,7 +32,7 @@ mod tests {
     #[test_case(CMP_INDIRECTY, 0x30, 0x32, 0x34 ; "indirect_y")]
     fn cmp(instruction: u8, carry: u8, zero: u8, negative: u8) {
         // Setup
-        let mut cpu = CPU::new();
+        let mut cpu = CPU::new().insert_test_rom(&[instruction, carry, BRK]);
         cpu.register_a = 0x10;
         cpu.register_x = 0x05;
         cpu.register_y = 0x06;
@@ -47,27 +47,22 @@ mod tests {
         cpu.mem_write_u16(0x34, 0x0E);
 
         // Carry Flag
-        cpu.load(&[instruction, carry, BRK]);
-        cpu.reset_status();
-        cpu.reset_program_counter();
         cpu.run();
         assert!(cpu.status.intersects(Status::CARRY));
         assert!(!cpu.status.intersects(Status::ZERO));
         assert!(!cpu.status.intersects(Status::NEGATIVE));
 
         // Zero Flag
-        cpu.load(&[instruction, zero, BRK]);
+        cpu.swap_test_rom(&[instruction, zero, BRK]);
         cpu.reset_status();
-        cpu.reset_program_counter();
         cpu.run();
         assert!(cpu.status.intersects(Status::CARRY));
         assert!(cpu.status.intersects(Status::ZERO));
         assert!(!cpu.status.intersects(Status::NEGATIVE));
 
         // Negative Flag
-        cpu.load(&[instruction, negative, BRK]);
+        cpu.swap_test_rom(&[instruction, negative, BRK]);
         cpu.reset_status();
-        cpu.reset_program_counter();
         cpu.run();
         assert!(!cpu.status.intersects(Status::CARRY));
         assert!(!cpu.status.intersects(Status::ZERO));

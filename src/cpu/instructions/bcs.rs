@@ -1,9 +1,9 @@
-use crate::{OpCode, Status, CPU};
+use crate::{Bus, OpCode, Rom, Status, CPU};
 
 pub const BCS: u8 = 0xB0;
 
 /// If the carry flag is set then add the relative displacement to the program counter to cause a branch to a new location.
-pub fn bcs(cpu: &mut CPU, _opcode: &OpCode) {
+pub fn bcs(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
     cpu.branch(cpu.status.intersects(Status::CARRY));
 }
 
@@ -15,9 +15,7 @@ mod tests {
 
     #[test]
     fn bcs() {
-        let mut cpu = CPU::new();
-        cpu.load(&[BCS, 0x01, INX, INX, BRK]);
-        cpu.reset();
+        let mut cpu = CPU::new().insert_test_rom(&[BCS, 0x01, INX, INX, BRK]);
 
         // Carry Flag Set
         cpu.status.insert(Status::CARRY);

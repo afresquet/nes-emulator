@@ -1,10 +1,10 @@
-use crate::{OpCode, Status, CPU};
+use crate::{Bus, OpCode, Rom, Status, CPU};
 
 pub const PLP: u8 = 0x28;
 
 /// Pulls an 8 bit value from the stack and into the processor flags.
 /// The flags will take on new states as determined by the value pulled.
-pub fn plp(cpu: &mut CPU, _opcode: &OpCode) {
+pub fn plp(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
     let status = cpu.stack_pull();
     cpu.status = Status::from_bits_retain(status);
 }
@@ -18,9 +18,7 @@ mod tests {
     #[test]
     fn plp() {
         // Setup
-        let mut cpu = CPU::new();
-        cpu.load(&[PLP, BRK]);
-        cpu.reset();
+        let mut cpu = CPU::new().insert_test_rom(&[PLP, BRK]);
         cpu.stack_push(0b0101_0101);
 
         // Push
@@ -31,9 +29,7 @@ mod tests {
     #[test]
     #[should_panic = "STACK OVERFLOW"]
     fn stack_overflow() {
-        let mut cpu = CPU::new();
-        cpu.load(&[PLP, BRK]);
-        cpu.reset();
+        let mut cpu = CPU::new().insert_test_rom(&[PLP, BRK]);
         cpu.stack_pointer = STACK_SIZE;
         cpu.run();
     }

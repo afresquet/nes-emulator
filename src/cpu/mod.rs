@@ -1,4 +1,5 @@
-use crate::{AddressingMode, Bus, Mem, OpCodeType, OPCODES};
+use crate::{AddressingMode, Bus, Mem, OpCodeType, Rom, Unloaded};
+use crate::{OPCODES, PROGRAM, PROGRAM_START, STACK, STACK_SIZE};
 
 pub mod instructions;
 
@@ -28,40 +29,82 @@ bitflags::bitflags! {
     }
 }
 
-pub const STACK: u16 = 0x0100;
-pub const STACK_SIZE: u8 = 0xFF;
-
-pub const PROGRAM: u16 = 0x0600;
-pub const PROGRAM_START: u16 = 0x1FFC;
-
 #[derive(Debug)]
-pub struct CPU {
+pub struct CPU<B> {
     register_a: u8,
     register_x: u8,
     register_y: u8,
     status: Status,
     program_counter: u16,
     stack_pointer: u8,
-    bus: Bus,
+    bus: B,
 }
 
-impl Default for CPU {
+impl Default for CPU<Bus<Unloaded>> {
     fn default() -> Self {
         Self {
             register_a: 0,
             register_x: 0,
             register_y: 0,
             status: Status::UNUSED,
-            program_counter: 0,
+            program_counter: PROGRAM,
             stack_pointer: STACK_SIZE,
-            bus: Bus::default(),
+            bus: Default::default(),
         }
     }
 }
 
-impl CPU {
+impl CPU<Bus<Unloaded>> {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    pub fn insert_rom(self, rom: Rom) -> CPU<Bus<Rom>> {
+        let mut bus = self.bus.insert_rom(rom);
+
+        CPU {
+            register_a: self.register_a,
+            register_x: self.register_x,
+            register_y: self.register_y,
+            status: self.status,
+            program_counter: bus.mem_read_u16(PROGRAM_START),
+            stack_pointer: self.stack_pointer,
+            bus,
+        }
+    }
+
+    #[cfg(test)]
+    pub fn insert_test_rom(self, program: &[u8]) -> CPU<Bus<Rom>> {
+        use crate::rom::tests::test_rom;
+
+        let mut bus = self.bus.insert_rom(test_rom(program));
+
+        CPU {
+            register_a: self.register_a,
+            register_x: self.register_x,
+            register_y: self.register_y,
+            status: self.status,
+            program_counter: bus.mem_read_u16(PROGRAM_START),
+            stack_pointer: self.stack_pointer,
+            bus,
+        }
+    }
+}
+
+impl CPU<Bus<Rom>> {
+    pub fn swap_rom(&mut self, rom: Rom) -> Rom {
+        let rom = self.bus.swap_rom(rom);
+        self.program_counter = self.mem_read_u16(PROGRAM_START);
+        rom
+    }
+
+    #[cfg(test)]
+    pub fn swap_test_rom(&mut self, program: &[u8]) -> Rom {
+        use crate::rom::tests::test_rom;
+
+        let rom = self.bus.swap_rom(test_rom(program));
+        self.program_counter = self.mem_read_u16(PROGRAM_START);
+        rom
     }
 
     pub fn stack_pull(&mut self) -> u8 {
@@ -86,6 +129,12 @@ impl CPU {
         self.stack_push(hi);
     }
 
+    pub fn reset_registers(&mut self) {
+        self.register_a = 0;
+        self.register_x = 0;
+        self.register_y = 0;
+    }
+
     pub fn reset_status(&mut self) {
         self.status = Status::UNUSED;
     }
@@ -99,25 +148,10 @@ impl CPU {
     }
 
     pub fn reset(&mut self) {
-        self.register_a = 0;
-        self.register_x = 0;
-        self.register_y = 0;
+        self.reset_registers();
         self.reset_status();
         self.reset_program_counter();
         self.reset_stack_pointer();
-    }
-
-    pub fn load(&mut self, program: &[u8]) {
-        for (i, byte) in program.iter().enumerate() {
-            self.mem_write(PROGRAM + i as u16, *byte);
-        }
-        self.mem_write_u16(PROGRAM_START, PROGRAM);
-    }
-
-    pub fn load_and_run(&mut self, program: &[u8]) {
-        self.load(program);
-        self.reset();
-        self.run();
     }
 
     pub fn run(&mut self) {
@@ -257,7 +291,7 @@ impl CPU {
     }
 }
 
-impl Mem for CPU {
+impl Mem for CPU<Bus<Rom>> {
     fn mem_read(&self, addr: u16) -> u8 {
         self.bus.mem_read(addr)
     }

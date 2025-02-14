@@ -1,9 +1,9 @@
-use crate::{OpCode, CPU};
+use crate::{Bus, OpCode, Rom, CPU};
 
 pub const JSR: u8 = 0x20;
 
 /// The JSR instruction pushes the address (minus one) of the return point on to the stack and then sets the program counter to the target memory address.
-pub fn jsr(cpu: &mut CPU, opcode: &OpCode) {
+pub fn jsr(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
     cpu.stack_push_u16(cpu.program_counter.wrapping_add(1));
     cpu.program_counter = cpu.get_operand_address(opcode.mode);
 }
@@ -20,10 +20,8 @@ mod tests {
     #[test]
     fn jsr() {
         // Setup
-        let mut cpu = CPU::new();
         let [lo, hi] = (PROGRAM + 4).to_le_bytes();
-        cpu.load(&[JSR, lo, hi, INX, INX, BRK, INX, INX, INX, INX, BRK]);
-        cpu.reset();
+        let mut cpu = CPU::new().insert_test_rom(&[JSR, lo, hi, INX, INX, BRK, INX, INX, INX, BRK]);
 
         // Jump
         cpu.run();

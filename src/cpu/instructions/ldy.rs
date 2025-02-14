@@ -1,4 +1,4 @@
-use crate::{Mem, OpCode, CPU};
+use crate::{Bus, Mem, OpCode, Rom, CPU};
 
 pub const LDY_IMMEDIATE: u8 = 0xA0;
 pub const LDY_ZEROPAGE: u8 = 0xA4;
@@ -7,7 +7,7 @@ pub const LDY_ABSOLUTE: u8 = 0xAC;
 pub const LDY_ABSOLUTEX: u8 = 0xBC;
 
 /// Loads a byte of memory into the Y register setting the zero and negative flags as appropriate.
-pub fn ldy(cpu: &mut CPU, opcode: &OpCode) {
+pub fn ldy(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
     let addr = cpu.get_operand_address(opcode.mode);
     cpu.register_y = cpu.mem_read(addr);
     cpu.update_zero_and_negative_flags(cpu.register_y);
@@ -28,8 +28,7 @@ mod tests {
     #[test_case(LDY_ABSOLUTEX, 0x0F, 0x0C, 0x11 ; "absolute_x")]
     fn ldy(instruction: u8, load: u8, zero: u8, negative: u8) {
         // Setup
-        let mut cpu = CPU::new();
-        cpu.load(&[instruction, load, BRK]);
+        let mut cpu = CPU::new().insert_test_rom(&[instruction, load, BRK]);
         cpu.register_x = 0x03;
         cpu.mem_write_u16(0x10, 0x00);
         cpu.mem_write(0x12, 0x05);
@@ -39,8 +38,6 @@ mod tests {
         cpu.mem_write_u16(0x1A, 0x14);
 
         // Load
-        cpu.reset_status();
-        cpu.reset_program_counter();
         cpu.run();
         assert_eq!(cpu.register_y, 0x05);
         assert!(!cpu.status.intersects(Status::ZERO));
@@ -56,7 +53,7 @@ mod tests {
         assert!(!cpu.status.intersects(Status::NEGATIVE));
 
         // Zero Flag
-        cpu.load(&[instruction, zero, BRK]);
+        cpu.swap_test_rom(&[instruction, zero, BRK]);
         cpu.reset_status();
         cpu.reset_program_counter();
         cpu.run();
@@ -64,7 +61,7 @@ mod tests {
         assert!(!cpu.status.intersects(Status::NEGATIVE));
 
         // Negative Flag
-        cpu.load(&[instruction, negative, BRK]);
+        cpu.swap_test_rom(&[instruction, negative, BRK]);
         cpu.reset_status();
         cpu.reset_program_counter();
         cpu.run();

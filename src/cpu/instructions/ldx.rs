@@ -1,4 +1,4 @@
-use crate::{Mem, OpCode, CPU};
+use crate::{Bus, Mem, OpCode, Rom, CPU};
 
 pub const LDX_IMMEDIATE: u8 = 0xA2;
 pub const LDX_ZEROPAGE: u8 = 0xA6;
@@ -7,7 +7,7 @@ pub const LDX_ABSOLUTE: u8 = 0xAE;
 pub const LDX_ABSOLUTEY: u8 = 0xBE;
 
 /// Loads a byte of memory into the X register setting the zero and negative flags as appropriate.
-pub fn ldx(cpu: &mut CPU, opcode: &OpCode) {
+pub fn ldx(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
     let addr = cpu.get_operand_address(opcode.mode);
     cpu.register_x = cpu.mem_read(addr);
     cpu.update_zero_and_negative_flags(cpu.register_x);
@@ -28,8 +28,7 @@ mod tests {
     #[test_case(LDX_ABSOLUTEY, 0x0E, 0x0B, 0x10 ; "absolute_y")]
     fn ldx(instruction: u8, load: u8, zero: u8, negative: u8) {
         // Setup
-        let mut cpu = CPU::new();
-        cpu.load(&[instruction, load, BRK]);
+        let mut cpu = CPU::new().insert_test_rom(&[instruction, load, BRK]);
         cpu.register_y = 0x04;
         cpu.mem_write_u16(0x10, 0x00);
         cpu.mem_write(0x12, 0x05);
@@ -39,8 +38,6 @@ mod tests {
         cpu.mem_write_u16(0x2A, 0x10);
 
         // Load
-        cpu.reset_status();
-        cpu.reset_program_counter();
         cpu.run();
         assert_eq!(cpu.register_x, 0x05);
         assert!(!cpu.status.intersects(Status::ZERO));
@@ -56,17 +53,15 @@ mod tests {
         assert!(!cpu.status.intersects(Status::NEGATIVE));
 
         // Zero Flag
-        cpu.load(&[instruction, zero, BRK]);
+        cpu.swap_test_rom(&[instruction, zero, BRK]);
         cpu.reset_status();
-        cpu.reset_program_counter();
         cpu.run();
         assert!(cpu.status.intersects(Status::ZERO));
         assert!(!cpu.status.intersects(Status::NEGATIVE));
 
         // Negative Flag
-        cpu.load(&[instruction, negative, BRK]);
+        cpu.swap_test_rom(&[instruction, negative, BRK]);
         cpu.reset_status();
-        cpu.reset_program_counter();
         cpu.run();
         assert!(!cpu.status.intersects(Status::ZERO));
         assert!(cpu.status.intersects(Status::NEGATIVE));

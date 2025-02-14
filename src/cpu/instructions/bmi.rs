@@ -1,9 +1,9 @@
-use crate::{OpCode, Status, CPU};
+use crate::{Bus, OpCode, Rom, Status, CPU};
 
 pub const BMI: u8 = 0x30;
 
 /// If the negative flag is set then add the relative displacement to the program counter to cause a branch to a new location.
-pub fn bmi(cpu: &mut CPU, _opcode: &OpCode) {
+pub fn bmi(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
     cpu.branch(cpu.status.intersects(Status::NEGATIVE));
 }
 
@@ -15,9 +15,7 @@ mod tests {
 
     #[test]
     fn bmi() {
-        let mut cpu = CPU::new();
-        cpu.load(&[BMI, 0x01, INX, INX, BRK]);
-        cpu.reset();
+        let mut cpu = CPU::new().insert_test_rom(&[BMI, 0x01, INX, INX, BRK]);
 
         // Zero Flag Set
         cpu.status.insert(Status::NEGATIVE);

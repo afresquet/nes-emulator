@@ -1,4 +1,4 @@
-use crate::{AddressingMode, Mem, OpCode, Status, CPU};
+use crate::{AddressingMode, Bus, Mem, OpCode, Rom, Status, CPU};
 
 use super::Address;
 
@@ -11,7 +11,7 @@ pub const ASL_ABSOLUTEX: u8 = 0x1E;
 /// This operation shifts all the bits of the accumulator or memory contents one bit left.
 /// Bit 0 is set to 0 and bit 7 is placed in the carry flag.
 /// The effect of this operation is to multiply the memory contents by 2 (ignoring 2's complement considerations), setting the carry if the result will not fit in 8 bits.
-pub fn asl(cpu: &mut CPU, opcode: &OpCode) {
+pub fn asl(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
     let addr = match opcode.mode {
         AddressingMode::Accumulator => Address::Accumulator(cpu.register_a),
         mode => {
@@ -53,11 +53,9 @@ mod tests {
         #[test]
         fn accumulator() {
             // Setup
-            let mut cpu = CPU::new();
-            cpu.load(&[ASL_ACCUMULATOR, BRK]);
+            let mut cpu = CPU::new().insert_test_rom(&[ASL_ACCUMULATOR, BRK]);
 
             // Shift
-            cpu.reset();
             cpu.register_a = 0b0101;
             cpu.run();
             assert_eq!(cpu.register_a, 0b1010);
@@ -99,13 +97,10 @@ mod tests {
         #[test_case(ASL_ABSOLUTEX, 0x30 ; "absolute_x")]
         fn memory(instruction: u8, addr: u8) {
             // Setup
-            let mut cpu = CPU::new();
-            cpu.load(&[instruction, addr, BRK]);
+            let mut cpu = CPU::new().insert_test_rom(&[instruction, addr, BRK]);
             cpu.register_x = 0x10;
 
             // Shift
-            cpu.reset_status();
-            cpu.reset_program_counter();
             cpu.mem_write(0x40, 0b0101);
             cpu.run();
             assert_eq!(cpu.mem_read(0x40), 0b1010);

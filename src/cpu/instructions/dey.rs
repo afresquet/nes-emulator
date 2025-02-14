@@ -1,9 +1,9 @@
-use crate::{OpCode, CPU};
+use crate::{Bus, OpCode, Rom, CPU};
 
 pub const DEY: u8 = 0x88;
 
 /// Subtracts one from the Y register setting the zero and negative flags as appropriate.
-pub fn dey(cpu: &mut CPU, _opcode: &OpCode) {
+pub fn dey(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
     let result = cpu.register_y.wrapping_sub(1);
     cpu.register_y = result;
     cpu.update_zero_and_negative_flags(result);
@@ -18,11 +18,9 @@ mod tests {
     #[test]
     fn dey() {
         // Setup
-        let mut cpu = CPU::new();
-        cpu.load(&[DEY, BRK]);
+        let mut cpu = CPU::new().insert_test_rom(&[DEY, BRK]);
 
         // Decrement
-        cpu.reset();
         cpu.register_y = 2;
         cpu.run();
         assert_eq!(cpu.register_y, 1);
