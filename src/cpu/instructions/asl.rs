@@ -1,6 +1,4 @@
-use crate::{Mem, OpCode, Status, CPU};
-
-use super::Instruction;
+use crate::{AddressingMode, Instruction, Mem, OpCode, Status, CPU};
 
 pub const ASL_ACCUMULATOR: u8 = 0x0A;
 pub const ASL_ZEROPAGE: u8 = 0x06;
@@ -14,6 +12,7 @@ pub const ASL_ABSOLUTEX: u8 = 0x1E;
 #[derive(Debug)]
 pub struct InstructionASL {
     addr: Option<u16>,
+    addressing_mode: AddressingMode,
 }
 
 impl OpCode for InstructionASL {
@@ -21,10 +20,13 @@ impl OpCode for InstructionASL {
         let addr = (cpu.current_instruction_register != ASL_ACCUMULATOR)
             .then(|| cpu.get_operand_address());
 
-        Instruction::ASL(Self { addr })
+        Instruction::ASL(Self {
+            addr,
+            addressing_mode: cpu.get_addressing_mode(),
+        })
     }
 
-    fn execute(self, cpu: &mut CPU) {
+    fn execute(self, cpu: &mut CPU) -> u8 {
         let value = self
             .addr
             .map(|addr| cpu.mem_read(addr))
@@ -46,6 +48,18 @@ impl OpCode for InstructionASL {
         }
 
         cpu.update_zero_and_negative_flags(shifted);
+
+        self.cycles(false)
+    }
+
+    fn cycles(&self, _page_crossed: bool) -> u8 {
+        match self.addressing_mode {
+            AddressingMode::Accumulator => 2,
+            AddressingMode::ZeroPage => 5,
+            AddressingMode::ZeroPageX | AddressingMode::Absolute => 6,
+            AddressingMode::AbsoluteX => 7,
+            _ => unreachable!(),
+        }
     }
 }
 

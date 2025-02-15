@@ -1,6 +1,4 @@
-use crate::{OpCode, Status, CPU};
-
-use super::Instruction;
+use crate::{Instruction, OpCode, Status, CPU};
 
 pub const BRK: u8 = 0x00;
 
@@ -14,10 +12,15 @@ impl OpCode for InstructionBRK {
         Instruction::BRK(Self)
     }
 
-    fn execute(self, cpu: &mut CPU) {
+    fn execute(self, cpu: &mut CPU) -> u8 {
         cpu.stack_push_u16(cpu.program_counter);
         cpu.stack_push(cpu.status.bits());
         cpu.status.insert(Status::BREAK_COMMAND);
+        self.cycles(false)
+    }
+
+    fn cycles(&self, _page_crossed: bool) -> u8 {
+        7
     }
 }
 

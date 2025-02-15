@@ -1,6 +1,4 @@
-use crate::{OpCode, Status, CPU};
-
-use super::Instruction;
+use crate::{Instruction, OpCode, Status, CPU};
 
 pub const CLI: u8 = 0x58;
 
@@ -13,8 +11,13 @@ impl OpCode for InstructionCLI {
         Instruction::CLI(Self)
     }
 
-    fn execute(self, cpu: &mut CPU) {
+    fn execute(self, cpu: &mut CPU) -> u8 {
         cpu.status.remove(Status::INTERRUPT_DISABLE);
+        self.cycles(false)
+    }
+
+    fn cycles(&self, _page_crossed: bool) -> u8 {
+        2
     }
 }
 

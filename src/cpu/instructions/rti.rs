@@ -1,6 +1,4 @@
-use crate::{OpCode, Status, CPU};
-
-use super::Instruction;
+use crate::{Instruction, OpCode, Status, CPU};
 
 pub const RTI: u8 = 0x40;
 
@@ -14,9 +12,14 @@ impl OpCode for InstructionRTI {
         Instruction::RTI(Self)
     }
 
-    fn execute(self, cpu: &mut CPU) {
+    fn execute(self, cpu: &mut CPU) -> u8 {
         cpu.status = Status::from_bits_retain(cpu.stack_pull());
         cpu.program_counter = cpu.stack_pull_u16();
+        self.cycles(false)
+    }
+
+    fn cycles(&self, _page_crossed: bool) -> u8 {
+        6
     }
 }
 

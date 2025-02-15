@@ -1,6 +1,4 @@
-use crate::{OpCode, CPU};
-
-use super::Instruction;
+use crate::{Instruction, OpCode, CPU};
 
 pub const INX: u8 = 0xE8;
 
@@ -13,9 +11,14 @@ impl OpCode for InstructionINX {
         Instruction::INX(Self)
     }
 
-    fn execute(self, cpu: &mut CPU) {
+    fn execute(self, cpu: &mut CPU) -> u8 {
         cpu.register_x = cpu.register_x.wrapping_add(1);
         cpu.update_zero_and_negative_flags(cpu.register_x);
+        self.cycles(false)
+    }
+
+    fn cycles(&self, _page_crossed: bool) -> u8 {
+        2
     }
 }
 

@@ -1,6 +1,4 @@
-use crate::{OpCode, Status, CPU};
-
-use super::Instruction;
+use crate::{Instruction, OpCode, Status, CPU};
 
 pub const CLC: u8 = 0x18;
 
@@ -13,8 +11,13 @@ impl OpCode for InstructionCLC {
         Instruction::CLC(Self)
     }
 
-    fn execute(self, cpu: &mut CPU) {
+    fn execute(self, cpu: &mut CPU) -> u8 {
         cpu.status.remove(Status::CARRY);
+        self.cycles(false)
+    }
+
+    fn cycles(&self, _page_crossed: bool) -> u8 {
+        2
     }
 }
 

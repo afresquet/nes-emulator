@@ -1,6 +1,4 @@
-use crate::{OpCode, CPU};
-
-use super::Instruction;
+use crate::{Instruction, OpCode, CPU};
 
 pub const TAY: u8 = 0xA8;
 
@@ -13,9 +11,14 @@ impl OpCode for InstructionTAY {
         Instruction::TAY(Self)
     }
 
-    fn execute(self, cpu: &mut CPU) {
+    fn execute(self, cpu: &mut CPU) -> u8 {
         cpu.register_y = cpu.register_a;
         cpu.update_zero_and_negative_flags(cpu.register_y);
+        self.cycles(false)
+    }
+
+    fn cycles(&self, _page_crossed: bool) -> u8 {
+        2
     }
 }
 

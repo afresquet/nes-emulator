@@ -1,6 +1,4 @@
-use crate::{OpCode, CPU};
-
-use super::Instruction;
+use crate::{Instruction, OpCode, CPU};
 
 pub const RTS: u8 = 0x60;
 
@@ -14,8 +12,13 @@ impl OpCode for InstructionRTS {
         Instruction::RTS(Self)
     }
 
-    fn execute(self, cpu: &mut CPU) {
+    fn execute(self, cpu: &mut CPU) -> u8 {
         cpu.program_counter = cpu.stack_pull_u16().wrapping_add(1);
+        self.cycles(false)
+    }
+
+    fn cycles(&self, _page_crossed: bool) -> u8 {
+        6
     }
 }
 

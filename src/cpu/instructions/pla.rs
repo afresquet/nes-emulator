@@ -1,6 +1,4 @@
-use crate::{OpCode, CPU};
-
-use super::Instruction;
+use crate::{Instruction, OpCode, CPU};
 
 pub const PLA: u8 = 0x68;
 
@@ -14,9 +12,14 @@ impl OpCode for InstructionPLA {
         Instruction::PLA(Self)
     }
 
-    fn execute(self, cpu: &mut CPU) {
+    fn execute(self, cpu: &mut CPU) -> u8 {
         cpu.register_a = cpu.stack_pull();
         cpu.update_zero_and_negative_flags(cpu.register_a);
+        self.cycles(false)
+    }
+
+    fn cycles(&self, _page_crossed: bool) -> u8 {
+        4
     }
 }
 

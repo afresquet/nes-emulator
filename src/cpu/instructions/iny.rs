@@ -1,6 +1,4 @@
-use crate::{OpCode, CPU};
-
-use super::Instruction;
+use crate::{Instruction, OpCode, CPU};
 
 pub const INY: u8 = 0xC8;
 
@@ -13,9 +11,14 @@ impl OpCode for InstructionINY {
         Instruction::INY(Self)
     }
 
-    fn execute(self, cpu: &mut CPU) {
+    fn execute(self, cpu: &mut CPU) -> u8 {
         cpu.register_y = cpu.register_y.wrapping_add(1);
         cpu.update_zero_and_negative_flags(cpu.register_y);
+        self.cycles(false)
+    }
+
+    fn cycles(&self, _page_crossed: bool) -> u8 {
+        2
     }
 }
 

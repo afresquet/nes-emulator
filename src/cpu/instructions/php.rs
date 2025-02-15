@@ -1,6 +1,4 @@
-use crate::{OpCode, CPU};
-
-use super::Instruction;
+use crate::{Instruction, OpCode, CPU};
 
 pub const PHP: u8 = 0x08;
 
@@ -13,8 +11,13 @@ impl OpCode for InstructionPHP {
         Instruction::PHP(Self)
     }
 
-    fn execute(self, cpu: &mut CPU) {
+    fn execute(self, cpu: &mut CPU) -> u8 {
         cpu.stack_push(cpu.status.bits());
+        self.cycles(false)
+    }
+
+    fn cycles(&self, _page_crossed: bool) -> u8 {
+        3
     }
 }
 

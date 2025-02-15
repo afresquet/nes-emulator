@@ -1,6 +1,4 @@
-use crate::{Mem, OpCode, CPU};
-
-use super::Instruction;
+use crate::{AddressingMode, Instruction, Mem, OpCode, CPU};
 
 pub const LDA_IMMEDIATE: u8 = 0xA9;
 pub const LDA_ZEROPAGE: u8 = 0xA5;
@@ -15,18 +13,33 @@ pub const LDA_INDIRECTY: u8 = 0xB1;
 #[derive(Debug)]
 pub struct InstructionLDA {
     addr: u16,
+    addressing_mode: AddressingMode,
 }
 
 impl OpCode for InstructionLDA {
     fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::LDA(Self {
             addr: cpu.get_operand_address(),
+            addressing_mode: cpu.get_addressing_mode(),
         })
     }
 
-    fn execute(self, cpu: &mut CPU) {
+    fn execute(self, cpu: &mut CPU) -> u8 {
         cpu.register_a = cpu.mem_read(self.addr);
         cpu.update_zero_and_negative_flags(cpu.register_a);
+        self.cycles(false)
+    }
+
+    fn cycles(&self, page_crossed: bool) -> u8 {
+        match self.addressing_mode {
+            AddressingMode::Immediate => 2,
+            AddressingMode::ZeroPage => 3,
+            AddressingMode::ZeroPageX | AddressingMode::Absolute => 4,
+            AddressingMode::AbsoluteX | AddressingMode::AbsoluteY => 4 + page_crossed as u8,
+            AddressingMode::IndirectX => 6,
+            AddressingMode::IndirectY => 5 + page_crossed as u8,
+            _ => unreachable!(),
+        }
     }
 }
 

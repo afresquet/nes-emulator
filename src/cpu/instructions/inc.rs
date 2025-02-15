@@ -1,6 +1,4 @@
-use crate::{Mem, OpCode, CPU};
-
-use super::Instruction;
+use crate::{AddressingMode, Instruction, Mem, OpCode, CPU};
 
 pub const INC_ZEROPAGE: u8 = 0xE6;
 pub const INC_ZEROPAGEX: u8 = 0xF6;
@@ -11,19 +9,31 @@ pub const INC_ABSOLUTEX: u8 = 0xFE;
 #[derive(Debug)]
 pub struct InstructionINC {
     addr: u16,
+    addressing_mode: AddressingMode,
 }
 
 impl OpCode for InstructionINC {
     fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::INC(Self {
             addr: cpu.get_operand_address(),
+            addressing_mode: cpu.get_addressing_mode(),
         })
     }
 
-    fn execute(self, cpu: &mut CPU) {
+    fn execute(self, cpu: &mut CPU) -> u8 {
         let result = cpu.mem_read(self.addr).wrapping_add(1);
         cpu.mem_write(self.addr, result);
         cpu.update_zero_and_negative_flags(result);
+        self.cycles(false)
+    }
+
+    fn cycles(&self, _page_crossed: bool) -> u8 {
+        match self.addressing_mode {
+            AddressingMode::ZeroPage => 5,
+            AddressingMode::ZeroPageX | AddressingMode::Absolute => 6,
+            AddressingMode::AbsoluteX => 7,
+            _ => unreachable!(),
+        }
     }
 }
 

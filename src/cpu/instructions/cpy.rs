@@ -1,6 +1,4 @@
-use crate::{Mem, OpCode, CPU};
-
-use super::Instruction;
+use crate::{AddressingMode, Instruction, Mem, OpCode, CPU};
 
 pub const CPY_IMMEDIATE: u8 = 0xC0;
 pub const CPY_ZEROPAGE: u8 = 0xC4;
@@ -10,18 +8,30 @@ pub const CPY_ABSOLUTE: u8 = 0xCC;
 #[derive(Debug)]
 pub struct InstructionCPY {
     addr: u16,
+    addressing_mode: AddressingMode,
 }
 
 impl OpCode for InstructionCPY {
     fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::CPY(Self {
             addr: cpu.get_operand_address(),
+            addressing_mode: cpu.get_addressing_mode(),
         })
     }
 
-    fn execute(self, cpu: &mut CPU) {
+    fn execute(self, cpu: &mut CPU) -> u8 {
         let data = cpu.mem_read(self.addr);
         cpu.compare(data, cpu.register_y);
+        self.cycles(false)
+    }
+
+    fn cycles(&self, _page_crossed: bool) -> u8 {
+        match self.addressing_mode {
+            AddressingMode::Immediate => 2,
+            AddressingMode::ZeroPage => 3,
+            AddressingMode::Absolute => 4,
+            _ => unreachable!(),
+        }
     }
 }
 

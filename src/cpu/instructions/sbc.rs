@@ -1,6 +1,4 @@
-use crate::{Mem, OpCode, CPU};
-
-use super::Instruction;
+use crate::{AddressingMode, Instruction, Mem, OpCode, CPU};
 
 pub const SBC_IMMEDIATE: u8 = 0xE9;
 pub const SBC_ZEROPAGE: u8 = 0xE5;
@@ -16,18 +14,33 @@ pub const SBC_INDIRECTY: u8 = 0xF1;
 #[derive(Debug)]
 pub struct InstructionSBC {
     addr: u16,
+    addressing_mode: AddressingMode,
 }
 
 impl OpCode for InstructionSBC {
     fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::SBC(Self {
             addr: cpu.get_operand_address(),
+            addressing_mode: cpu.get_addressing_mode(),
         })
     }
 
-    fn execute(self, cpu: &mut CPU) {
+    fn execute(self, cpu: &mut CPU) -> u8 {
         let value = cpu.mem_read(self.addr);
         cpu.sum((value as i8).wrapping_neg().wrapping_sub(1) as u8);
+        self.cycles(false)
+    }
+
+    fn cycles(&self, page_crossed: bool) -> u8 {
+        match self.addressing_mode {
+            AddressingMode::Immediate => 2,
+            AddressingMode::ZeroPage => 3,
+            AddressingMode::ZeroPageX | AddressingMode::Absolute => 4,
+            AddressingMode::AbsoluteX | AddressingMode::AbsoluteY => 4 + page_crossed as u8,
+            AddressingMode::IndirectX => 6,
+            AddressingMode::IndirectY => 5 + page_crossed as u8,
+            _ => unreachable!(),
+        }
     }
 }
 

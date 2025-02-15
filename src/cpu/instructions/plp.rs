@@ -1,6 +1,4 @@
-use crate::{OpCode, Status, CPU};
-
-use super::Instruction;
+use crate::{Instruction, OpCode, Status, CPU};
 
 pub const PLP: u8 = 0x28;
 
@@ -14,9 +12,14 @@ impl OpCode for InstructionPLP {
         Instruction::PLP(Self)
     }
 
-    fn execute(self, cpu: &mut CPU) {
+    fn execute(self, cpu: &mut CPU) -> u8 {
         let status = cpu.stack_pull();
         cpu.status = Status::from_bits_retain(status);
+        self.cycles(false)
+    }
+
+    fn cycles(&self, _page_crossed: bool) -> u8 {
+        4
     }
 }
 

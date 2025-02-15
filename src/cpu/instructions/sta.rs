@@ -1,6 +1,4 @@
-use crate::{Mem, OpCode, CPU};
-
-use super::Instruction;
+use crate::{AddressingMode, Instruction, Mem, OpCode, CPU};
 
 pub const STA_ZEROPAGE: u8 = 0x85;
 pub const STA_ZEROPAGEX: u8 = 0x95;
@@ -14,17 +12,30 @@ pub const STA_INDIRECTY: u8 = 0x91;
 #[derive(Debug)]
 pub struct InstructionSTA {
     addr: u16,
+    addressing_mode: AddressingMode,
 }
 
 impl OpCode for InstructionSTA {
     fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::STA(Self {
             addr: cpu.get_operand_address(),
+            addressing_mode: cpu.get_addressing_mode(),
         })
     }
 
-    fn execute(self, cpu: &mut CPU) {
+    fn execute(self, cpu: &mut CPU) -> u8 {
         cpu.mem_write(self.addr, cpu.register_a);
+        self.cycles(false)
+    }
+
+    fn cycles(&self, _page_crossed: bool) -> u8 {
+        match self.addressing_mode {
+            AddressingMode::ZeroPage => 3,
+            AddressingMode::ZeroPageX | AddressingMode::Absolute => 4,
+            AddressingMode::AbsoluteX | AddressingMode::AbsoluteY => 6,
+            AddressingMode::IndirectX | AddressingMode::IndirectY => 6,
+            _ => unreachable!(),
+        }
     }
 }
 

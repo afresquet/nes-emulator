@@ -1,6 +1,4 @@
-use crate::{OpCode, CPU};
-
-use super::Instruction;
+use crate::{Instruction, OpCode, CPU};
 
 pub const TAX: u8 = 0xAA;
 
@@ -13,9 +11,14 @@ impl OpCode for InstructionTAX {
         Instruction::TAX(Self)
     }
 
-    fn execute(self, cpu: &mut CPU) {
+    fn execute(self, cpu: &mut CPU) -> u8 {
         cpu.register_x = cpu.register_a;
         cpu.update_zero_and_negative_flags(cpu.register_x);
+        self.cycles(false)
+    }
+
+    fn cycles(&self, _page_crossed: bool) -> u8 {
+        2
     }
 }
 

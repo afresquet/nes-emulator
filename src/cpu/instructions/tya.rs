@@ -1,6 +1,4 @@
-use crate::{OpCode, CPU};
-
-use super::Instruction;
+use crate::{Instruction, OpCode, CPU};
 
 pub const TYA: u8 = 0x98;
 
@@ -13,9 +11,14 @@ impl OpCode for InstructionTYA {
         Instruction::TYA(Self)
     }
 
-    fn execute(self, cpu: &mut CPU) {
+    fn execute(self, cpu: &mut CPU) -> u8 {
         cpu.register_a = cpu.register_y;
         cpu.update_zero_and_negative_flags(cpu.register_a);
+        self.cycles(false)
+    }
+
+    fn cycles(&self, _page_crossed: bool) -> u8 {
+        2
     }
 }
 

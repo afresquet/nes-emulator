@@ -142,6 +142,10 @@ impl CPU {
         F: FnMut(&mut Self, &Instruction),
     {
         loop {
+            if self.status.intersects(Status::BREAK_COMMAND) {
+                return;
+            }
+
             let instruction = Instruction::fetch(self);
 
             callback(self, &instruction);
@@ -150,11 +154,9 @@ impl CPU {
                 .program_counter
                 .wrapping_add(self.get_addressing_mode().bytes());
 
-            instruction.execute(self);
+            let cycles = instruction.execute(self);
 
-            if self.status.intersects(Status::BREAK_COMMAND) {
-                return;
-            }
+            self.bus.tick(cycles);
         }
     }
 

@@ -1,6 +1,4 @@
-use crate::{Mem, OpCode, CPU};
-
-use super::Instruction;
+use crate::{AddressingMode, Instruction, Mem, OpCode, CPU};
 
 pub const STX_ZEROPAGE: u8 = 0x86;
 pub const STX_ZEROPAGEY: u8 = 0x96;
@@ -10,17 +8,28 @@ pub const STX_ABSOLUTE: u8 = 0x8E;
 #[derive(Debug)]
 pub struct InstructionSTX {
     addr: u16,
+    addressing_mode: AddressingMode,
 }
 
 impl OpCode for InstructionSTX {
     fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::STX(Self {
             addr: cpu.get_operand_address(),
+            addressing_mode: cpu.get_addressing_mode(),
         })
     }
 
-    fn execute(self, cpu: &mut CPU) {
+    fn execute(self, cpu: &mut CPU) -> u8 {
         cpu.mem_write(self.addr, cpu.register_x);
+        self.cycles(false)
+    }
+
+    fn cycles(&self, _page_crossed: bool) -> u8 {
+        match self.addressing_mode {
+            AddressingMode::ZeroPage => 3,
+            AddressingMode::ZeroPageY | AddressingMode::Absolute => 4,
+            _ => unreachable!(),
+        }
     }
 }
 

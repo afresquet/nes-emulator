@@ -1,6 +1,4 @@
-use crate::{OpCode, Status, CPU};
-
-use super::Instruction;
+use crate::{Instruction, OpCode, Status, CPU};
 
 pub const BPL: u8 = 0x10;
 
@@ -8,17 +6,24 @@ pub const BPL: u8 = 0x10;
 #[derive(Debug)]
 pub struct InstructionBPL {
     skip: i8,
+    condition: bool,
 }
 
 impl OpCode for InstructionBPL {
     fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::BPL(Self {
             skip: cpu.get_operand_address() as i8,
+            condition: !cpu.status.intersects(Status::NEGATIVE),
         })
     }
 
-    fn execute(self, cpu: &mut CPU) {
-        cpu.branch(self.skip, !cpu.status.intersects(Status::NEGATIVE));
+    fn execute(self, cpu: &mut CPU) -> u8 {
+        cpu.branch(self.skip, self.condition);
+        self.cycles(false)
+    }
+
+    fn cycles(&self, page_crossed: bool) -> u8 {
+        2 + (self.condition as u8 * if page_crossed { 2 } else { 1 })
     }
 }
 

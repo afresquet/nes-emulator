@@ -1,6 +1,4 @@
-use crate::{OpCode, Status, CPU};
-
-use super::Instruction;
+use crate::{Instruction, OpCode, Status, CPU};
 
 pub const BEQ: u8 = 0xF0;
 
@@ -8,17 +6,24 @@ pub const BEQ: u8 = 0xF0;
 #[derive(Debug)]
 pub struct InstructionBEQ {
     skip: i8,
+    condition: bool,
 }
 
 impl OpCode for InstructionBEQ {
     fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::BEQ(Self {
             skip: cpu.get_operand_address() as i8,
+            condition: cpu.status.intersects(Status::ZERO),
         })
     }
 
-    fn execute(self, cpu: &mut CPU) {
-        cpu.branch(self.skip, cpu.status.intersects(Status::ZERO));
+    fn execute(self, cpu: &mut CPU) -> u8 {
+        cpu.branch(self.skip, self.condition);
+        self.cycles(false)
+    }
+
+    fn cycles(&self, page_crossed: bool) -> u8 {
+        2 + (self.condition as u8 * if page_crossed { 2 } else { 1 })
     }
 }
 

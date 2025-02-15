@@ -1,6 +1,4 @@
-use crate::{Mem, OpCode, Status, CPU};
-
-use super::Instruction;
+use crate::{AddressingMode, Instruction, Mem, OpCode, Status, CPU};
 
 pub const ROL_ACCUMULATOR: u8 = 0x2A;
 pub const ROL_ZEROPAGE: u8 = 0x26;
@@ -13,6 +11,7 @@ pub const ROL_ABSOLUTEX: u8 = 0x3E;
 #[derive(Debug)]
 pub struct InstructionROL {
     addr: Option<u16>,
+    addressing_mode: AddressingMode,
 }
 
 impl OpCode for InstructionROL {
@@ -20,10 +19,13 @@ impl OpCode for InstructionROL {
         let addr = (cpu.current_instruction_register != ROL_ACCUMULATOR)
             .then(|| cpu.get_operand_address());
 
-        Instruction::ROL(Self { addr })
+        Instruction::ROL(Self {
+            addr,
+            addressing_mode: cpu.get_addressing_mode(),
+        })
     }
 
-    fn execute(self, cpu: &mut CPU) {
+    fn execute(self, cpu: &mut CPU) -> u8 {
         let value = self
             .addr
             .map(|addr| cpu.mem_read(addr))
@@ -48,6 +50,18 @@ impl OpCode for InstructionROL {
         }
 
         cpu.update_zero_and_negative_flags(shifted);
+
+        self.cycles(false)
+    }
+
+    fn cycles(&self, _page_crossed: bool) -> u8 {
+        match self.addressing_mode {
+            AddressingMode::Accumulator => 2,
+            AddressingMode::ZeroPage => 5,
+            AddressingMode::ZeroPageX | AddressingMode::Absolute => 6,
+            AddressingMode::AbsoluteX => 7,
+            _ => unreachable!(),
+        }
     }
 }
 

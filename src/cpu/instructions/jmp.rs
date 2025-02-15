@@ -1,6 +1,4 @@
-use crate::{OpCode, CPU};
-
-use super::Instruction;
+use crate::{AddressingMode, Instruction, OpCode, CPU};
 
 pub const JMP_ABSOLUTE: u8 = 0x4C;
 pub const JMP_INDIRECT: u8 = 0x6C;
@@ -9,17 +7,28 @@ pub const JMP_INDIRECT: u8 = 0x6C;
 #[derive(Debug)]
 pub struct InstructionJMP {
     addr: u16,
+    addressing_mode: AddressingMode,
 }
 
 impl OpCode for InstructionJMP {
     fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::JMP(Self {
             addr: cpu.get_operand_address(),
+            addressing_mode: cpu.get_addressing_mode(),
         })
     }
 
-    fn execute(self, cpu: &mut CPU) {
+    fn execute(self, cpu: &mut CPU) -> u8 {
         cpu.program_counter = self.addr;
+        self.cycles(false)
+    }
+
+    fn cycles(&self, _page_crossed: bool) -> u8 {
+        match self.addressing_mode {
+            AddressingMode::Absolute => 3,
+            AddressingMode::Indirect => 5,
+            _ => unreachable!(),
+        }
     }
 }
 

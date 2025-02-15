@@ -1,6 +1,4 @@
-use crate::{OpCode, CPU};
-
-use super::Instruction;
+use crate::{Instruction, OpCode, CPU};
 
 pub const NOP: u8 = 0xEA;
 
@@ -13,7 +11,13 @@ impl OpCode for InstructionNOP {
         Instruction::NOP(Self)
     }
 
-    fn execute(self, _cpu: &mut CPU) {}
+    fn execute(self, _cpu: &mut CPU) -> u8 {
+        self.cycles(false)
+    }
+
+    fn cycles(&self, _page_crossed: bool) -> u8 {
+        2
+    }
 }
 
 #[cfg(test)]

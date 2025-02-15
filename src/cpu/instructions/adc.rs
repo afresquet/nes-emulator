@@ -1,6 +1,4 @@
-use crate::{Mem, OpCode, CPU};
-
-use super::Instruction;
+use crate::{AddressingMode, Instruction, Mem, OpCode, CPU};
 
 pub const ADC_IMMEDIATE: u8 = 0x69;
 pub const ADC_ZEROPAGE: u8 = 0x65;
@@ -15,18 +13,33 @@ pub const ADC_INDIRECTY: u8 = 0x71;
 #[derive(Debug)]
 pub struct InstructionADC {
     addr: u16,
+    addressing_mode: AddressingMode,
 }
 
 impl OpCode for InstructionADC {
     fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::ADC(Self {
             addr: cpu.get_operand_address(),
+            addressing_mode: cpu.get_addressing_mode(),
         })
     }
 
-    fn execute(self, cpu: &mut CPU) {
+    fn execute(self, cpu: &mut CPU) -> u8 {
         let value = cpu.mem_read(self.addr);
         cpu.sum(value);
+        self.cycles(false)
+    }
+
+    fn cycles(&self, page_crossed: bool) -> u8 {
+        match self.addressing_mode {
+            AddressingMode::Immediate => 2,
+            AddressingMode::ZeroPage => 3,
+            AddressingMode::ZeroPageX | AddressingMode::Absolute => 4,
+            AddressingMode::AbsoluteX | AddressingMode::AbsoluteY => 4 + page_crossed as u8,
+            AddressingMode::IndirectX => 6,
+            AddressingMode::IndirectY => 5 + page_crossed as u8,
+            _ => unreachable!(),
+        }
     }
 }
 

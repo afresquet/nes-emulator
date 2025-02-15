@@ -1,6 +1,4 @@
-use crate::{OpCode, CPU};
-
-use super::Instruction;
+use crate::{Instruction, OpCode, CPU};
 
 pub const TXA: u8 = 0x8A;
 
@@ -13,9 +11,14 @@ impl OpCode for InstructionTXA {
         Instruction::TXA(Self)
     }
 
-    fn execute(self, cpu: &mut CPU) {
+    fn execute(self, cpu: &mut CPU) -> u8 {
         cpu.register_a = cpu.register_x;
         cpu.update_zero_and_negative_flags(cpu.register_a);
+        self.cycles(false)
+    }
+
+    fn cycles(&self, _page_crossed: bool) -> u8 {
+        2
     }
 }
 

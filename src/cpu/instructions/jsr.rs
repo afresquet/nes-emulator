@@ -1,6 +1,4 @@
-use crate::{OpCode, CPU};
-
-use super::Instruction;
+use crate::{Instruction, OpCode, CPU};
 
 pub const JSR: u8 = 0x20;
 
@@ -17,9 +15,14 @@ impl OpCode for InstructionJSR {
         })
     }
 
-    fn execute(self, cpu: &mut CPU) {
+    fn execute(self, cpu: &mut CPU) -> u8 {
         cpu.stack_push_u16(cpu.program_counter - 1);
         cpu.program_counter = self.addr;
+        self.cycles(false)
+    }
+
+    fn cycles(&self, _page_crossed: bool) -> u8 {
+        6
     }
 }
 

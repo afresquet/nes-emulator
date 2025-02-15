@@ -1,6 +1,4 @@
-use crate::{Mem, OpCode, CPU};
-
-use super::Instruction;
+use crate::{AddressingMode, Instruction, Mem, OpCode, CPU};
 
 pub const ORA_IMMEDIATE: u8 = 0x09;
 pub const ORA_ZEROPAGE: u8 = 0x05;
@@ -15,19 +13,34 @@ pub const ORA_INDIRECTY: u8 = 0x11;
 #[derive(Debug)]
 pub struct InstructionORA {
     addr: u16,
+    addressing_mode: AddressingMode,
 }
 
 impl OpCode for InstructionORA {
     fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::ORA(Self {
             addr: cpu.get_operand_address(),
+            addressing_mode: cpu.get_addressing_mode(),
         })
     }
 
-    fn execute(self, cpu: &mut CPU) {
+    fn execute(self, cpu: &mut CPU) -> u8 {
         let data = cpu.mem_read(self.addr);
         cpu.register_a |= data;
         cpu.update_zero_and_negative_flags(cpu.register_a);
+        self.cycles(false)
+    }
+
+    fn cycles(&self, page_crossed: bool) -> u8 {
+        match self.addressing_mode {
+            AddressingMode::Immediate => 2,
+            AddressingMode::ZeroPage => 3,
+            AddressingMode::ZeroPageX | AddressingMode::Absolute => 4,
+            AddressingMode::AbsoluteX | AddressingMode::AbsoluteY => 4 + page_crossed as u8,
+            AddressingMode::IndirectX => 6,
+            AddressingMode::IndirectY => 5 + page_crossed as u8,
+            _ => unreachable!(),
+        }
     }
 }
 
