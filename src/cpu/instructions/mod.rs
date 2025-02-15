@@ -112,7 +112,7 @@ pub use txa::*;
 pub use txs::*;
 pub use tya::*;
 
-use crate::{Bus, Mem, OpCode, Rom};
+use crate::{Mem, OpCode};
 
 use super::CPU;
 

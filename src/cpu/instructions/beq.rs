@@ -1,4 +1,4 @@
-use crate::{Bus, OpCode, Rom, Status, CPU};
+use crate::{OpCode, Status, CPU};
 
 use super::Instruction;
 
@@ -11,13 +11,13 @@ pub struct InstructionBEQ {
 }
 
 impl OpCode for InstructionBEQ {
-    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::BEQ(Self {
             skip: cpu.get_operand_address() as i8,
         })
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         cpu.branch(self.skip, cpu.status.intersects(Status::ZERO));
     }
 }
@@ -30,7 +30,7 @@ mod tests {
 
     #[test]
     fn beq() {
-        let mut cpu = CPU::new().insert_test_rom(&[BEQ, 0x01, INX, INX, BRK]);
+        let mut cpu = CPU::new_test(&[BEQ, 0x01, INX, INX, BRK]);
 
         // Zero Flag Set
         cpu.status.insert(Status::ZERO);

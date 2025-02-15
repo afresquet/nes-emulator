@@ -1,4 +1,4 @@
-use crate::{Bus, OpCode, Rom, CPU};
+use crate::{OpCode, CPU};
 
 use super::Instruction;
 
@@ -11,13 +11,13 @@ pub struct InstructionJSR {
 }
 
 impl OpCode for InstructionJSR {
-    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::JSR(Self {
             addr: cpu.get_operand_address(),
         })
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         cpu.stack_push_u16(cpu.program_counter - 1);
         cpu.program_counter = self.addr;
     }
@@ -36,7 +36,7 @@ mod tests {
     fn jsr() {
         // Setup
         let [lo, hi] = (PROGRAM + 4).to_le_bytes();
-        let mut cpu = CPU::new().insert_test_rom(&[JSR, lo, hi, INX, INX, BRK, INX, INX, INX, BRK]);
+        let mut cpu = CPU::new_test(&[JSR, lo, hi, INX, INX, BRK, INX, INX, INX, BRK]);
 
         // Jump
         cpu.run();

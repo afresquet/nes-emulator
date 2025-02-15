@@ -1,4 +1,4 @@
-use crate::{Bus, OpCode, Rom, Status, CPU};
+use crate::{OpCode, Status, CPU};
 
 use super::Instruction;
 
@@ -9,11 +9,11 @@ pub const SEI: u8 = 0x78;
 pub struct InstructionSEI;
 
 impl OpCode for InstructionSEI {
-    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(_cpu: &mut CPU) -> Instruction {
         Instruction::SEI(Self)
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         cpu.status.insert(Status::INTERRUPT_DISABLE);
     }
 }
@@ -26,7 +26,7 @@ mod tests {
 
     #[test]
     fn sei() {
-        let mut cpu = CPU::new().insert_test_rom(&[SEI, BRK]);
+        let mut cpu = CPU::new_test(&[SEI, BRK]);
         cpu.run();
         assert!(cpu.status.intersects(Status::INTERRUPT_DISABLE));
     }

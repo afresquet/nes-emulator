@@ -1,4 +1,4 @@
-use crate::{Bus, OpCode, Rom, Status, CPU};
+use crate::{OpCode, Status, CPU};
 
 use super::Instruction;
 
@@ -11,13 +11,13 @@ pub struct InstructionBCS {
 }
 
 impl OpCode for InstructionBCS {
-    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::BCS(Self {
             skip: cpu.get_operand_address() as i8,
         })
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         cpu.branch(self.skip, cpu.status.intersects(Status::CARRY));
     }
 }
@@ -30,7 +30,7 @@ mod tests {
 
     #[test]
     fn bcs() {
-        let mut cpu = CPU::new().insert_test_rom(&[BCS, 0x01, INX, INX, BRK]);
+        let mut cpu = CPU::new_test(&[BCS, 0x01, INX, INX, BRK]);
 
         // Carry Flag Set
         cpu.status.insert(Status::CARRY);

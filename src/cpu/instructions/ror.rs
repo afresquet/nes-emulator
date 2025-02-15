@@ -1,4 +1,4 @@
-use crate::{Bus, Mem, OpCode, Rom, Status, CPU};
+use crate::{Mem, OpCode, Status, CPU};
 
 use super::Instruction;
 
@@ -16,14 +16,14 @@ pub struct InstructionROR {
 }
 
 impl OpCode for InstructionROR {
-    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(cpu: &mut CPU) -> Instruction {
         let addr = (cpu.current_instruction_register != ROR_ACCUMULATOR)
             .then(|| cpu.get_operand_address());
 
         Instruction::ROR(Self { addr })
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         let value = self
             .addr
             .map(|addr| cpu.mem_read(addr))
@@ -63,7 +63,7 @@ mod tests {
         #[test]
         fn accumulator() {
             // Setup
-            let mut cpu = CPU::new().insert_test_rom(&[ROR_ACCUMULATOR, BRK]);
+            let mut cpu = CPU::new_test(&[ROR_ACCUMULATOR, BRK]);
 
             // Shift
             cpu.register_a = 0b1000_0101;
@@ -117,7 +117,7 @@ mod tests {
         #[test_case(ROR_ABSOLUTEX, 0x30 ; "absolute_x")]
         fn memory(instruction: u8, addr: u8) {
             // Setup
-            let mut cpu = CPU::new().insert_test_rom(&[instruction, addr, BRK]);
+            let mut cpu = CPU::new_test(&[instruction, addr, BRK]);
             cpu.register_x = 0x10;
 
             // Shift

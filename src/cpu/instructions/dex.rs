@@ -1,4 +1,4 @@
-use crate::{Bus, OpCode, Rom, CPU};
+use crate::{OpCode, CPU};
 
 use super::Instruction;
 
@@ -9,11 +9,11 @@ pub const DEX: u8 = 0xCA;
 pub struct InstructionDEX;
 
 impl OpCode for InstructionDEX {
-    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(_cpu: &mut CPU) -> Instruction {
         Instruction::DEX(Self)
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         let result = cpu.register_x.wrapping_sub(1);
         cpu.register_x = result;
         cpu.update_zero_and_negative_flags(result);
@@ -29,7 +29,7 @@ mod tests {
     #[test]
     fn dex() {
         // Setup
-        let mut cpu = CPU::new().insert_test_rom(&[DEX, BRK]);
+        let mut cpu = CPU::new_test(&[DEX, BRK]);
 
         // Decrement
         cpu.register_x = 2;

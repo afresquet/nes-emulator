@@ -1,8 +1,8 @@
-use crate::{instructions::*, Bus, Rom, CPU};
+use crate::{instructions::*, CPU};
 
 pub trait OpCode {
-    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction;
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>);
+    fn fetch(cpu: &mut CPU) -> Instruction;
+    fn execute(self, cpu: &mut CPU);
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

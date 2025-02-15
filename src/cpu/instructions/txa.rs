@@ -1,4 +1,4 @@
-use crate::{Bus, OpCode, Rom, CPU};
+use crate::{OpCode, CPU};
 
 use super::Instruction;
 
@@ -9,11 +9,11 @@ pub const TXA: u8 = 0x8A;
 pub struct InstructionTXA;
 
 impl OpCode for InstructionTXA {
-    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(_cpu: &mut CPU) -> Instruction {
         Instruction::TXA(Self)
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         cpu.register_a = cpu.register_x;
         cpu.update_zero_and_negative_flags(cpu.register_a);
     }
@@ -27,7 +27,7 @@ mod tests {
 
     #[test]
     fn txa() {
-        let mut cpu = CPU::new().insert_test_rom(&[TXA, BRK]);
+        let mut cpu = CPU::new_test(&[TXA, BRK]);
 
         // Transfer
         cpu.register_x = 0x05;

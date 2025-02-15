@@ -1,4 +1,4 @@
-use crate::{Bus, Mem, OpCode, Rom, CPU};
+use crate::{Mem, OpCode, CPU};
 
 use super::Instruction;
 
@@ -18,13 +18,13 @@ pub struct InstructionADC {
 }
 
 impl OpCode for InstructionADC {
-    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::ADC(Self {
             addr: cpu.get_operand_address(),
         })
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         let value = cpu.mem_read(self.addr);
         cpu.sum(value);
     }
@@ -47,7 +47,7 @@ mod tests {
     #[test_case(ADC_INDIRECTY, 0x4A ; "indirect_y")]
     fn adc(instruction: u8, addr: u8) {
         // Setup
-        let mut cpu = CPU::new().insert_test_rom(&[instruction, addr, BRK]);
+        let mut cpu = CPU::new_test(&[instruction, addr, BRK]);
         cpu.register_x = 0x10;
         cpu.register_y = 0x1A;
         cpu.mem_write(0x10, 0x40);

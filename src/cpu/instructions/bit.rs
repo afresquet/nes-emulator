@@ -1,4 +1,4 @@
-use crate::{Bus, Mem, OpCode, Rom, Status, CPU};
+use crate::{Mem, OpCode, Status, CPU};
 
 use super::Instruction;
 
@@ -14,13 +14,13 @@ pub struct InstructionBIT {
 }
 
 impl OpCode for InstructionBIT {
-    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::BIT(Self {
             addr: cpu.get_operand_address(),
         })
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         let data = cpu.mem_read(self.addr);
 
         let result = cpu.register_a & data;
@@ -44,7 +44,7 @@ mod tests {
     #[test_case(BIT_ABSOLUTE ; "absolute")]
     fn bit(instruction: u8) {
         // Setup
-        let mut cpu = CPU::new().insert_test_rom(&[instruction, 0x10, BRK]);
+        let mut cpu = CPU::new_test(&[instruction, 0x10, BRK]);
         cpu.mem_write(0x10, 0);
         cpu.mem_write(0x20, 0b0101_0101);
         cpu.mem_write(0x30, 0b1001_0101);

@@ -1,4 +1,4 @@
-use crate::{Bus, Mem, OpCode, Rom, CPU};
+use crate::{Mem, OpCode, CPU};
 
 use super::Instruction;
 
@@ -19,13 +19,13 @@ pub struct InstructionSBC {
 }
 
 impl OpCode for InstructionSBC {
-    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::SBC(Self {
             addr: cpu.get_operand_address(),
         })
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         let value = cpu.mem_read(self.addr);
         cpu.sum((value as i8).wrapping_neg().wrapping_sub(1) as u8);
     }
@@ -48,7 +48,7 @@ mod tests {
     #[test_case(&[SBC_INDIRECTY, 0x4A, BRK] ; "indirect_y")]
     fn sbc(program: &[u8]) {
         // Setup
-        let mut cpu = CPU::new().insert_test_rom(program);
+        let mut cpu = CPU::new_test(program);
         cpu.register_x = 0x10;
         cpu.register_y = 0x1A;
         cpu.mem_write(0x10, 0x40);

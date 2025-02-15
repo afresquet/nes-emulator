@@ -1,4 +1,4 @@
-use crate::{Bus, OpCode, Rom, Status, CPU};
+use crate::{OpCode, Status, CPU};
 
 use super::Instruction;
 
@@ -9,11 +9,11 @@ pub const CLV: u8 = 0xB8;
 pub struct InstructionCLV;
 
 impl OpCode for InstructionCLV {
-    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(_cpu: &mut CPU) -> Instruction {
         Instruction::CLV(Self)
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         cpu.status.remove(Status::OVERFLOW);
     }
 }
@@ -26,7 +26,7 @@ mod tests {
 
     #[test]
     fn clv() {
-        let mut cpu = CPU::new().insert_test_rom(&[CLV, BRK]);
+        let mut cpu = CPU::new_test(&[CLV, BRK]);
         cpu.status.insert(Status::OVERFLOW);
         cpu.run();
         assert!(!cpu.status.intersects(Status::OVERFLOW))

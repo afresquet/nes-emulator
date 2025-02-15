@@ -44,7 +44,7 @@ pub fn instruction(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
     quote! {
         impl OpCode for #name {
-            fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+            fn fetch(cpu: &mut CPU) -> Instruction {
                 cpu.current_instruction_register = cpu.mem_read(cpu.program_counter);
 
                 match cpu.current_instruction_register {
@@ -53,7 +53,7 @@ pub fn instruction(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                 }
             }
 
-            fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+            fn execute(self, cpu: &mut CPU) {
                 match self {
                     #(#execute,)*
                 }

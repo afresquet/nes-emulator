@@ -1,4 +1,4 @@
-use crate::{Bus, OpCode, Rom, CPU};
+use crate::{OpCode, CPU};
 
 use super::Instruction;
 
@@ -10,11 +10,11 @@ pub const RTS: u8 = 0x60;
 pub struct InstructionRTS;
 
 impl OpCode for InstructionRTS {
-    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(_cpu: &mut CPU) -> Instruction {
         Instruction::RTS(Self)
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         cpu.program_counter = cpu.stack_pull_u16().wrapping_add(1);
     }
 }
@@ -31,7 +31,7 @@ mod tests {
     #[test]
     fn rts() {
         // Setup
-        let mut cpu = CPU::new().insert_test_rom(&[RTS, INX, INX, BRK, INX, INX, INX, INX, BRK]);
+        let mut cpu = CPU::new_test(&[RTS, INX, INX, BRK, INX, INX, INX, INX, BRK]);
         cpu.stack_push_u16(PROGRAM + 1);
 
         // Jump

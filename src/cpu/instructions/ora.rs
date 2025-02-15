@@ -1,4 +1,4 @@
-use crate::{Bus, Mem, OpCode, Rom, CPU};
+use crate::{Mem, OpCode, CPU};
 
 use super::Instruction;
 
@@ -18,13 +18,13 @@ pub struct InstructionORA {
 }
 
 impl OpCode for InstructionORA {
-    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::ORA(Self {
             addr: cpu.get_operand_address(),
         })
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         let data = cpu.mem_read(self.addr);
         cpu.register_a |= data;
         cpu.update_zero_and_negative_flags(cpu.register_a);
@@ -49,7 +49,7 @@ mod tests {
     #[test_case(ORA_INDIRECTY, 0x1C, 0x1E, 0x20 ; "indirect_y")]
     fn ora(instruction: u8, load: u8, zero: u8, negative: u8) {
         // Setup
-        let mut cpu = CPU::new().insert_test_rom(&[instruction, load, BRK]);
+        let mut cpu = CPU::new_test(&[instruction, load, BRK]);
         cpu.register_a = 0b1010;
         cpu.register_x = 0x03;
         cpu.register_y = 0x04;

@@ -1,4 +1,4 @@
-use crate::{Bus, OpCode, Rom, Status, CPU};
+use crate::{OpCode, Status, CPU};
 
 use super::Instruction;
 
@@ -10,11 +10,11 @@ pub const PLP: u8 = 0x28;
 pub struct InstructionPLP;
 
 impl OpCode for InstructionPLP {
-    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(_cpu: &mut CPU) -> Instruction {
         Instruction::PLP(Self)
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         let status = cpu.stack_pull();
         cpu.status = Status::from_bits_retain(status);
     }
@@ -29,7 +29,7 @@ mod tests {
     #[test]
     fn plp() {
         // Setup
-        let mut cpu = CPU::new().insert_test_rom(&[PLP, BRK]);
+        let mut cpu = CPU::new_test(&[PLP, BRK]);
         cpu.stack_push(0b0101_0101);
 
         // Push
@@ -40,7 +40,7 @@ mod tests {
     #[test]
     #[should_panic = "STACK OVERFLOW"]
     fn stack_overflow() {
-        let mut cpu = CPU::new().insert_test_rom(&[PLP, BRK]);
+        let mut cpu = CPU::new_test(&[PLP, BRK]);
         cpu.stack_pointer = STACK_SIZE;
         cpu.run();
     }

@@ -1,4 +1,4 @@
-use crate::{Bus, OpCode, Rom, CPU};
+use crate::{OpCode, CPU};
 
 use super::Instruction;
 
@@ -9,11 +9,11 @@ pub const INX: u8 = 0xE8;
 pub struct InstructionINX;
 
 impl OpCode for InstructionINX {
-    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(_cpu: &mut CPU) -> Instruction {
         Instruction::INX(Self)
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         cpu.register_x = cpu.register_x.wrapping_add(1);
         cpu.update_zero_and_negative_flags(cpu.register_x);
     }
@@ -27,7 +27,7 @@ mod tests {
 
     #[test]
     fn inx() {
-        let mut cpu = CPU::new().insert_test_rom(&[INX, BRK]);
+        let mut cpu = CPU::new_test(&[INX, BRK]);
 
         // Increments
         cpu.run();

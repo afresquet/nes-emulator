@@ -1,4 +1,4 @@
-use crate::{Bus, OpCode, Rom, CPU};
+use crate::{OpCode, CPU};
 
 use super::Instruction;
 
@@ -10,11 +10,11 @@ pub const PLA: u8 = 0x68;
 pub struct InstructionPLA;
 
 impl OpCode for InstructionPLA {
-    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(_cpu: &mut CPU) -> Instruction {
         Instruction::PLA(Self)
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         cpu.register_a = cpu.stack_pull();
         cpu.update_zero_and_negative_flags(cpu.register_a);
     }
@@ -29,7 +29,7 @@ mod tests {
     #[test]
     fn pla() {
         // Setup
-        let mut cpu = CPU::new().insert_test_rom(&[PLA, BRK]);
+        let mut cpu = CPU::new_test(&[PLA, BRK]);
         cpu.stack_push(0x20);
 
         // Push
@@ -59,7 +59,7 @@ mod tests {
     #[test]
     #[should_panic = "STACK OVERFLOW"]
     fn stack_overflow() {
-        let mut cpu = CPU::new().insert_test_rom(&[PLA, BRK]);
+        let mut cpu = CPU::new_test(&[PLA, BRK]);
         cpu.stack_pointer = STACK_SIZE;
         cpu.run();
     }

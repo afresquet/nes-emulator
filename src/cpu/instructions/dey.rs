@@ -1,4 +1,4 @@
-use crate::{Bus, OpCode, Rom, CPU};
+use crate::{OpCode, CPU};
 
 use super::Instruction;
 
@@ -9,11 +9,11 @@ pub const DEY: u8 = 0x88;
 pub struct InstructionDEY;
 
 impl OpCode for InstructionDEY {
-    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(_cpu: &mut CPU) -> Instruction {
         Instruction::DEY(Self)
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         let result = cpu.register_y.wrapping_sub(1);
         cpu.register_y = result;
         cpu.update_zero_and_negative_flags(result);
@@ -29,7 +29,7 @@ mod tests {
     #[test]
     fn dey() {
         // Setup
-        let mut cpu = CPU::new().insert_test_rom(&[DEY, BRK]);
+        let mut cpu = CPU::new_test(&[DEY, BRK]);
 
         // Decrement
         cpu.register_y = 2;

@@ -1,4 +1,4 @@
-use crate::{Bus, Mem, OpCode, Rom, CPU};
+use crate::{Mem, OpCode, CPU};
 
 use super::Instruction;
 
@@ -13,13 +13,13 @@ pub struct InstructionCPX {
 }
 
 impl OpCode for InstructionCPX {
-    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::CPX(Self {
             addr: cpu.get_operand_address(),
         })
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         let data = cpu.mem_read(self.addr);
         cpu.compare(data, cpu.register_x);
     }
@@ -38,7 +38,7 @@ mod tests {
     #[test_case(CPX_ABSOLUTE, 0x10, 0x20, 0x30 ; "absolute")]
     fn cpx(instruction: u8, carry: u8, zero: u8, negative: u8) {
         // Setup
-        let mut cpu = CPU::new().insert_test_rom(&[instruction, carry, BRK]);
+        let mut cpu = CPU::new_test(&[instruction, carry, BRK]);
         cpu.register_x = 0x10;
         cpu.mem_write(0x10, 0x00);
         cpu.mem_write(0x20, 0x10);

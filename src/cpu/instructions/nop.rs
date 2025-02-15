@@ -1,4 +1,4 @@
-use crate::{Bus, OpCode, Rom, CPU};
+use crate::{OpCode, CPU};
 
 use super::Instruction;
 
@@ -9,11 +9,11 @@ pub const NOP: u8 = 0xEA;
 pub struct InstructionNOP;
 
 impl OpCode for InstructionNOP {
-    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(_cpu: &mut CPU) -> Instruction {
         Instruction::NOP(Self)
     }
 
-    fn execute(self, _cpu: &mut CPU<Bus<Rom>>) {}
+    fn execute(self, _cpu: &mut CPU) {}
 }
 
 #[cfg(test)]
@@ -24,7 +24,7 @@ mod tests {
 
     #[test]
     fn nop() {
-        let mut cpu = CPU::new().insert_test_rom(&[NOP, BRK]);
+        let mut cpu = CPU::new_test(&[NOP, BRK]);
         cpu.run();
         assert_eq!(cpu.program_counter, PROGRAM + 2);
         assert_eq!(cpu.register_a, 0);

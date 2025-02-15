@@ -1,4 +1,4 @@
-use crate::{Bus, OpCode, Rom, Status, CPU};
+use crate::{OpCode, Status, CPU};
 
 use super::Instruction;
 
@@ -11,13 +11,13 @@ pub struct InstructionBNE {
 }
 
 impl OpCode for InstructionBNE {
-    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::BNE(Self {
             skip: cpu.get_operand_address() as i8,
         })
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         cpu.branch(self.skip, !cpu.status.intersects(Status::ZERO));
     }
 }
@@ -30,7 +30,7 @@ mod tests {
 
     #[test]
     fn bne() {
-        let mut cpu = CPU::new().insert_test_rom(&[BNE, 0x01, INX, INX, BRK]);
+        let mut cpu = CPU::new_test(&[BNE, 0x01, INX, INX, BRK]);
 
         // Zero Flag Set
         cpu.status.insert(Status::ZERO);

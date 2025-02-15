@@ -1,4 +1,4 @@
-use crate::{Bus, Mem, OpCode, Rom, CPU};
+use crate::{Mem, OpCode, CPU};
 
 use super::Instruction;
 
@@ -18,13 +18,13 @@ pub struct InstructionAND {
 }
 
 impl OpCode for InstructionAND {
-    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::AND(Self {
             addr: cpu.get_operand_address(),
         })
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         let data = cpu.mem_read(self.addr);
         cpu.register_a &= data;
         cpu.update_zero_and_negative_flags(cpu.register_a);
@@ -49,7 +49,7 @@ mod tests {
     #[test_case(AND_INDIRECTY, 0x60, 0x6A ; "indirect_y")]
     fn and(instruction: u8, and: u8, negative: u8) {
         // Setup
-        let mut cpu = CPU::new().insert_test_rom(&[instruction, and, BRK]);
+        let mut cpu = CPU::new_test(&[instruction, and, BRK]);
         cpu.register_a = 0b1000_1010;
         cpu.register_x = 0x10;
         cpu.register_y = 0x0A;

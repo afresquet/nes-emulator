@@ -1,4 +1,4 @@
-use crate::{Bus, OpCode, Rom, Status, CPU};
+use crate::{OpCode, Status, CPU};
 
 use super::Instruction;
 
@@ -10,11 +10,11 @@ pub const BRK: u8 = 0x00;
 pub struct InstructionBRK;
 
 impl OpCode for InstructionBRK {
-    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(_cpu: &mut CPU) -> Instruction {
         Instruction::BRK(Self)
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         cpu.stack_push_u16(cpu.program_counter);
         cpu.stack_push(cpu.status.bits());
         cpu.status.insert(Status::BREAK_COMMAND);
@@ -31,7 +31,7 @@ mod tests {
     #[test]
     fn brk() {
         // Setup
-        let mut cpu = CPU::new().insert_test_rom(&[BRK]);
+        let mut cpu = CPU::new_test(&[BRK]);
 
         // Break
         cpu.run();

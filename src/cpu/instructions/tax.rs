@@ -1,4 +1,4 @@
-use crate::{Bus, OpCode, Rom, CPU};
+use crate::{OpCode, CPU};
 
 use super::Instruction;
 
@@ -9,11 +9,11 @@ pub const TAX: u8 = 0xAA;
 pub struct InstructionTAX;
 
 impl OpCode for InstructionTAX {
-    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(_cpu: &mut CPU) -> Instruction {
         Instruction::TAX(Self)
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         cpu.register_x = cpu.register_a;
         cpu.update_zero_and_negative_flags(cpu.register_x);
     }
@@ -27,7 +27,7 @@ mod tests {
 
     #[test]
     fn tax() {
-        let mut cpu = CPU::new().insert_test_rom(&[TAX, BRK]);
+        let mut cpu = CPU::new_test(&[TAX, BRK]);
 
         // Transfer
         cpu.register_a = 0x05;

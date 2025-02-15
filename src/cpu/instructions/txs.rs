@@ -1,4 +1,4 @@
-use crate::{Bus, OpCode, Rom, CPU};
+use crate::{OpCode, CPU};
 
 use super::Instruction;
 
@@ -9,11 +9,11 @@ pub const TXS: u8 = 0x9A;
 pub struct InstructionTXS;
 
 impl OpCode for InstructionTXS {
-    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(_cpu: &mut CPU) -> Instruction {
         Instruction::TXS(Self)
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         cpu.stack_push(cpu.register_x);
     }
 }
@@ -27,7 +27,7 @@ mod tests {
     #[test]
     fn txs() {
         // Setup
-        let mut cpu = CPU::new().insert_test_rom(&[TXS, BRK]);
+        let mut cpu = CPU::new_test(&[TXS, BRK]);
         cpu.register_x = 0x05;
 
         // Transfer

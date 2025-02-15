@@ -1,4 +1,4 @@
-use crate::{Bus, Mem, OpCode, Rom, CPU};
+use crate::{Mem, OpCode, CPU};
 
 use super::Instruction;
 
@@ -14,13 +14,13 @@ pub struct InstructionDEC {
 }
 
 impl OpCode for InstructionDEC {
-    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::DEC(Self {
             addr: cpu.get_operand_address(),
         })
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         let result = cpu.mem_read(self.addr).wrapping_sub(1);
         cpu.mem_write(self.addr, result);
         cpu.update_zero_and_negative_flags(result);
@@ -41,7 +41,7 @@ mod tests {
     #[test_case(DEC_ABSOLUTEX, 0x0D ; "absolute_x")]
     fn dec(instruction: u8, addr: u8) {
         // Setup
-        let mut cpu = CPU::new().insert_test_rom(&[instruction, addr, BRK]);
+        let mut cpu = CPU::new_test(&[instruction, addr, BRK]);
         cpu.register_x = 0x03;
 
         // Decrement

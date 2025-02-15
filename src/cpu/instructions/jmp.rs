@@ -1,4 +1,4 @@
-use crate::{Bus, OpCode, Rom, CPU};
+use crate::{OpCode, CPU};
 
 use super::Instruction;
 
@@ -12,13 +12,13 @@ pub struct InstructionJMP {
 }
 
 impl OpCode for InstructionJMP {
-    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::JMP(Self {
             addr: cpu.get_operand_address(),
         })
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         cpu.program_counter = self.addr;
     }
 }
@@ -37,8 +37,7 @@ mod tests {
         fn absolute() {
             // Setup
             let [lo, hi] = (PROGRAM + 4).to_le_bytes();
-            let mut cpu =
-                CPU::new().insert_test_rom(&[JMP_ABSOLUTE, lo, hi, INX, INX, BRK, INX, INX, BRK]);
+            let mut cpu = CPU::new_test(&[JMP_ABSOLUTE, lo, hi, INX, INX, BRK, INX, INX, BRK]);
 
             // Jump
             cpu.run();
@@ -48,8 +47,7 @@ mod tests {
         #[test]
         fn indirect() {
             // Setup
-            let mut cpu =
-                CPU::new().insert_test_rom(&[JMP_INDIRECT, 0x10, 0, INX, INX, BRK, INX, INX, BRK]);
+            let mut cpu = CPU::new_test(&[JMP_INDIRECT, 0x10, 0, INX, INX, BRK, INX, INX, BRK]);
             cpu.mem_write_u16(0x10, PROGRAM + 4);
 
             // Jump

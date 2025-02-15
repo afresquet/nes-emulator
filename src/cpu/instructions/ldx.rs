@@ -1,4 +1,4 @@
-use crate::{Bus, Mem, OpCode, Rom, CPU};
+use crate::{Mem, OpCode, CPU};
 
 use super::Instruction;
 
@@ -15,13 +15,13 @@ pub struct InstructionLDX {
 }
 
 impl OpCode for InstructionLDX {
-    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::LDX(Self {
             addr: cpu.get_operand_address(),
         })
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         cpu.register_x = cpu.mem_read(self.addr);
         cpu.update_zero_and_negative_flags(cpu.register_x);
     }
@@ -42,7 +42,7 @@ mod tests {
     #[test_case(LDX_ABSOLUTEY, 0x0E, 0x0B, 0x10 ; "absolute_y")]
     fn ldx(instruction: u8, load: u8, zero: u8, negative: u8) {
         // Setup
-        let mut cpu = CPU::new().insert_test_rom(&[instruction, load, BRK]);
+        let mut cpu = CPU::new_test(&[instruction, load, BRK]);
         cpu.register_y = 0x04;
         cpu.mem_write_u16(0x10, 0x00);
         cpu.mem_write(0x12, 0x05);

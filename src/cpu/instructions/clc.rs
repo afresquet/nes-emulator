@@ -1,4 +1,4 @@
-use crate::{Bus, OpCode, Rom, Status, CPU};
+use crate::{OpCode, Status, CPU};
 
 use super::Instruction;
 
@@ -9,11 +9,11 @@ pub const CLC: u8 = 0x18;
 pub struct InstructionCLC;
 
 impl OpCode for InstructionCLC {
-    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(_cpu: &mut CPU) -> Instruction {
         Instruction::CLC(Self)
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         cpu.status.remove(Status::CARRY);
     }
 }
@@ -26,7 +26,7 @@ mod tests {
 
     #[test]
     fn clc() {
-        let mut cpu = CPU::new().insert_test_rom(&[CLC, BRK]);
+        let mut cpu = CPU::new_test(&[CLC, BRK]);
         cpu.status.insert(Status::CARRY);
         cpu.run();
         assert!(!cpu.status.intersects(Status::CARRY))

@@ -1,4 +1,4 @@
-use crate::{Bus, OpCode, Rom, CPU};
+use crate::{OpCode, CPU};
 
 use super::Instruction;
 
@@ -9,11 +9,11 @@ pub const TAY: u8 = 0xA8;
 pub struct InstructionTAY;
 
 impl OpCode for InstructionTAY {
-    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(_cpu: &mut CPU) -> Instruction {
         Instruction::TAY(Self)
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         cpu.register_y = cpu.register_a;
         cpu.update_zero_and_negative_flags(cpu.register_y);
     }
@@ -27,7 +27,7 @@ mod tests {
 
     #[test]
     fn tay() {
-        let mut cpu = CPU::new().insert_test_rom(&[TAY, BRK]);
+        let mut cpu = CPU::new_test(&[TAY, BRK]);
 
         // Transfer
         cpu.register_a = 0x05;

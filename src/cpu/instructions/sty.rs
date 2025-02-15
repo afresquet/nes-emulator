@@ -1,4 +1,4 @@
-use crate::{Bus, Mem, OpCode, Rom, CPU};
+use crate::{Mem, OpCode, CPU};
 
 use super::Instruction;
 
@@ -13,13 +13,13 @@ pub struct InstructionSTY {
 }
 
 impl OpCode for InstructionSTY {
-    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::STY(Self {
             addr: cpu.get_operand_address(),
         })
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         cpu.mem_write(self.addr, cpu.register_y);
     }
 }
@@ -37,7 +37,7 @@ mod tests {
     #[test_case(STY_ABSOLUTE, 0x00, 0x00 ; "absolute")]
     fn sty(instruction: u8, arg: u8, addr: u16) {
         // Setup
-        let mut cpu = CPU::new().insert_test_rom(&[instruction, arg, BRK]);
+        let mut cpu = CPU::new_test(&[instruction, arg, BRK]);
         cpu.register_x = 0x10;
         cpu.mem_write_u16(0x10, 0x00);
 

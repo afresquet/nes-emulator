@@ -1,6 +1,6 @@
 use std::{thread, time::Duration};
 
-use nes_emulator::{Bus, Rom};
+use nes_emulator::Rom;
 use nes_emulator::{Mem, CPU};
 use rand::Rng;
 use sdl2::event::Event;
@@ -30,7 +30,7 @@ fn main() {
 
     //load the game
     let rom = Rom::from_file("roms/snake.nes").unwrap();
-    let mut cpu = CPU::new().insert_rom(rom);
+    let mut cpu = CPU::new(rom);
 
     let mut screen_state = [0; 32 * 3 * 32];
     let mut rng = rand::rng();
@@ -67,7 +67,7 @@ fn color(byte: u8) -> Color {
     }
 }
 
-fn read_screen_state(cpu: &CPU<Bus<Rom>>, frame: &mut [u8; 32 * 3 * 32]) -> bool {
+fn read_screen_state(cpu: &mut CPU, frame: &mut [u8; 32 * 3 * 32]) -> bool {
     let mut frame_idx = 0;
     let mut update = false;
     for i in 0x0200..0x600 {
@@ -84,7 +84,7 @@ fn read_screen_state(cpu: &CPU<Bus<Rom>>, frame: &mut [u8; 32 * 3 * 32]) -> bool
     update
 }
 
-fn handle_user_input(cpu: &mut CPU<Bus<Rom>>, event_pump: &mut EventPump) {
+fn handle_user_input(cpu: &mut CPU, event_pump: &mut EventPump) {
     for event in event_pump.poll_iter() {
         match event {
             Event::Quit { .. }

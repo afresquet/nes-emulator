@@ -1,4 +1,4 @@
-use crate::{Bus, Mem, OpCode, Rom, CPU};
+use crate::{Mem, OpCode, CPU};
 
 use super::Instruction;
 
@@ -18,13 +18,13 @@ pub struct InstructionLDA {
 }
 
 impl OpCode for InstructionLDA {
-    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::LDA(Self {
             addr: cpu.get_operand_address(),
         })
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         cpu.register_a = cpu.mem_read(self.addr);
         cpu.update_zero_and_negative_flags(cpu.register_a);
     }
@@ -48,7 +48,7 @@ mod tests {
     #[test_case(LDA_INDIRECTY, 0x1C, 0x1E, 0x20 ; "indirect_y")]
     fn lda(instruction: u8, load: u8, zero: u8, negative: u8) {
         // Setup
-        let mut cpu = CPU::new().insert_test_rom(&[instruction, load, BRK]);
+        let mut cpu = CPU::new_test(&[instruction, load, BRK]);
         cpu.register_x = 0x03;
         cpu.register_y = 0x04;
         cpu.mem_write_u16(0x10, 0x00);

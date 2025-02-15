@@ -1,4 +1,4 @@
-use crate::{Bus, Mem, OpCode, Rom, CPU};
+use crate::{Mem, OpCode, CPU};
 
 use super::Instruction;
 
@@ -18,13 +18,13 @@ pub struct InstructionCMP {
 }
 
 impl OpCode for InstructionCMP {
-    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::CMP(Self {
             addr: cpu.get_operand_address(),
         })
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         let data = cpu.mem_read(self.addr);
         cpu.compare(data, cpu.register_a);
     }
@@ -48,7 +48,7 @@ mod tests {
     #[test_case(CMP_INDIRECTY, 0x30, 0x32, 0x34 ; "indirect_y")]
     fn cmp(instruction: u8, carry: u8, zero: u8, negative: u8) {
         // Setup
-        let mut cpu = CPU::new().insert_test_rom(&[instruction, carry, BRK]);
+        let mut cpu = CPU::new_test(&[instruction, carry, BRK]);
         cpu.register_a = 0x10;
         cpu.register_x = 0x05;
         cpu.register_y = 0x06;

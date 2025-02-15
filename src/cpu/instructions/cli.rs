@@ -1,4 +1,4 @@
-use crate::{Bus, OpCode, Rom, Status, CPU};
+use crate::{OpCode, Status, CPU};
 
 use super::Instruction;
 
@@ -9,11 +9,11 @@ pub const CLI: u8 = 0x58;
 pub struct InstructionCLI;
 
 impl OpCode for InstructionCLI {
-    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(_cpu: &mut CPU) -> Instruction {
         Instruction::CLI(Self)
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         cpu.status.remove(Status::INTERRUPT_DISABLE);
     }
 }
@@ -26,7 +26,7 @@ mod tests {
 
     #[test]
     fn cli() {
-        let mut cpu = CPU::new().insert_test_rom(&[CLI, BRK]);
+        let mut cpu = CPU::new_test(&[CLI, BRK]);
         cpu.status.insert(Status::INTERRUPT_DISABLE);
         cpu.run();
         assert!(!cpu.status.intersects(Status::INTERRUPT_DISABLE))

@@ -1,4 +1,4 @@
-use crate::{Bus, OpCode, Rom, Status, CPU};
+use crate::{OpCode, Status, CPU};
 
 use super::Instruction;
 
@@ -9,11 +9,11 @@ pub const SEC: u8 = 0x38;
 pub struct InstructionSEC;
 
 impl OpCode for InstructionSEC {
-    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(_cpu: &mut CPU) -> Instruction {
         Instruction::SEC(Self)
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         cpu.status.insert(Status::CARRY);
     }
 }
@@ -26,7 +26,7 @@ mod tests {
 
     #[test]
     fn sec() {
-        let mut cpu = CPU::new().insert_test_rom(&[SEC, BRK]);
+        let mut cpu = CPU::new_test(&[SEC, BRK]);
         cpu.run();
         assert!(cpu.status.intersects(Status::CARRY));
     }

@@ -1,4 +1,4 @@
-use crate::{Bus, OpCode, Rom, Status, CPU};
+use crate::{OpCode, Status, CPU};
 
 use super::Instruction;
 
@@ -10,11 +10,11 @@ pub const RTI: u8 = 0x40;
 pub struct InstructionRTI;
 
 impl OpCode for InstructionRTI {
-    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(_cpu: &mut CPU) -> Instruction {
         Instruction::RTI(Self)
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         cpu.status = Status::from_bits_retain(cpu.stack_pull());
         cpu.program_counter = cpu.stack_pull_u16();
     }
@@ -33,7 +33,7 @@ mod tests {
     #[test]
     fn rti() {
         // Setup
-        let mut cpu = CPU::new().insert_test_rom(&[RTI, BRK, PHP, BRK]);
+        let mut cpu = CPU::new_test(&[RTI, BRK, PHP, BRK]);
         cpu.stack_push_u16(PROGRAM + 2);
         cpu.stack_push(0b1010_1010);
 

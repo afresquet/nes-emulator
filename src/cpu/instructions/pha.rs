@@ -1,4 +1,4 @@
-use crate::{Bus, OpCode, Rom, CPU};
+use crate::{OpCode, CPU};
 
 use super::Instruction;
 
@@ -9,11 +9,11 @@ pub const PHA: u8 = 0x48;
 pub struct InstructionPHA;
 
 impl OpCode for InstructionPHA {
-    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(_cpu: &mut CPU) -> Instruction {
         Instruction::PHA(Self)
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         cpu.stack_push(cpu.register_a);
     }
 }
@@ -27,7 +27,7 @@ mod tests {
     #[test]
     fn pha() {
         // Setup
-        let mut cpu = CPU::new().insert_test_rom(&[PHA, TXA, PHA, BRK]);
+        let mut cpu = CPU::new_test(&[PHA, TXA, PHA, BRK]);
         cpu.register_a = 0x10;
         cpu.register_x = 0x20;
 
@@ -42,7 +42,7 @@ mod tests {
     #[test]
     #[should_panic = "STACK OVERFLOW"]
     fn stack_overflow() {
-        let mut cpu = CPU::new().insert_test_rom(&[PHA, BRK]);
+        let mut cpu = CPU::new_test(&[PHA, BRK]);
         cpu.stack_pointer = 0;
         cpu.run();
     }

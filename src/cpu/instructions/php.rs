@@ -1,4 +1,4 @@
-use crate::{Bus, OpCode, Rom, CPU};
+use crate::{OpCode, CPU};
 
 use super::Instruction;
 
@@ -9,11 +9,11 @@ pub const PHP: u8 = 0x08;
 pub struct InstructionPHP;
 
 impl OpCode for InstructionPHP {
-    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+    fn fetch(_cpu: &mut CPU) -> Instruction {
         Instruction::PHP(Self)
     }
 
-    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+    fn execute(self, cpu: &mut CPU) {
         cpu.stack_push(cpu.status.bits());
     }
 }
@@ -27,7 +27,7 @@ mod tests {
     #[test]
     fn php() {
         // Setup
-        let mut cpu = CPU::new().insert_test_rom(&[PHP, BRK]);
+        let mut cpu = CPU::new_test(&[PHP, BRK]);
         cpu.status = Status::from_bits_retain(0b1010_1010);
 
         // Push
@@ -40,7 +40,7 @@ mod tests {
     #[test]
     #[should_panic = "STACK OVERFLOW"]
     fn stack_overflow() {
-        let mut cpu = CPU::new().insert_test_rom(&[PHP, BRK]);
+        let mut cpu = CPU::new_test(&[PHP, BRK]);
         cpu.stack_pointer = 0;
         cpu.run();
     }
