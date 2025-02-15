@@ -1,10 +1,21 @@
 use crate::{Bus, OpCode, Rom, CPU};
 
+use super::Instruction;
+
 pub const PHP: u8 = 0x08;
 
 /// Pushes a copy of the status flags on to the stack.
-pub fn php(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
-    cpu.stack_push(cpu.status.bits());
+#[derive(Debug)]
+pub struct InstructionPHP;
+
+impl OpCode for InstructionPHP {
+    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::PHP(Self)
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.stack_push(cpu.status.bits());
+    }
 }
 
 #[cfg(test)]

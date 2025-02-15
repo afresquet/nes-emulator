@@ -1,5 +1,7 @@
 use crate::{Bus, Mem, OpCode, Rom, CPU};
 
+use super::Instruction;
+
 pub const ADC_IMMEDIATE: u8 = 0x69;
 pub const ADC_ZEROPAGE: u8 = 0x65;
 pub const ADC_ZEROPAGEX: u8 = 0x75;
@@ -10,10 +12,22 @@ pub const ADC_INDIRECTX: u8 = 0x61;
 pub const ADC_INDIRECTY: u8 = 0x71;
 
 /// This instruction adds the contents of a memory location to the accumulator together with the carry bit. If overflow occurs the carry bit is set, this enables multiple byte addition to be performed.
-pub fn adc(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
-    let addr = cpu.get_operand_address(opcode.mode);
-    let value = cpu.mem_read(addr);
-    cpu.sum(value);
+#[derive(Debug)]
+pub struct InstructionADC {
+    addr: u16,
+}
+
+impl OpCode for InstructionADC {
+    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::ADC(Self {
+            addr: cpu.get_operand_address(),
+        })
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        let value = cpu.mem_read(self.addr);
+        cpu.sum(value);
+    }
 }
 
 #[cfg(test)]

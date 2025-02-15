@@ -1,12 +1,23 @@
 use crate::{Bus, OpCode, Rom, CPU};
 
+use super::Instruction;
+
 pub const DEY: u8 = 0x88;
 
 /// Subtracts one from the Y register setting the zero and negative flags as appropriate.
-pub fn dey(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
-    let result = cpu.register_y.wrapping_sub(1);
-    cpu.register_y = result;
-    cpu.update_zero_and_negative_flags(result);
+#[derive(Debug)]
+pub struct InstructionDEY;
+
+impl OpCode for InstructionDEY {
+    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::DEY(Self)
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        let result = cpu.register_y.wrapping_sub(1);
+        cpu.register_y = result;
+        cpu.update_zero_and_negative_flags(result);
+    }
 }
 
 #[cfg(test)]

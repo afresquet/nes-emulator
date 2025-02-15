@@ -1,10 +1,25 @@
 use crate::{Bus, OpCode, Rom, Status, CPU};
 
+use super::Instruction;
+
 pub const BVC: u8 = 0x50;
 
 /// If the overflow flag is clear then add the relative displacement to the program counter to cause a branch to a new location.
-pub fn bvc(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
-    cpu.branch(!cpu.status.intersects(Status::OVERFLOW));
+#[derive(Debug)]
+pub struct InstructionBVC {
+    skip: i8,
+}
+
+impl OpCode for InstructionBVC {
+    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::BVC(Self {
+            skip: cpu.get_operand_address() as i8,
+        })
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.branch(self.skip, !cpu.status.intersects(Status::OVERFLOW));
+    }
 }
 
 #[cfg(test)]

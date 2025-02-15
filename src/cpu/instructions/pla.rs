@@ -1,12 +1,23 @@
 use crate::{Bus, OpCode, Rom, CPU};
 
+use super::Instruction;
+
 pub const PLA: u8 = 0x68;
 
 /// Pulls an 8 bit value from the stack and into the accumulator.
 /// The zero and negative flags are set as appropriate.
-pub fn pla(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
-    cpu.register_a = cpu.stack_pull();
-    cpu.update_zero_and_negative_flags(cpu.register_a);
+#[derive(Debug)]
+pub struct InstructionPLA;
+
+impl OpCode for InstructionPLA {
+    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::PLA(Self)
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.register_a = cpu.stack_pull();
+        cpu.update_zero_and_negative_flags(cpu.register_a);
+    }
 }
 
 #[cfg(test)]

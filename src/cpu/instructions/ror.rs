@@ -1,6 +1,6 @@
-use crate::{AddressingMode, Bus, Mem, OpCode, Rom, Status, CPU};
+use crate::{Bus, Mem, OpCode, Rom, Status, CPU};
 
-use super::Address;
+use super::Instruction;
 
 pub const ROR_ACCUMULATOR: u8 = 0x6A;
 pub const ROR_ZEROPAGE: u8 = 0x66;
@@ -10,34 +10,44 @@ pub const ROR_ABSOLUTEX: u8 = 0x7E;
 
 /// Move each of the bits in either A or M one place to the right.
 /// Bit 7 is filled with the current value of the carry flag whilst the old bit 0 becomes the new carry flag value.
-pub fn ror(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
-    let addr = match opcode.mode {
-        AddressingMode::Accumulator => Address::Accumulator(cpu.register_a),
-        mode => {
-            let addr = cpu.get_operand_address(mode);
-            Address::Memory {
-                addr,
-                value: cpu.mem_read(addr),
+#[derive(Debug)]
+pub struct InstructionROR {
+    addr: Option<u16>,
+}
+
+impl OpCode for InstructionROR {
+    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        let addr = (cpu.current_instruction_register != ROR_ACCUMULATOR)
+            .then(|| cpu.get_operand_address());
+
+        Instruction::ROR(Self { addr })
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        let value = self
+            .addr
+            .map(|addr| cpu.mem_read(addr))
+            .unwrap_or(cpu.register_a);
+
+        let bit_seven = cpu.status.intersects(Status::CARRY);
+        let carry = value & 1;
+
+        let shifted = value >> 1 | (bit_seven as u8) << 7;
+
+        cpu.status.set(Status::CARRY, carry > 0);
+
+        match self.addr {
+            Some(addr) => {
+                cpu.mem_write(addr, shifted);
+                cpu.update_zero_and_negative_flags(shifted);
+            }
+            None => {
+                cpu.register_a = shifted;
+                cpu.update_negative_flag(shifted);
             }
         }
-    };
 
-    let bit_seven = cpu.status.intersects(Status::CARRY);
-    let carry = addr.value() & 1;
-
-    let shifted = addr.value() >> 1 | (bit_seven as u8) << 7;
-
-    cpu.status.set(Status::CARRY, carry > 0);
-
-    match addr {
-        Address::Accumulator(_) => {
-            cpu.register_a = shifted;
-            cpu.update_zero_and_negative_flags(shifted);
-        }
-        Address::Memory { addr, .. } => {
-            cpu.mem_write(addr, shifted);
-            cpu.update_negative_flag(shifted);
-        }
+        cpu.update_zero_and_negative_flags(shifted);
     }
 }
 

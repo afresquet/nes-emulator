@@ -1,13 +1,27 @@
 use crate::{Bus, Mem, OpCode, Rom, CPU};
 
+use super::Instruction;
+
 pub const STX_ZEROPAGE: u8 = 0x86;
 pub const STX_ZEROPAGEY: u8 = 0x96;
 pub const STX_ABSOLUTE: u8 = 0x8E;
 
 /// Stores the contents of the X register into memory.
-pub fn stx(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
-    let addr = cpu.get_operand_address(opcode.mode);
-    cpu.mem_write(addr, cpu.register_x);
+#[derive(Debug)]
+pub struct InstructionSTX {
+    addr: u16,
+}
+
+impl OpCode for InstructionSTX {
+    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::STX(Self {
+            addr: cpu.get_operand_address(),
+        })
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.mem_write(self.addr, cpu.register_x);
+    }
 }
 
 #[cfg(test)]

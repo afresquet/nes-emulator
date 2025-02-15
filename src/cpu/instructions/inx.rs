@@ -1,11 +1,22 @@
 use crate::{Bus, OpCode, Rom, CPU};
 
+use super::Instruction;
+
 pub const INX: u8 = 0xE8;
 
 /// Adds one to the X register setting the zero and negative flags as appropriate.
-pub fn inx(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
-    cpu.register_x = cpu.register_x.wrapping_add(1);
-    cpu.update_zero_and_negative_flags(cpu.register_x);
+#[derive(Debug)]
+pub struct InstructionINX;
+
+impl OpCode for InstructionINX {
+    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::INX(Self)
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.register_x = cpu.register_x.wrapping_add(1);
+        cpu.update_zero_and_negative_flags(cpu.register_x);
+    }
 }
 
 #[cfg(test)]

@@ -1,11 +1,22 @@
 use crate::{Bus, OpCode, Rom, CPU};
 
+use super::Instruction;
+
 pub const INY: u8 = 0xC8;
 
 /// Adds one to the Y register setting the zero and negative flags as appropriate.
-pub fn iny(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
-    cpu.register_y = cpu.register_y.wrapping_add(1);
-    cpu.update_zero_and_negative_flags(cpu.register_y);
+#[derive(Debug)]
+pub struct InstructionINY;
+
+impl OpCode for InstructionINY {
+    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::INY(Self)
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.register_y = cpu.register_y.wrapping_add(1);
+        cpu.update_zero_and_negative_flags(cpu.register_y);
+    }
 }
 
 #[cfg(test)]

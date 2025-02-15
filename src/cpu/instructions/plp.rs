@@ -1,12 +1,23 @@
 use crate::{Bus, OpCode, Rom, Status, CPU};
 
+use super::Instruction;
+
 pub const PLP: u8 = 0x28;
 
 /// Pulls an 8 bit value from the stack and into the processor flags.
 /// The flags will take on new states as determined by the value pulled.
-pub fn plp(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
-    let status = cpu.stack_pull();
-    cpu.status = Status::from_bits_retain(status);
+#[derive(Debug)]
+pub struct InstructionPLP;
+
+impl OpCode for InstructionPLP {
+    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::PLP(Self)
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        let status = cpu.stack_pull();
+        cpu.status = Status::from_bits_retain(status);
+    }
 }
 
 #[cfg(test)]

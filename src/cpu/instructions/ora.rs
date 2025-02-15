@@ -1,5 +1,7 @@
 use crate::{Bus, Mem, OpCode, Rom, CPU};
 
+use super::Instruction;
+
 pub const ORA_IMMEDIATE: u8 = 0x09;
 pub const ORA_ZEROPAGE: u8 = 0x05;
 pub const ORA_ZEROPAGEX: u8 = 0x15;
@@ -10,11 +12,23 @@ pub const ORA_INDIRECTX: u8 = 0x01;
 pub const ORA_INDIRECTY: u8 = 0x11;
 
 /// An inclusive OR is performed, bit by bit, on the accumulator contents using the contents of a byte of memory.
-pub fn ora(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
-    let addr = cpu.get_operand_address(opcode.mode);
-    let data = cpu.mem_read(addr);
-    cpu.register_a |= data;
-    cpu.update_zero_and_negative_flags(cpu.register_a);
+#[derive(Debug)]
+pub struct InstructionORA {
+    addr: u16,
+}
+
+impl OpCode for InstructionORA {
+    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::ORA(Self {
+            addr: cpu.get_operand_address(),
+        })
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        let data = cpu.mem_read(self.addr);
+        cpu.register_a |= data;
+        cpu.update_zero_and_negative_flags(cpu.register_a);
+    }
 }
 
 #[cfg(test)]

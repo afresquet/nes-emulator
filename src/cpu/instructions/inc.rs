@@ -1,16 +1,30 @@
 use crate::{Bus, Mem, OpCode, Rom, CPU};
 
+use super::Instruction;
+
 pub const INC_ZEROPAGE: u8 = 0xE6;
 pub const INC_ZEROPAGEX: u8 = 0xF6;
 pub const INC_ABSOLUTE: u8 = 0xEE;
 pub const INC_ABSOLUTEX: u8 = 0xFE;
 
 /// Adds one to the value held at a specified memory location setting the zero and negative flags as appropriate.
-pub fn inc(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
-    let addr = cpu.get_operand_address(opcode.mode);
-    let result = cpu.mem_read(addr).wrapping_add(1);
-    cpu.mem_write(addr, result);
-    cpu.update_zero_and_negative_flags(result);
+#[derive(Debug)]
+pub struct InstructionINC {
+    addr: u16,
+}
+
+impl OpCode for InstructionINC {
+    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::INC(Self {
+            addr: cpu.get_operand_address(),
+        })
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        let result = cpu.mem_read(self.addr).wrapping_add(1);
+        cpu.mem_write(self.addr, result);
+        cpu.update_zero_and_negative_flags(result);
+    }
 }
 
 #[cfg(test)]

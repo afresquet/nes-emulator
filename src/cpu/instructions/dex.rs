@@ -1,12 +1,23 @@
 use crate::{Bus, OpCode, Rom, CPU};
 
+use super::Instruction;
+
 pub const DEX: u8 = 0xCA;
 
 /// Subtracts one from the X register setting the zero and negative flags as appropriate.
-pub fn dex(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
-    let result = cpu.register_x.wrapping_sub(1);
-    cpu.register_x = result;
-    cpu.update_zero_and_negative_flags(result);
+#[derive(Debug)]
+pub struct InstructionDEX;
+
+impl OpCode for InstructionDEX {
+    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::DEX(Self)
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        let result = cpu.register_x.wrapping_sub(1);
+        cpu.register_x = result;
+        cpu.update_zero_and_negative_flags(result);
+    }
 }
 
 #[cfg(test)]

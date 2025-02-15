@@ -1,12 +1,23 @@
 use crate::{Bus, OpCode, Rom, Status, CPU};
 
+use super::Instruction;
+
 pub const RTI: u8 = 0x40;
 
 /// The RTI instruction is used at the end of an interrupt processing routine.
 /// It pulls the processor flags from the stack followed by the program counter.
-pub fn rti(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
-    cpu.status = Status::from_bits_retain(cpu.stack_pull());
-    cpu.program_counter = cpu.stack_pull_u16();
+#[derive(Debug)]
+pub struct InstructionRTI;
+
+impl OpCode for InstructionRTI {
+    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::RTI(Self)
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.status = Status::from_bits_retain(cpu.stack_pull());
+        cpu.program_counter = cpu.stack_pull_u16();
+    }
 }
 
 #[cfg(test)]

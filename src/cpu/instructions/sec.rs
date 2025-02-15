@@ -1,10 +1,21 @@
 use crate::{Bus, OpCode, Rom, Status, CPU};
 
+use super::Instruction;
+
 pub const SEC: u8 = 0x38;
 
 /// Set the carry flag to one.
-pub fn sec(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
-    cpu.status.insert(Status::CARRY);
+#[derive(Debug)]
+pub struct InstructionSEC;
+
+impl OpCode for InstructionSEC {
+    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::SEC(Self)
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.status.insert(Status::CARRY);
+    }
 }
 
 #[cfg(test)]

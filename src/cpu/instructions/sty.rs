@@ -1,13 +1,27 @@
 use crate::{Bus, Mem, OpCode, Rom, CPU};
 
+use super::Instruction;
+
 pub const STY_ZEROPAGE: u8 = 0x84;
 pub const STY_ZEROPAGEX: u8 = 0x94;
 pub const STY_ABSOLUTE: u8 = 0x8C;
 
 /// Stores the contents of the Y register into memory.
-pub fn sty(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
-    let addr = cpu.get_operand_address(opcode.mode);
-    cpu.mem_write(addr, cpu.register_y);
+#[derive(Debug)]
+pub struct InstructionSTY {
+    addr: u16,
+}
+
+impl OpCode for InstructionSTY {
+    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::STY(Self {
+            addr: cpu.get_operand_address(),
+        })
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.mem_write(self.addr, cpu.register_y);
+    }
 }
 
 #[cfg(test)]

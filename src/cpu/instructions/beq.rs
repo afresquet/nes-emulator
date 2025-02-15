@@ -1,10 +1,25 @@
 use crate::{Bus, OpCode, Rom, Status, CPU};
 
+use super::Instruction;
+
 pub const BEQ: u8 = 0xF0;
 
 /// If the zero flag is set then add the relative displacement to the program counter to cause a branch to a new location.
-pub fn beq(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
-    cpu.branch(cpu.status.intersects(Status::ZERO));
+#[derive(Debug)]
+pub struct InstructionBEQ {
+    skip: i8,
+}
+
+impl OpCode for InstructionBEQ {
+    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::BEQ(Self {
+            skip: cpu.get_operand_address() as i8,
+        })
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.branch(self.skip, cpu.status.intersects(Status::ZERO));
+    }
 }
 
 #[cfg(test)]

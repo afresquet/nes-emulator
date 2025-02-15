@@ -1,10 +1,21 @@
 use crate::{Bus, OpCode, Rom, CPU};
 
+use super::Instruction;
+
 pub const PHA: u8 = 0x48;
 
 /// Pushes a copy of the accumulator on to the stack.
-pub fn pha(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
-    cpu.stack_push(cpu.register_a);
+#[derive(Debug)]
+pub struct InstructionPHA;
+
+impl OpCode for InstructionPHA {
+    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::PHA(Self)
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.stack_push(cpu.register_a);
+    }
 }
 
 #[cfg(test)]

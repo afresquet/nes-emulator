@@ -1,10 +1,21 @@
 use crate::{Bus, OpCode, Rom, Status, CPU};
 
+use super::Instruction;
+
 pub const CLV: u8 = 0xB8;
 
 /// Clears the overflow flag.
-pub fn clv(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
-    cpu.status.remove(Status::OVERFLOW);
+#[derive(Debug)]
+pub struct InstructionCLV;
+
+impl OpCode for InstructionCLV {
+    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::CLV(Self)
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.status.remove(Status::OVERFLOW);
+    }
 }
 
 #[cfg(test)]

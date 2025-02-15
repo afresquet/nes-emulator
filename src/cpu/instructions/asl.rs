@@ -1,6 +1,6 @@
-use crate::{AddressingMode, Bus, Mem, OpCode, Rom, Status, CPU};
+use crate::{Bus, Mem, OpCode, Rom, Status, CPU};
 
-use super::Address;
+use super::Instruction;
 
 pub const ASL_ACCUMULATOR: u8 = 0x0A;
 pub const ASL_ZEROPAGE: u8 = 0x06;
@@ -11,34 +11,42 @@ pub const ASL_ABSOLUTEX: u8 = 0x1E;
 /// This operation shifts all the bits of the accumulator or memory contents one bit left.
 /// Bit 0 is set to 0 and bit 7 is placed in the carry flag.
 /// The effect of this operation is to multiply the memory contents by 2 (ignoring 2's complement considerations), setting the carry if the result will not fit in 8 bits.
-pub fn asl(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
-    let addr = match opcode.mode {
-        AddressingMode::Accumulator => Address::Accumulator(cpu.register_a),
-        mode => {
-            let addr = cpu.get_operand_address(mode);
-            Address::Memory {
-                addr,
-                value: cpu.mem_read(addr),
-            }
-        }
-    };
+#[derive(Debug)]
+pub struct InstructionASL {
+    addr: Option<u16>,
+}
 
-    let shifted = (addr.value() as u16) << 1;
+impl OpCode for InstructionASL {
+    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        let addr = (cpu.current_instruction_register != ASL_ACCUMULATOR)
+            .then(|| cpu.get_operand_address());
 
-    cpu.status.set(Status::CARRY, shifted > u8::MAX as u16);
-
-    let shifted = shifted as u8;
-
-    match addr {
-        Address::Accumulator(_) => {
-            cpu.register_a = shifted;
-        }
-        Address::Memory { addr, .. } => {
-            cpu.mem_write(addr, shifted);
-        }
+        Instruction::ASL(Self { addr })
     }
 
-    cpu.update_zero_and_negative_flags(shifted);
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        let value = self
+            .addr
+            .map(|addr| cpu.mem_read(addr))
+            .unwrap_or(cpu.register_a);
+
+        let shifted = (value as u16) << 1;
+
+        cpu.status.set(Status::CARRY, shifted > u8::MAX as u16);
+
+        let shifted = shifted as u8;
+
+        match self.addr {
+            Some(addr) => {
+                cpu.mem_write(addr, shifted);
+            }
+            None => {
+                cpu.register_a = shifted;
+            }
+        }
+
+        cpu.update_zero_and_negative_flags(shifted);
+    }
 }
 
 #[cfg(test)]

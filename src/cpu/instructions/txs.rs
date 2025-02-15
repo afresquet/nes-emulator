@@ -1,10 +1,21 @@
 use crate::{Bus, OpCode, Rom, CPU};
 
+use super::Instruction;
+
 pub const TXS: u8 = 0x9A;
 
 /// Copies the current contents of the X register into the stack register.
-pub fn txs(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
-    cpu.stack_push(cpu.register_x);
+#[derive(Debug)]
+pub struct InstructionTXS;
+
+impl OpCode for InstructionTXS {
+    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::TXS(Self)
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.stack_push(cpu.register_x);
+    }
 }
 
 #[cfg(test)]

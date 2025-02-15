@@ -1,5 +1,7 @@
 use crate::{Bus, Mem, OpCode, Rom, CPU};
 
+use super::Instruction;
+
 pub const LDA_IMMEDIATE: u8 = 0xA9;
 pub const LDA_ZEROPAGE: u8 = 0xA5;
 pub const LDA_ZEROPAGEX: u8 = 0xB5;
@@ -10,11 +12,22 @@ pub const LDA_INDIRECTX: u8 = 0xA1;
 pub const LDA_INDIRECTY: u8 = 0xB1;
 
 /// Loads a byte of memory into the accumulator setting the zero and negative flags as appropriate.
-pub fn lda(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
-    let addr = cpu.get_operand_address(opcode.mode);
-    let value = cpu.mem_read(addr);
-    cpu.register_a = value;
-    cpu.update_zero_and_negative_flags(cpu.register_a);
+#[derive(Debug)]
+pub struct InstructionLDA {
+    addr: u16,
+}
+
+impl OpCode for InstructionLDA {
+    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::LDA(Self {
+            addr: cpu.get_operand_address(),
+        })
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.register_a = cpu.mem_read(self.addr);
+        cpu.update_zero_and_negative_flags(cpu.register_a);
+    }
 }
 
 #[cfg(test)]

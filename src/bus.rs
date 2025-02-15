@@ -32,7 +32,7 @@ impl Bus<Unloaded> {
 
 impl Bus<Rom> {
     pub fn swap_rom(&mut self, rom: Rom) -> Rom {
-        std::mem::replace(&mut self.rom, rom)
+        core::mem::replace(&mut self.rom, rom)
     }
 
     pub fn remove_rom(self) -> (Bus<Unloaded>, Rom) {

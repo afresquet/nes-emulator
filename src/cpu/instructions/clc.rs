@@ -1,10 +1,21 @@
 use crate::{Bus, OpCode, Rom, Status, CPU};
 
+use super::Instruction;
+
 pub const CLC: u8 = 0x18;
 
 /// Set the carry flag to zero.
-pub fn clc(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
-    cpu.status.remove(Status::CARRY);
+#[derive(Debug)]
+pub struct InstructionCLC;
+
+impl OpCode for InstructionCLC {
+    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::CLC(Self)
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.status.remove(Status::CARRY);
+    }
 }
 
 #[cfg(test)]

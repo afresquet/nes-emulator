@@ -1,10 +1,25 @@
 use crate::{Bus, OpCode, Rom, Status, CPU};
 
+use super::Instruction;
+
 pub const BPL: u8 = 0x10;
 
 /// If the negative flag is clear then add the relative displacement to the program counter to cause a branch to a new location.
-pub fn bpl(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
-    cpu.branch(!cpu.status.intersects(Status::NEGATIVE));
+#[derive(Debug)]
+pub struct InstructionBPL {
+    skip: i8,
+}
+
+impl OpCode for InstructionBPL {
+    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::BPL(Self {
+            skip: cpu.get_operand_address() as i8,
+        })
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.branch(self.skip, !cpu.status.intersects(Status::NEGATIVE));
+    }
 }
 
 #[cfg(test)]

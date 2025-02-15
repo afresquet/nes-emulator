@@ -1,21 +1,35 @@
 use crate::{Bus, Mem, OpCode, Rom, Status, CPU};
 
+use super::Instruction;
+
 pub const BIT_ZEROPAGE: u8 = 0x24;
 pub const BIT_ABSOLUTE: u8 = 0x2C;
 
 /// This instructions is used to test if one or more bits are set in a target memory location.
 /// The mask pattern in A is ANDed with the value in memory to set or clear the zero flag, but the result is not kept.
 /// Bits 7 and 6 of the value from memory are copied into the N and V flags.
-pub fn bit(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
-    let addr = cpu.get_operand_address(opcode.mode);
-    let data = cpu.mem_read(addr);
+#[derive(Debug)]
+pub struct InstructionBIT {
+    addr: u16,
+}
 
-    let result = cpu.register_a & data;
+impl OpCode for InstructionBIT {
+    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::BIT(Self {
+            addr: cpu.get_operand_address(),
+        })
+    }
 
-    cpu.update_zero_flag(result);
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        let data = cpu.mem_read(self.addr);
 
-    cpu.status.set(Status::OVERFLOW, data & 1 << 6 != 0);
-    cpu.update_negative_flag(data);
+        let result = cpu.register_a & data;
+
+        cpu.update_zero_flag(result);
+
+        cpu.status.set(Status::OVERFLOW, data & 1 << 6 != 0);
+        cpu.update_negative_flag(data);
+    }
 }
 
 #[cfg(test)]

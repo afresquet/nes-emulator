@@ -1,11 +1,22 @@
 use crate::{Bus, OpCode, Rom, CPU};
 
+use super::Instruction;
+
 pub const TXA: u8 = 0x8A;
 
 /// Copies the current contents of the X register into the accumulator and sets the zero and negative flags as appropriate.
-pub fn txa(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
-    cpu.register_a = cpu.register_x;
-    cpu.update_zero_and_negative_flags(cpu.register_a);
+#[derive(Debug)]
+pub struct InstructionTXA;
+
+impl OpCode for InstructionTXA {
+    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::TXA(Self)
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.register_a = cpu.register_x;
+        cpu.update_zero_and_negative_flags(cpu.register_a);
+    }
 }
 
 #[cfg(test)]

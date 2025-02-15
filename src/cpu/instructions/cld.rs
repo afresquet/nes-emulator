@@ -1,10 +1,21 @@
 use crate::{Bus, OpCode, Rom, Status, CPU};
 
+use super::Instruction;
+
 pub const CLD: u8 = 0xD8;
 
 /// Sets the decimal mode flag to zero.
-pub fn cld(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
-    cpu.status.remove(Status::DECIMAL);
+#[derive(Debug)]
+pub struct InstructionCLD;
+
+impl OpCode for InstructionCLD {
+    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::CLD(Self)
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.status.remove(Status::DECIMAL);
+    }
 }
 
 #[cfg(test)]

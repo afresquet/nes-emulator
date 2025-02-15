@@ -1,12 +1,28 @@
-use crate::{Bus, OpCode, Rom, CPU};
+use crate::{Bus, Mem, OpCode, Rom, CPU};
+
+use super::Instruction;
 
 pub const CPY_IMMEDIATE: u8 = 0xC0;
 pub const CPY_ZEROPAGE: u8 = 0xC4;
 pub const CPY_ABSOLUTE: u8 = 0xCC;
 
 /// This instruction compares the contents of the Y register with another memory held value and sets the zero and carry flags as appropriate.
-pub fn cpy(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
-    cpu.compare(cpu.register_y, opcode.mode);
+#[derive(Debug)]
+pub struct InstructionCPY {
+    addr: u16,
+}
+
+impl OpCode for InstructionCPY {
+    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::CPY(Self {
+            addr: cpu.get_operand_address(),
+        })
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        let data = cpu.mem_read(self.addr);
+        cpu.compare(data, cpu.register_y);
+    }
 }
 
 #[cfg(test)]

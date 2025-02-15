@@ -36,7 +36,7 @@ fn main() {
     let mut rng = rand::rng();
 
     // run the game cycle
-    cpu.run_with_callback(move |cpu| {
+    cpu.run_with_callback(move |cpu, _| {
         handle_user_input(cpu, &mut event_pump);
 
         cpu.mem_write(0xfe, rng.random_range(1..16));

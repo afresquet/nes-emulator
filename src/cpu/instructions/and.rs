@@ -1,5 +1,7 @@
 use crate::{Bus, Mem, OpCode, Rom, CPU};
 
+use super::Instruction;
+
 pub const AND_IMMEDIATE: u8 = 0x29;
 pub const AND_ZEROPAGE: u8 = 0x25;
 pub const AND_ZEROPAGEX: u8 = 0x35;
@@ -10,11 +12,23 @@ pub const AND_INDIRECTX: u8 = 0x21;
 pub const AND_INDIRECTY: u8 = 0x31;
 
 /// A logical AND is performed, bit by bit, on the accumulator contents using the contents of a byte of memory.
-pub fn and(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
-    let addr = cpu.get_operand_address(opcode.mode);
-    let data = cpu.mem_read(addr);
-    cpu.register_a &= data;
-    cpu.update_zero_and_negative_flags(cpu.register_a);
+#[derive(Debug)]
+pub struct InstructionAND {
+    addr: u16,
+}
+
+impl OpCode for InstructionAND {
+    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::AND(Self {
+            addr: cpu.get_operand_address(),
+        })
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        let data = cpu.mem_read(self.addr);
+        cpu.register_a &= data;
+        cpu.update_zero_and_negative_flags(cpu.register_a);
+    }
 }
 
 #[cfg(test)]

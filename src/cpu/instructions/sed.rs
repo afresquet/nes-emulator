@@ -1,10 +1,21 @@
 use crate::{Bus, OpCode, Rom, Status, CPU};
 
+use super::Instruction;
+
 pub const SED: u8 = 0xF8;
 
 /// Set the decimal mode flag to one.
-pub fn sed(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
-    cpu.status.insert(Status::DECIMAL);
+#[derive(Debug)]
+pub struct InstructionSED;
+
+impl OpCode for InstructionSED {
+    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::SED(Self)
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.status.insert(Status::DECIMAL);
+    }
 }
 
 #[cfg(test)]

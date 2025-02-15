@@ -1,10 +1,25 @@
 use crate::{Bus, OpCode, Rom, Status, CPU};
 
+use super::Instruction;
+
 pub const BMI: u8 = 0x30;
 
 /// If the negative flag is set then add the relative displacement to the program counter to cause a branch to a new location.
-pub fn bmi(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
-    cpu.branch(cpu.status.intersects(Status::NEGATIVE));
+#[derive(Debug)]
+pub struct InstructionBMI {
+    skip: i8,
+}
+
+impl OpCode for InstructionBMI {
+    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::BMI(Self {
+            skip: cpu.get_operand_address() as i8,
+        })
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.branch(self.skip, cpu.status.intersects(Status::NEGATIVE));
+    }
 }
 
 #[cfg(test)]

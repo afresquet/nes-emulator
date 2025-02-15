@@ -1,5 +1,7 @@
 use crate::{Bus, Mem, OpCode, Rom, CPU};
 
+use super::Instruction;
+
 pub const EOR_IMMEDIATE: u8 = 0x49;
 pub const EOR_ZEROPAGE: u8 = 0x45;
 pub const EOR_ZEROPAGEX: u8 = 0x55;
@@ -10,11 +12,23 @@ pub const EOR_INDIRECTX: u8 = 0x41;
 pub const EOR_INDIRECTY: u8 = 0x51;
 
 /// An exclusive OR is performed, bit by bit, on the accumulator contents using the contents of a byte of memory.
-pub fn eor(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
-    let addr = cpu.get_operand_address(opcode.mode);
-    let data = cpu.mem_read(addr);
-    cpu.register_a ^= data;
-    cpu.update_zero_and_negative_flags(cpu.register_a);
+#[derive(Debug)]
+pub struct InstructionEOR {
+    addr: u16,
+}
+
+impl OpCode for InstructionEOR {
+    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::EOR(Self {
+            addr: cpu.get_operand_address(),
+        })
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        let data = cpu.mem_read(self.addr);
+        cpu.register_a ^= data;
+        cpu.update_zero_and_negative_flags(cpu.register_a);
+    }
 }
 
 #[cfg(test)]

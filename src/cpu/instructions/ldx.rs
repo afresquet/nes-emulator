@@ -1,5 +1,7 @@
 use crate::{Bus, Mem, OpCode, Rom, CPU};
 
+use super::Instruction;
+
 pub const LDX_IMMEDIATE: u8 = 0xA2;
 pub const LDX_ZEROPAGE: u8 = 0xA6;
 pub const LDX_ZEROPAGEY: u8 = 0xB6;
@@ -7,10 +9,22 @@ pub const LDX_ABSOLUTE: u8 = 0xAE;
 pub const LDX_ABSOLUTEY: u8 = 0xBE;
 
 /// Loads a byte of memory into the X register setting the zero and negative flags as appropriate.
-pub fn ldx(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
-    let addr = cpu.get_operand_address(opcode.mode);
-    cpu.register_x = cpu.mem_read(addr);
-    cpu.update_zero_and_negative_flags(cpu.register_x);
+#[derive(Debug)]
+pub struct InstructionLDX {
+    addr: u16,
+}
+
+impl OpCode for InstructionLDX {
+    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::LDX(Self {
+            addr: cpu.get_operand_address(),
+        })
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.register_x = cpu.mem_read(self.addr);
+        cpu.update_zero_and_negative_flags(cpu.register_x);
+    }
 }
 
 #[cfg(test)]

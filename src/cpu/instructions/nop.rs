@@ -1,9 +1,20 @@
 use crate::{Bus, OpCode, Rom, CPU};
 
-/// The NOP instruction causes no changes to the processor other than the normal incrementing of the program counter to the next instruction.
+use super::Instruction;
+
 pub const NOP: u8 = 0xEA;
 
-pub fn nop(_cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {}
+/// The NOP instruction causes no changes to the processor other than the normal incrementing of the program counter to the next instruction.
+#[derive(Debug)]
+pub struct InstructionNOP;
+
+impl OpCode for InstructionNOP {
+    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::NOP(Self)
+    }
+
+    fn execute(self, _cpu: &mut CPU<Bus<Rom>>) {}
+}
 
 #[cfg(test)]
 mod tests {

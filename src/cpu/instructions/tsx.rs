@@ -1,11 +1,22 @@
 use crate::{Bus, OpCode, Rom, CPU};
 
+use super::Instruction;
+
 pub const TSX: u8 = 0xBA;
 
 /// Copies the current contents of the stack register into the X register and sets the zero and negative flags as appropriate.
-pub fn tsx(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
-    cpu.register_x = cpu.stack_pull();
-    cpu.update_zero_and_negative_flags(cpu.register_x);
+#[derive(Debug)]
+pub struct InstructionTSX;
+
+impl OpCode for InstructionTSX {
+    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::TSX(Self)
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.register_x = cpu.stack_pull();
+        cpu.update_zero_and_negative_flags(cpu.register_x);
+    }
 }
 
 #[cfg(test)]

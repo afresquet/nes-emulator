@@ -1,12 +1,26 @@
 use crate::{Bus, OpCode, Rom, CPU};
 
+use super::Instruction;
+
 pub const JMP_ABSOLUTE: u8 = 0x4C;
 pub const JMP_INDIRECT: u8 = 0x6C;
 
 /// Sets the program counter to the address specified by the operand.
-pub fn jmp(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
-    let addr = cpu.get_operand_address(opcode.mode);
-    cpu.program_counter = addr;
+#[derive(Debug)]
+pub struct InstructionJMP {
+    addr: u16,
+}
+
+impl OpCode for InstructionJMP {
+    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::JMP(Self {
+            addr: cpu.get_operand_address(),
+        })
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.program_counter = self.addr;
+    }
 }
 
 #[cfg(test)]

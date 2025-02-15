@@ -1,11 +1,22 @@
 use crate::{Bus, OpCode, Rom, CPU};
 
+use super::Instruction;
+
 pub const TYA: u8 = 0x98;
 
 /// Copies the current contents of the Y register into the accumulator and sets the zero and negative flags as appropriate.
-pub fn tya(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
-    cpu.register_a = cpu.register_y;
-    cpu.update_zero_and_negative_flags(cpu.register_a);
+#[derive(Debug)]
+pub struct InstructionTYA;
+
+impl OpCode for InstructionTYA {
+    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::TYA(Self)
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.register_a = cpu.register_y;
+        cpu.update_zero_and_negative_flags(cpu.register_a);
+    }
 }
 
 #[cfg(test)]

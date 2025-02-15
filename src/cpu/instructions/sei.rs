@@ -1,10 +1,21 @@
 use crate::{Bus, OpCode, Rom, Status, CPU};
 
+use super::Instruction;
+
 pub const SEI: u8 = 0x78;
 
 /// Set the interrupt disable flag to one.
-pub fn sei(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
-    cpu.status.insert(Status::INTERRUPT_DISABLE);
+#[derive(Debug)]
+pub struct InstructionSEI;
+
+impl OpCode for InstructionSEI {
+    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::SEI(Self)
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.status.insert(Status::INTERRUPT_DISABLE);
+    }
 }
 
 #[cfg(test)]

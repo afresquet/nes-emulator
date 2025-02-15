@@ -268,7 +268,7 @@ pub mod tests {
     fn header() {
         let bytes = HEADER
             .into_iter()
-            .chain(std::iter::repeat_n(0xFF, 0x0001))
+            .chain(core::iter::repeat_n(0xFF, 0x0001))
             .collect::<Vec<_>>();
 
         let raw = RawROM::from_bytes(&bytes).unwrap();

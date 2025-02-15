@@ -1,5 +1,7 @@
-use crate::{AddressingMode, Bus, Mem, OpCodeType, Rom, Unloaded};
-use crate::{OPCODES, PROGRAM, PROGRAM_START, STACK, STACK_SIZE};
+pub use instructions::*;
+
+use crate::{AddressingMode, Bus, Mem, OpCode, Rom, Unloaded};
+use crate::{PROGRAM, PROGRAM_START, STACK, STACK_SIZE};
 
 pub mod instructions;
 
@@ -38,6 +40,7 @@ pub struct CPU<B> {
     program_counter: u16,
     stack_pointer: u8,
     bus: B,
+    current_instruction_register: u8,
 }
 
 impl Default for CPU<Bus<Unloaded>> {
@@ -50,6 +53,7 @@ impl Default for CPU<Bus<Unloaded>> {
             program_counter: PROGRAM,
             stack_pointer: STACK_SIZE,
             bus: Default::default(),
+            current_instruction_register: 0,
         }
     }
 }
@@ -70,6 +74,7 @@ impl CPU<Bus<Unloaded>> {
             program_counter: bus.mem_read_u16(PROGRAM_START),
             stack_pointer: self.stack_pointer,
             bus,
+            current_instruction_register: self.current_instruction_register,
         }
     }
 
@@ -87,6 +92,7 @@ impl CPU<Bus<Unloaded>> {
             program_counter: bus.mem_read_u16(PROGRAM_START),
             stack_pointer: self.stack_pointer,
             bus,
+            current_instruction_register: self.current_instruction_register,
         }
     }
 }
@@ -155,34 +161,27 @@ impl CPU<Bus<Rom>> {
     }
 
     pub fn run(&mut self) {
-        self.run_with_callback(|_| {});
+        self.run_with_callback(|_, _| {});
     }
 
     pub fn run_with_callback<F>(&mut self, mut callback: F)
     where
-        F: FnMut(&mut Self),
+        F: FnMut(&mut Self, &Instruction),
     {
-        let opcodes = std::sync::LazyLock::force(&OPCODES);
-
         loop {
-            let opcode = self.mem_read(self.program_counter);
-            let opcode = opcodes.get(&opcode).expect("to be a valid opcode");
+            let instruction = Instruction::fetch(self);
 
-            self.program_counter = self.program_counter.wrapping_add(1);
+            callback(self, &instruction);
 
-            let pc_state = self.program_counter;
+            self.program_counter = self
+                .program_counter
+                .wrapping_add(self.get_addressing_mode().bytes());
 
-            (opcode.instruction)(self, opcode);
+            instruction.execute(self);
 
-            if let OpCodeType::BRK = opcode.ty {
+            if let Instruction::BRK(_) = instruction {
                 return;
             }
-
-            if self.program_counter == pc_state {
-                self.program_counter = self.program_counter.wrapping_add(opcode.bytes as u16 - 1);
-            }
-
-            callback(self);
         }
     }
 
@@ -200,27 +199,32 @@ impl CPU<Bus<Rom>> {
         self.status.set(Status::NEGATIVE, result & 1 << 7 != 0);
     }
 
-    fn get_operand_address(&mut self, mode: AddressingMode) -> u16 {
+    fn get_addressing_mode(&self) -> AddressingMode {
+        AddressingMode::new(self.current_instruction_register).expect("valid instruction")
+    }
+
+    fn get_operand_address(&mut self) -> u16 {
         use AddressingMode as AM;
 
+        let mode = self.get_addressing_mode();
+
+        // Skip OpCode
+        let program_counter = self.program_counter + 1;
+
         match mode {
-            AM::Immediate => self.program_counter,
-            AM::ZeroPage => self.mem_read(self.program_counter) as u16,
-            AM::ZeroPageX => self
-                .mem_read(self.program_counter)
-                .wrapping_add(self.register_x) as u16,
-            AM::ZeroPageY => self
-                .mem_read(self.program_counter)
-                .wrapping_add(self.register_y) as u16,
-            AM::Absolute => self.mem_read_u16(self.program_counter),
+            AM::Immediate => program_counter,
+            AM::ZeroPage | AM::Relative => self.mem_read(program_counter) as u16,
+            AM::ZeroPageX => self.mem_read(program_counter).wrapping_add(self.register_x) as u16,
+            AM::ZeroPageY => self.mem_read(program_counter).wrapping_add(self.register_y) as u16,
+            AM::Absolute => self.mem_read_u16(program_counter),
             AM::AbsoluteX => self
-                .mem_read_u16(self.program_counter)
+                .mem_read_u16(program_counter)
                 .wrapping_add(self.register_x as u16),
             AM::AbsoluteY => self
-                .mem_read_u16(self.program_counter)
+                .mem_read_u16(program_counter)
                 .wrapping_add(self.register_y as u16),
             AM::Indirect => {
-                let pos = self.mem_read_u16(self.program_counter);
+                let pos = self.mem_read_u16(program_counter);
 
                 // The 6502 microprocessor has a known bug
                 // related to indirect addressing modes that involve page boundaries.
@@ -242,13 +246,11 @@ impl CPU<Bus<Rom>> {
                 }
             }
             AM::IndirectX => {
-                let pos = self
-                    .mem_read(self.program_counter)
-                    .wrapping_add(self.register_x);
+                let pos = self.mem_read(program_counter).wrapping_add(self.register_x);
                 self.mem_read_u16(pos as u16)
             }
             AM::IndirectY => {
-                let pos = self.mem_read(self.program_counter);
+                let pos = self.mem_read(program_counter);
                 self.mem_read_u16(pos as u16)
                     .wrapping_add(self.register_y as u16)
             }
@@ -256,17 +258,13 @@ impl CPU<Bus<Rom>> {
         }
     }
 
-    pub fn branch(&mut self, condition: bool) {
+    pub fn branch(&mut self, skip: i8, condition: bool) {
         if condition {
-            let skip = self.mem_read(self.program_counter) as i8;
-            self.program_counter = self.program_counter.wrapping_add_signed(skip as i16 + 1);
+            self.program_counter = self.program_counter.wrapping_add_signed(skip as i16);
         }
     }
 
-    pub fn compare(&mut self, value: u8, mode: AddressingMode) {
-        let addr = self.get_operand_address(mode);
-        let data = self.mem_read(addr);
-
+    pub fn compare(&mut self, data: u8, value: u8) {
         self.status.set(Status::CARRY, value >= data);
 
         self.update_zero_and_negative_flags(value.wrapping_sub(data));

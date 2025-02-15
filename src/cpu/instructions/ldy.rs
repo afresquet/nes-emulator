@@ -1,5 +1,7 @@
 use crate::{Bus, Mem, OpCode, Rom, CPU};
 
+use super::Instruction;
+
 pub const LDY_IMMEDIATE: u8 = 0xA0;
 pub const LDY_ZEROPAGE: u8 = 0xA4;
 pub const LDY_ZEROPAGEX: u8 = 0xB4;
@@ -7,10 +9,22 @@ pub const LDY_ABSOLUTE: u8 = 0xAC;
 pub const LDY_ABSOLUTEX: u8 = 0xBC;
 
 /// Loads a byte of memory into the Y register setting the zero and negative flags as appropriate.
-pub fn ldy(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
-    let addr = cpu.get_operand_address(opcode.mode);
-    cpu.register_y = cpu.mem_read(addr);
-    cpu.update_zero_and_negative_flags(cpu.register_y);
+#[derive(Debug)]
+pub struct InstructionLDY {
+    addr: u16,
+}
+
+impl OpCode for InstructionLDY {
+    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::LDY(Self {
+            addr: cpu.get_operand_address(),
+        })
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.register_y = cpu.mem_read(self.addr);
+        cpu.update_zero_and_negative_flags(cpu.register_y);
+    }
 }
 
 #[cfg(test)]

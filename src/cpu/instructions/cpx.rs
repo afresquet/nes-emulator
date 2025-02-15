@@ -1,12 +1,28 @@
-use crate::{Bus, OpCode, Rom, CPU};
+use crate::{Bus, Mem, OpCode, Rom, CPU};
+
+use super::Instruction;
 
 pub const CPX_IMMEDIATE: u8 = 0xE0;
 pub const CPX_ZEROPAGE: u8 = 0xE4;
 pub const CPX_ABSOLUTE: u8 = 0xEC;
 
 /// This instruction compares the contents of the X register with another memory held value and sets the zero and carry flags as appropriate.
-pub fn cpx(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
-    cpu.compare(cpu.register_x, opcode.mode);
+#[derive(Debug)]
+pub struct InstructionCPX {
+    addr: u16,
+}
+
+impl OpCode for InstructionCPX {
+    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::CPX(Self {
+            addr: cpu.get_operand_address(),
+        })
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        let data = cpu.mem_read(self.addr);
+        cpu.compare(data, cpu.register_x);
+    }
 }
 
 #[cfg(test)]

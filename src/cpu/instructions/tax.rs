@@ -1,11 +1,22 @@
 use crate::{Bus, OpCode, Rom, CPU};
 
+use super::Instruction;
+
 pub const TAX: u8 = 0xAA;
 
 /// Copies the current contents of the accumulator into the X register and sets the zero and negative flags as appropriate.
-pub fn tax(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
-    cpu.register_x = cpu.register_a;
-    cpu.update_zero_and_negative_flags(cpu.register_x);
+#[derive(Debug)]
+pub struct InstructionTAX;
+
+impl OpCode for InstructionTAX {
+    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::TAX(Self)
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.register_x = cpu.register_a;
+        cpu.update_zero_and_negative_flags(cpu.register_x);
+    }
 }
 
 #[cfg(test)]

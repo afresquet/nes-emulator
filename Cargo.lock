@@ -55,10 +55,20 @@ name = "nes-emulator"
 version = "0.1.0"
 dependencies = [
  "bitflags 2.8.0",
+ "nes-emulator-macros",
  "rand",
  "sdl2",
  "test-case",
  "thiserror",
+]
+
+[[package]]
+name = "nes-emulator-macros"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]

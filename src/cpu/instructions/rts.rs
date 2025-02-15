@@ -1,11 +1,22 @@
 use crate::{Bus, OpCode, Rom, CPU};
 
+use super::Instruction;
+
 pub const RTS: u8 = 0x60;
 
 /// The RTS instruction is used at the end of a subroutine to return to the calling routine.
 /// It pulls the program counter (minus one) from the stack.
-pub fn rts(cpu: &mut CPU<Bus<Rom>>, _opcode: &OpCode) {
-    cpu.program_counter = cpu.stack_pull_u16().wrapping_add(1);
+#[derive(Debug)]
+pub struct InstructionRTS;
+
+impl OpCode for InstructionRTS {
+    fn fetch(_cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::RTS(Self)
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.program_counter = cpu.stack_pull_u16().wrapping_add(1);
+    }
 }
 
 #[cfg(test)]

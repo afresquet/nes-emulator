@@ -1,6 +1,6 @@
-use crate::{AddressingMode, Bus, Mem, OpCode, Rom, Status, CPU};
+use crate::{Bus, Mem, OpCode, Rom, Status, CPU};
 
-use super::Address;
+use super::Instruction;
 
 pub const LSR_ACCUMULATOR: u8 = 0x4A;
 pub const LSR_ZEROPAGE: u8 = 0x46;
@@ -11,32 +11,40 @@ pub const LSR_ABSOLUTEX: u8 = 0x5E;
 /// Each of the bits in A or M is shift one place to the right.
 /// The bit that was in bit 0 is shifted into the carry flag.
 /// Bit 7 is set to zero.
-pub fn lsr(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
-    let addr = match opcode.mode {
-        AddressingMode::Accumulator => Address::Accumulator(cpu.register_a),
-        mode => {
-            let addr = cpu.get_operand_address(mode);
-            Address::Memory {
-                addr,
-                value: cpu.mem_read(addr),
-            }
-        }
-    };
+#[derive(Debug)]
+pub struct InstructionLSR {
+    addr: Option<u16>,
+}
 
-    cpu.status.set(Status::CARRY, addr.value() & 1 != 0);
+impl OpCode for InstructionLSR {
+    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        let addr = (cpu.current_instruction_register != LSR_ACCUMULATOR)
+            .then(|| cpu.get_operand_address());
 
-    let shifted = addr.value() >> 1;
-
-    match addr {
-        Address::Accumulator(_) => {
-            cpu.register_a = shifted;
-        }
-        Address::Memory { addr, .. } => {
-            cpu.mem_write(addr, shifted);
-        }
+        Instruction::LSR(Self { addr })
     }
 
-    cpu.update_zero_and_negative_flags(shifted);
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        let value = self
+            .addr
+            .map(|addr| cpu.mem_read(addr))
+            .unwrap_or(cpu.register_a);
+
+        cpu.status.set(Status::CARRY, value & 1 != 0);
+
+        let shifted = value >> 1;
+
+        match self.addr {
+            Some(addr) => {
+                cpu.mem_write(addr, shifted);
+            }
+            None => {
+                cpu.register_a = shifted;
+            }
+        }
+
+        cpu.update_zero_and_negative_flags(shifted);
+    }
 }
 
 #[cfg(test)]

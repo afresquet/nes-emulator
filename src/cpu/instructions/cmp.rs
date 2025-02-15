@@ -1,4 +1,6 @@
-use crate::{Bus, OpCode, Rom, CPU};
+use crate::{Bus, Mem, OpCode, Rom, CPU};
+
+use super::Instruction;
 
 pub const CMP_IMMEDIATE: u8 = 0xC9;
 pub const CMP_ZEROPAGE: u8 = 0xC5;
@@ -10,8 +12,22 @@ pub const CMP_INDIRECTX: u8 = 0xC1;
 pub const CMP_INDIRECTY: u8 = 0xD1;
 
 /// This instruction compares the contents of the accumulator with another memory held value and sets the zero and carry flags as appropriate.
-pub fn cmp(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
-    cpu.compare(cpu.register_a, opcode.mode);
+#[derive(Debug)]
+pub struct InstructionCMP {
+    addr: u16,
+}
+
+impl OpCode for InstructionCMP {
+    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::CMP(Self {
+            addr: cpu.get_operand_address(),
+        })
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        let data = cpu.mem_read(self.addr);
+        cpu.compare(data, cpu.register_a);
+    }
 }
 
 #[cfg(test)]

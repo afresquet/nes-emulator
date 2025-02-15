@@ -1,11 +1,26 @@
 use crate::{Bus, OpCode, Rom, CPU};
 
+use super::Instruction;
+
 pub const JSR: u8 = 0x20;
 
 /// The JSR instruction pushes the address (minus one) of the return point on to the stack and then sets the program counter to the target memory address.
-pub fn jsr(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
-    cpu.stack_push_u16(cpu.program_counter.wrapping_add(1));
-    cpu.program_counter = cpu.get_operand_address(opcode.mode);
+#[derive(Debug)]
+pub struct InstructionJSR {
+    addr: u16,
+}
+
+impl OpCode for InstructionJSR {
+    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::JSR(Self {
+            addr: cpu.get_operand_address(),
+        })
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.stack_push_u16(cpu.program_counter - 1);
+        cpu.program_counter = self.addr;
+    }
 }
 
 #[cfg(test)]

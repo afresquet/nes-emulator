@@ -1,5 +1,7 @@
 use crate::{Bus, Mem, OpCode, Rom, CPU};
 
+use super::Instruction;
+
 pub const SBC_IMMEDIATE: u8 = 0xE9;
 pub const SBC_ZEROPAGE: u8 = 0xE5;
 pub const SBC_ZEROPAGEX: u8 = 0xF5;
@@ -11,10 +13,22 @@ pub const SBC_INDIRECTY: u8 = 0xF1;
 
 /// This instruction subtracts the contents of a memory location to the accumulator together with the not of the carry bit.
 /// If overflow occurs the carry bit is clear, this enables multiple byte subtraction to be performed.
-pub fn sbc(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
-    let addr = cpu.get_operand_address(opcode.mode);
-    let value = cpu.mem_read(addr);
-    cpu.sum((value as i8).wrapping_neg().wrapping_sub(1) as u8);
+#[derive(Debug)]
+pub struct InstructionSBC {
+    addr: u16,
+}
+
+impl OpCode for InstructionSBC {
+    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::SBC(Self {
+            addr: cpu.get_operand_address(),
+        })
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        let value = cpu.mem_read(self.addr);
+        cpu.sum((value as i8).wrapping_neg().wrapping_sub(1) as u8);
+    }
 }
 
 #[cfg(test)]

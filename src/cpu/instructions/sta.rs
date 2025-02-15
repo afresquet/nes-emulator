@@ -1,5 +1,7 @@
 use crate::{Bus, Mem, OpCode, Rom, CPU};
 
+use super::Instruction;
+
 pub const STA_ZEROPAGE: u8 = 0x85;
 pub const STA_ZEROPAGEX: u8 = 0x95;
 pub const STA_ABSOLUTE: u8 = 0x8D;
@@ -9,9 +11,21 @@ pub const STA_INDIRECTX: u8 = 0x81;
 pub const STA_INDIRECTY: u8 = 0x91;
 
 /// Stores the contents of the accumulator into memory.
-pub fn sta(cpu: &mut CPU<Bus<Rom>>, opcode: &OpCode) {
-    let addr = cpu.get_operand_address(opcode.mode);
-    cpu.mem_write(addr, cpu.register_a);
+#[derive(Debug)]
+pub struct InstructionSTA {
+    addr: u16,
+}
+
+impl OpCode for InstructionSTA {
+    fn fetch(cpu: &mut CPU<Bus<Rom>>) -> Instruction {
+        Instruction::STA(Self {
+            addr: cpu.get_operand_address(),
+        })
+    }
+
+    fn execute(self, cpu: &mut CPU<Bus<Rom>>) {
+        cpu.mem_write(self.addr, cpu.register_a);
+    }
 }
 
 #[cfg(test)]
