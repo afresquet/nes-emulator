@@ -24,7 +24,7 @@ impl OpCode for InstructionRTI {
 mod tests {
 
     use crate::{
-        instructions::{BRK, INX},
+        instructions::{BRK, PHP},
         Status, PROGRAM,
     };
 
@@ -33,13 +33,13 @@ mod tests {
     #[test]
     fn rti() {
         // Setup
-        let mut cpu = CPU::new().insert_test_rom(&[RTI, BRK, INX, BRK]);
+        let mut cpu = CPU::new().insert_test_rom(&[RTI, BRK, PHP, BRK]);
         cpu.stack_push_u16(PROGRAM + 2);
-        cpu.stack_push(0b0101_0101);
+        cpu.stack_push(0b1010_1010);
 
         // Break
         cpu.run();
-        assert_eq!(cpu.register_x, 1);
-        assert_eq!(cpu.status, Status::from_bits_retain(0b0101_0101))
+        assert_eq!(cpu.stack_pull(), 0b1010_1010);
+        assert_eq!(cpu.status, Status::from_bits_retain(0b1011_1010))
     }
 }

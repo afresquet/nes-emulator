@@ -179,7 +179,7 @@ impl CPU<Bus<Rom>> {
 
             instruction.execute(self);
 
-            if let Instruction::BRK(_) = instruction {
+            if self.status.intersects(Status::BREAK_COMMAND) {
                 return;
             }
         }
