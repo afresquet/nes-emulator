@@ -11,13 +11,12 @@ impl OpCode for InstructionTXA {
         Instruction::TXA(Self)
     }
 
-    fn execute(self, cpu: &mut CPU) -> u8 {
+    fn execute(self, cpu: &mut CPU) {
         cpu.register_a = cpu.register_x;
         cpu.update_zero_and_negative_flags(cpu.register_a);
-        self.cycles(false)
     }
 
-    fn cycles(&self, _page_crossed: bool) -> u8 {
+    fn cycles(&self) -> u8 {
         2
     }
 }

@@ -12,13 +12,12 @@ impl OpCode for InstructionPLA {
         Instruction::PLA(Self)
     }
 
-    fn execute(self, cpu: &mut CPU) -> u8 {
+    fn execute(self, cpu: &mut CPU) {
         cpu.register_a = cpu.stack_pull();
         cpu.update_zero_and_negative_flags(cpu.register_a);
-        self.cycles(false)
     }
 
-    fn cycles(&self, _page_crossed: bool) -> u8 {
+    fn cycles(&self) -> u8 {
         4
     }
 }

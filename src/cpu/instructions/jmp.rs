@@ -13,17 +13,16 @@ pub struct InstructionJMP {
 impl OpCode for InstructionJMP {
     fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::JMP(Self {
-            addr: cpu.get_operand_address(),
+            addr: cpu.get_operand_address().0,
             addressing_mode: cpu.get_addressing_mode(),
         })
     }
 
-    fn execute(self, cpu: &mut CPU) -> u8 {
+    fn execute(self, cpu: &mut CPU) {
         cpu.program_counter = self.addr;
-        self.cycles(false)
     }
 
-    fn cycles(&self, _page_crossed: bool) -> u8 {
+    fn cycles(&self) -> u8 {
         match self.addressing_mode {
             AddressingMode::Absolute => 3,
             AddressingMode::Indirect => 5,

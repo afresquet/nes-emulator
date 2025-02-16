@@ -11,28 +11,30 @@ pub const LDY_ABSOLUTEX: u8 = 0xBC;
 pub struct InstructionLDY {
     addr: u16,
     addressing_mode: AddressingMode,
+    page_crossed: bool,
 }
 
 impl OpCode for InstructionLDY {
     fn fetch(cpu: &mut CPU) -> Instruction {
+        let (addr, page_crossed) = cpu.get_operand_address();
         Instruction::LDY(Self {
-            addr: cpu.get_operand_address(),
+            addr,
+            page_crossed,
             addressing_mode: cpu.get_addressing_mode(),
         })
     }
 
-    fn execute(self, cpu: &mut CPU) -> u8 {
+    fn execute(self, cpu: &mut CPU) {
         cpu.register_y = cpu.mem_read(self.addr);
         cpu.update_zero_and_negative_flags(cpu.register_y);
-        self.cycles(false)
     }
 
-    fn cycles(&self, page_crossed: bool) -> u8 {
+    fn cycles(&self) -> u8 {
         match self.addressing_mode {
             AddressingMode::Immediate => 2,
             AddressingMode::ZeroPage => 3,
             AddressingMode::ZeroPageX | AddressingMode::Absolute => 4,
-            AddressingMode::AbsoluteX => 4 + page_crossed as u8,
+            AddressingMode::AbsoluteX => 4 + self.page_crossed as u8,
             _ => unreachable!(),
         }
     }

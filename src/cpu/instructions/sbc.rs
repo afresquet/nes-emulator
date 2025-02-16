@@ -15,30 +15,32 @@ pub const SBC_INDIRECTY: u8 = 0xF1;
 pub struct InstructionSBC {
     addr: u16,
     addressing_mode: AddressingMode,
+    page_crossed: bool,
 }
 
 impl OpCode for InstructionSBC {
     fn fetch(cpu: &mut CPU) -> Instruction {
+        let (addr, page_crossed) = cpu.get_operand_address();
         Instruction::SBC(Self {
-            addr: cpu.get_operand_address(),
+            addr,
+            page_crossed,
             addressing_mode: cpu.get_addressing_mode(),
         })
     }
 
-    fn execute(self, cpu: &mut CPU) -> u8 {
+    fn execute(self, cpu: &mut CPU) {
         let value = cpu.mem_read(self.addr);
         cpu.sum((value as i8).wrapping_neg().wrapping_sub(1) as u8);
-        self.cycles(false)
     }
 
-    fn cycles(&self, page_crossed: bool) -> u8 {
+    fn cycles(&self) -> u8 {
         match self.addressing_mode {
             AddressingMode::Immediate => 2,
             AddressingMode::ZeroPage => 3,
             AddressingMode::ZeroPageX | AddressingMode::Absolute => 4,
-            AddressingMode::AbsoluteX | AddressingMode::AbsoluteY => 4 + page_crossed as u8,
+            AddressingMode::AbsoluteX | AddressingMode::AbsoluteY => 4 + self.page_crossed as u8,
             AddressingMode::IndirectX => 6,
-            AddressingMode::IndirectY => 5 + page_crossed as u8,
+            AddressingMode::IndirectY => 5 + self.page_crossed as u8,
             _ => unreachable!(),
         }
     }

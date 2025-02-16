@@ -11,12 +11,11 @@ impl OpCode for InstructionCLC {
         Instruction::CLC(Self)
     }
 
-    fn execute(self, cpu: &mut CPU) -> u8 {
+    fn execute(self, cpu: &mut CPU) {
         cpu.status.remove(Status::CARRY);
-        self.cycles(false)
     }
 
-    fn cycles(&self, _page_crossed: bool) -> u8 {
+    fn cycles(&self) -> u8 {
         2
     }
 }

@@ -11,17 +11,16 @@ pub struct InstructionJSR {
 impl OpCode for InstructionJSR {
     fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::JSR(Self {
-            addr: cpu.get_operand_address(),
+            addr: cpu.get_operand_address().0,
         })
     }
 
-    fn execute(self, cpu: &mut CPU) -> u8 {
+    fn execute(self, cpu: &mut CPU) {
         cpu.stack_push_u16(cpu.program_counter - 1);
         cpu.program_counter = self.addr;
-        self.cycles(false)
     }
 
-    fn cycles(&self, _page_crossed: bool) -> u8 {
+    fn cycles(&self) -> u8 {
         6
     }
 }

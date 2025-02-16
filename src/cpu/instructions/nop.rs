@@ -11,11 +11,9 @@ impl OpCode for InstructionNOP {
         Instruction::NOP(Self)
     }
 
-    fn execute(self, _cpu: &mut CPU) -> u8 {
-        self.cycles(false)
-    }
+    fn execute(self, _cpu: &mut CPU) {}
 
-    fn cycles(&self, _page_crossed: bool) -> u8 {
+    fn cycles(&self) -> u8 {
         2
     }
 }

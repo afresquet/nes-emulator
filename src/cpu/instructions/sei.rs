@@ -11,12 +11,11 @@ impl OpCode for InstructionSEI {
         Instruction::SEI(Self)
     }
 
-    fn execute(self, cpu: &mut CPU) -> u8 {
+    fn execute(self, cpu: &mut CPU) {
         cpu.status.insert(Status::INTERRUPT_DISABLE);
-        self.cycles(false)
     }
 
-    fn cycles(&self, _page_crossed: bool) -> u8 {
+    fn cycles(&self) -> u8 {
         2
     }
 }

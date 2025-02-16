@@ -12,13 +12,12 @@ impl OpCode for InstructionPLP {
         Instruction::PLP(Self)
     }
 
-    fn execute(self, cpu: &mut CPU) -> u8 {
+    fn execute(self, cpu: &mut CPU) {
         let status = cpu.stack_pull();
         cpu.status = Status::from_bits_retain(status);
-        self.cycles(false)
     }
 
-    fn cycles(&self, _page_crossed: bool) -> u8 {
+    fn cycles(&self) -> u8 {
         4
     }
 }

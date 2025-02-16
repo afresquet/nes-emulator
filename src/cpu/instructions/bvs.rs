@@ -7,23 +7,25 @@ pub const BVS: u8 = 0x70;
 pub struct InstructionBVS {
     target: u16,
     condition: bool,
+    page_crossed: bool,
 }
 
 impl OpCode for InstructionBVS {
     fn fetch(cpu: &mut CPU) -> Instruction {
+        let (target, page_crossed) = cpu.get_operand_address();
         Instruction::BVS(Self {
-            target: cpu.get_operand_address(),
+            target,
             condition: cpu.status.intersects(Status::OVERFLOW),
+            page_crossed,
         })
     }
 
-    fn execute(self, cpu: &mut CPU) -> u8 {
+    fn execute(self, cpu: &mut CPU) {
         cpu.branch(self.target, self.condition);
-        self.cycles(false)
     }
 
-    fn cycles(&self, page_crossed: bool) -> u8 {
-        2 + (self.condition as u8 * if page_crossed { 2 } else { 1 })
+    fn cycles(&self) -> u8 {
+        2 + (self.condition as u8 * if self.page_crossed { 2 } else { 1 })
     }
 }
 

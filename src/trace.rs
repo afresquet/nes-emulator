@@ -98,7 +98,7 @@ impl InstructionTrace {
             AddressingMode::Implied => return Self::Implied,
             AddressingMode::Accumulator => return Self::Accumulator,
             _ => {
-                let addr = cpu.get_operand_address();
+                let addr = cpu.get_operand_address().0;
                 (addr, cpu.mem_read(addr))
             }
         };

@@ -15,12 +15,12 @@ pub struct InstructionBIT {
 impl OpCode for InstructionBIT {
     fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::BIT(Self {
-            addr: cpu.get_operand_address(),
+            addr: cpu.get_operand_address().0,
             addressing_mode: cpu.get_addressing_mode(),
         })
     }
 
-    fn execute(self, cpu: &mut CPU) -> u8 {
+    fn execute(self, cpu: &mut CPU) {
         let data = cpu.mem_read(self.addr);
 
         let result = cpu.register_a & data;
@@ -29,11 +29,9 @@ impl OpCode for InstructionBIT {
 
         cpu.status.set(Status::OVERFLOW, data & 1 << 6 != 0);
         cpu.update_negative_flag(data);
-
-        self.cycles(false)
     }
 
-    fn cycles(&self, _page_crossed: bool) -> u8 {
+    fn cycles(&self) -> u8 {
         match self.addressing_mode {
             AddressingMode::ZeroPage => 3,
             AddressingMode::Absolute => 4,

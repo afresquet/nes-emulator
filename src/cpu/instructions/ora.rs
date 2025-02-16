@@ -14,31 +14,33 @@ pub const ORA_INDIRECTY: u8 = 0x11;
 pub struct InstructionORA {
     addr: u16,
     addressing_mode: AddressingMode,
+    page_crossed: bool,
 }
 
 impl OpCode for InstructionORA {
     fn fetch(cpu: &mut CPU) -> Instruction {
+        let (addr, page_crossed) = cpu.get_operand_address();
         Instruction::ORA(Self {
-            addr: cpu.get_operand_address(),
+            addr,
+            page_crossed,
             addressing_mode: cpu.get_addressing_mode(),
         })
     }
 
-    fn execute(self, cpu: &mut CPU) -> u8 {
+    fn execute(self, cpu: &mut CPU) {
         let data = cpu.mem_read(self.addr);
         cpu.register_a |= data;
         cpu.update_zero_and_negative_flags(cpu.register_a);
-        self.cycles(false)
     }
 
-    fn cycles(&self, page_crossed: bool) -> u8 {
+    fn cycles(&self) -> u8 {
         match self.addressing_mode {
             AddressingMode::Immediate => 2,
             AddressingMode::ZeroPage => 3,
             AddressingMode::ZeroPageX | AddressingMode::Absolute => 4,
-            AddressingMode::AbsoluteX | AddressingMode::AbsoluteY => 4 + page_crossed as u8,
+            AddressingMode::AbsoluteX | AddressingMode::AbsoluteY => 4 + self.page_crossed as u8,
             AddressingMode::IndirectX => 6,
-            AddressingMode::IndirectY => 5 + page_crossed as u8,
+            AddressingMode::IndirectY => 5 + self.page_crossed as u8,
             _ => unreachable!(),
         }
     }

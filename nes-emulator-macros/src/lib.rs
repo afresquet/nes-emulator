@@ -44,7 +44,7 @@ pub fn instruction(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
     let cycles = fields.iter().map(|(name, _instruction, _attr)| {
         quote! {
-             Self::#name(instruction) => instruction.cycles(page_crossed)
+             Self::#name(instruction) => instruction.cycles()
         }
     });
 
@@ -66,13 +66,13 @@ pub fn instruction(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                 }
             }
 
-            fn execute(self, cpu: &mut CPU) -> u8 {
+            fn execute(self, cpu: &mut CPU) {
                 match self {
                     #(#execute,)*
                 }
             }
 
-            fn cycles(&self, page_crossed: bool) -> u8 {
+            fn cycles(&self) -> u8 {
                 match self {
                     #(#cycles,)*
                 }

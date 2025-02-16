@@ -4,9 +4,9 @@ pub trait OpCode {
     /// Construct instruction
     fn fetch(cpu: &mut CPU) -> Instruction;
     /// Perform instruction, returning the number of cycles
-    fn execute(self, cpu: &mut CPU) -> u8;
+    fn execute(self, cpu: &mut CPU);
     /// Number of cycles
-    fn cycles(&self, page_crossed: bool) -> u8;
+    fn cycles(&self) -> u8;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

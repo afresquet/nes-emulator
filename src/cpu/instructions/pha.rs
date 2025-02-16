@@ -11,12 +11,11 @@ impl OpCode for InstructionPHA {
         Instruction::PHA(Self)
     }
 
-    fn execute(self, cpu: &mut CPU) -> u8 {
+    fn execute(self, cpu: &mut CPU) {
         cpu.stack_push(cpu.register_a);
-        self.cycles(false)
     }
 
-    fn cycles(&self, _page_crossed: bool) -> u8 {
+    fn cycles(&self) -> u8 {
         3
     }
 }

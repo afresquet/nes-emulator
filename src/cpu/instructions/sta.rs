@@ -18,17 +18,16 @@ pub struct InstructionSTA {
 impl OpCode for InstructionSTA {
     fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::STA(Self {
-            addr: cpu.get_operand_address(),
+            addr: cpu.get_operand_address().0,
             addressing_mode: cpu.get_addressing_mode(),
         })
     }
 
-    fn execute(self, cpu: &mut CPU) -> u8 {
+    fn execute(self, cpu: &mut CPU) {
         cpu.mem_write(self.addr, cpu.register_a);
-        self.cycles(false)
     }
 
-    fn cycles(&self, _page_crossed: bool) -> u8 {
+    fn cycles(&self) -> u8 {
         match self.addressing_mode {
             AddressingMode::ZeroPage => 3,
             AddressingMode::ZeroPageX | AddressingMode::Absolute => 4,

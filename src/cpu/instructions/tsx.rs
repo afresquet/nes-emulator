@@ -11,13 +11,12 @@ impl OpCode for InstructionTSX {
         Instruction::TSX(Self)
     }
 
-    fn execute(self, cpu: &mut CPU) -> u8 {
+    fn execute(self, cpu: &mut CPU) {
         cpu.register_x = cpu.stack_pull();
         cpu.update_zero_and_negative_flags(cpu.register_x);
-        self.cycles(false)
     }
 
-    fn cycles(&self, _page_crossed: bool) -> u8 {
+    fn cycles(&self) -> u8 {
         2
     }
 }

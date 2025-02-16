@@ -17,7 +17,7 @@ pub struct InstructionROL {
 impl OpCode for InstructionROL {
     fn fetch(cpu: &mut CPU) -> Instruction {
         let addr = (cpu.current_instruction_register != ROL_ACCUMULATOR)
-            .then(|| cpu.get_operand_address());
+            .then(|| cpu.get_operand_address().0);
 
         Instruction::ROL(Self {
             addr,
@@ -25,7 +25,7 @@ impl OpCode for InstructionROL {
         })
     }
 
-    fn execute(self, cpu: &mut CPU) -> u8 {
+    fn execute(self, cpu: &mut CPU) {
         let value = self
             .addr
             .map(|addr| cpu.mem_read(addr))
@@ -50,11 +50,9 @@ impl OpCode for InstructionROL {
         }
 
         cpu.update_zero_and_negative_flags(shifted);
-
-        self.cycles(false)
     }
 
-    fn cycles(&self, _page_crossed: bool) -> u8 {
+    fn cycles(&self) -> u8 {
         match self.addressing_mode {
             AddressingMode::Accumulator => 2,
             AddressingMode::ZeroPage => 5,

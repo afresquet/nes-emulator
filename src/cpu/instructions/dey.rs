@@ -11,14 +11,13 @@ impl OpCode for InstructionDEY {
         Instruction::DEY(Self)
     }
 
-    fn execute(self, cpu: &mut CPU) -> u8 {
+    fn execute(self, cpu: &mut CPU) {
         let result = cpu.register_y.wrapping_sub(1);
         cpu.register_y = result;
         cpu.update_zero_and_negative_flags(result);
-        self.cycles(false)
     }
 
-    fn cycles(&self, _page_crossed: bool) -> u8 {
+    fn cycles(&self) -> u8 {
         2
     }
 }

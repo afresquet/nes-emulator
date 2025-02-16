@@ -159,7 +159,9 @@ impl CPU {
                 .program_counter
                 .wrapping_add(self.get_addressing_mode().bytes());
 
-            let cycles = instruction.execute(self);
+            let cycles = instruction.cycles();
+
+            instruction.execute(self);
 
             self.bus.tick(cycles);
         }
@@ -183,8 +185,14 @@ impl CPU {
         AddressingMode::new(self.current_instruction_register).expect("valid instruction")
     }
 
-    pub fn get_operand_address(&mut self) -> u16 {
+    /// (address, page_crossed)
+    pub fn get_operand_address(&mut self) -> (u16, bool) {
         use AddressingMode as AM;
+
+        /// A page is crossed if it crossed a 256 bytes boundary
+        fn page_cross(a: u16, b: u16) -> bool {
+            a & 0xFF00 != b & 0xFF00
+        }
 
         let mode = self.get_addressing_mode();
 
@@ -192,19 +200,29 @@ impl CPU {
         let program_counter = self.program_counter.wrapping_add(1);
 
         match mode {
-            AM::Immediate => program_counter,
-            AM::ZeroPage => self.mem_read(program_counter) as u16,
-            AM::ZeroPageX => self.mem_read(program_counter).wrapping_add(self.register_x) as u16,
-            AM::ZeroPageY => self.mem_read(program_counter).wrapping_add(self.register_y) as u16,
-            AM::Absolute => self.mem_read_u16(program_counter),
-            AM::AbsoluteX => self
-                .mem_read_u16(program_counter)
-                .wrapping_add(self.register_x as u16),
-            AM::AbsoluteY => self
-                .mem_read_u16(program_counter)
-                .wrapping_add(self.register_y as u16),
+            AM::Immediate => (program_counter, false),
+            AM::ZeroPage => (self.mem_read(program_counter) as u16, false),
+            AM::ZeroPageX => (
+                self.mem_read(program_counter).wrapping_add(self.register_x) as u16,
+                false,
+            ),
+            AM::ZeroPageY => (
+                self.mem_read(program_counter).wrapping_add(self.register_y) as u16,
+                false,
+            ),
+            AM::Absolute => (self.mem_read_u16(program_counter), false),
+            AM::AbsoluteX => {
+                let base = self.mem_read_u16(program_counter);
+                let addr = base.wrapping_add(self.register_x as u16);
+                (addr, page_cross(base, addr))
+            }
+            AM::AbsoluteY => {
+                let base = self.mem_read_u16(program_counter);
+                let addr = base.wrapping_add(self.register_y as u16);
+                (addr, page_cross(base, addr))
+            }
             AM::Indirect => {
-                let pos = self.mem_read_u16(program_counter);
+                let base = self.mem_read_u16(program_counter);
 
                 // The 6502 microprocessor has a known bug
                 // related to indirect addressing modes that involve page boundaries.
@@ -217,28 +235,31 @@ impl CPU {
                 //
                 // However, due to the bug, the 6502 reads the addresses $10FF and $1000 instead of $10FF and $1100,
                 // leading to an incorrect destination address of $3400.
-                if pos & 0xFF == 0xFF {
-                    let lo = self.mem_read(pos);
-                    let hi = self.mem_read(pos + 0xFF00);
+                let addr = if base & 0xFF == 0xFF {
+                    let lo = self.mem_read(base);
+                    let hi = self.mem_read(base + 0xFF00);
                     u16::from_le_bytes([lo, hi])
                 } else {
-                    self.mem_read_u16(pos)
-                }
+                    self.mem_read_u16(base)
+                };
+
+                (addr, false)
             }
             AM::IndirectX => {
                 let pos = self.mem_read(program_counter).wrapping_add(self.register_x);
-                self.mem_read_u16(pos as u16)
+                (self.mem_read_u16(pos as u16), false)
             }
             AM::IndirectY => {
-                let pos = self.mem_read(program_counter);
-                self.mem_read_u16(pos as u16)
-                    .wrapping_add(self.register_y as u16)
+                let base = self.mem_read(program_counter);
+                let deref_base = self.mem_read_u16(base as u16);
+                let deref = deref_base.wrapping_add(self.register_y as u16);
+                (deref, page_cross(deref, deref_base))
             }
             AM::Relative => {
                 let skip = self.mem_read(program_counter);
-                self.program_counter
-                    .wrapping_add(mode.bytes())
-                    .wrapping_add_signed(skip as i16)
+                let base = self.program_counter.wrapping_add(mode.bytes());
+                let addr = base.wrapping_add_signed(skip as i16);
+                (addr, page_cross(base, addr))
             }
             mode => panic!("mode {mode:?} is not supported"),
         }
