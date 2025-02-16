@@ -5,20 +5,20 @@ pub const BVS: u8 = 0x70;
 /// If the overflow flag is set then add the relative displacement to the program counter to cause a branch to a new location.
 #[derive(Debug)]
 pub struct InstructionBVS {
-    skip: i8,
+    target: u16,
     condition: bool,
 }
 
 impl OpCode for InstructionBVS {
     fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::BVS(Self {
-            skip: cpu.get_operand_address() as i8,
+            target: cpu.get_operand_address(),
             condition: cpu.status.intersects(Status::OVERFLOW),
         })
     }
 
     fn execute(self, cpu: &mut CPU) -> u8 {
-        cpu.branch(self.skip, self.condition);
+        cpu.branch(self.target, self.condition);
         self.cycles(false)
     }
 

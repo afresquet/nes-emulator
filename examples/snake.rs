@@ -37,6 +37,9 @@ fn main() {
 
     // run the game cycle
     cpu.run_with_callback(move |cpu, _| {
+        let trace = cpu.trace();
+        println!("{trace}");
+
         handle_user_input(cpu, &mut event_pump);
 
         cpu.mem_write(0xfe, rng.random_range(1..16));

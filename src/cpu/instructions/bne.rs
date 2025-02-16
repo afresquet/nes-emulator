@@ -5,20 +5,20 @@ pub const BNE: u8 = 0xD0;
 /// If the zero flag is clear then add the relative displacement to the program counter to cause a branch to a new location.
 #[derive(Debug)]
 pub struct InstructionBNE {
-    skip: i8,
+    target: u16,
     condition: bool,
 }
 
 impl OpCode for InstructionBNE {
     fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::BNE(Self {
-            skip: cpu.get_operand_address() as i8,
+            target: cpu.get_operand_address(),
             condition: !cpu.status.intersects(Status::ZERO),
         })
     }
 
     fn execute(self, cpu: &mut CPU) -> u8 {
-        cpu.branch(self.skip, self.condition);
+        cpu.branch(self.target, self.condition);
         self.cycles(false)
     }
 

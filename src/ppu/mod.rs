@@ -20,8 +20,8 @@ pub struct PPU {
     pub data: DataRegister,
     pub oamdma: OAMDMARegister,
     internal_data_buf: u8,
-    scanline: u16,
-    cycles: usize,
+    pub scanline: u16,
+    pub cycles: usize,
     nmi_interrupt: Option<()>,
 }
 
@@ -63,6 +63,14 @@ impl PPU {
 
     fn increment_vram_addr(&mut self) {
         self.addr.increment(self.ctrl.vram_addr_increment());
+    }
+
+    pub fn read_status(&mut self) -> u8 {
+        let data = self.status.bits();
+        self.status.set_vblank_status(false);
+        self.addr.reset_latch();
+        self.scroll.reset_latch();
+        data
     }
 
     pub fn read_data(&mut self) -> u8 {

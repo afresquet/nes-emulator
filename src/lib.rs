@@ -4,6 +4,7 @@ pub mod mem;
 pub mod opcode;
 pub mod ppu;
 pub mod rom;
+pub mod trace;
 
 pub use bus::*;
 pub use cpu::*;

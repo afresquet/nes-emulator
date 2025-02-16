@@ -54,6 +54,10 @@ impl AddressRegister {
 
         self.mirror();
     }
+
+    pub fn reset_latch(&mut self) {
+        self.hi_ptr = true;
+    }
 }
 
 #[cfg(test)]

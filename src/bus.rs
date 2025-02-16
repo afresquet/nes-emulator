@@ -5,10 +5,10 @@ use crate::{
 
 #[derive(Debug)]
 pub struct Bus {
-    cpu_vram: [u8; 2048],
-    prg_rom: Vec<u8>,
-    ppu: PPU,
-    cycles: usize,
+    pub cpu_vram: [u8; 2048],
+    pub prg_rom: Vec<u8>,
+    pub ppu: PPU,
+    pub cycles: usize,
 }
 
 impl Bus {
@@ -63,6 +63,7 @@ impl Mem for Bus {
             PPUCTRL | PPUMASK | OAMADDR | PPUSCROLL | PPUADDR | OAMDMA => {
                 panic!("Attempt to read from write-only PPU address {:x}", addr);
             }
+            PPUSTATUS => self.ppu.read_status(),
             PPUDATA => self.ppu.read_data(),
             PPU_REGISTERS..=PPU_REGISTERS_MIRRORS_END => {
                 let mirror_down_addr = addr & 0b00100000_00000111;

@@ -21,7 +21,6 @@ pub enum AddressingMode {
     Indirect,
     IndirectX,
     IndirectY,
-    NoneAddressing,
     Accumulator,
     Relative,
     Implied,
@@ -137,9 +136,7 @@ impl AddressingMode {
 
     pub fn bytes(&self) -> u16 {
         match self {
-            AddressingMode::NoneAddressing
-            | AddressingMode::Accumulator
-            | AddressingMode::Implied => 1,
+            AddressingMode::Accumulator | AddressingMode::Implied => 1,
 
             AddressingMode::Immediate
             | AddressingMode::ZeroPage

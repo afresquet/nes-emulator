@@ -5,20 +5,20 @@ pub const BMI: u8 = 0x30;
 /// If the negative flag is set then add the relative displacement to the program counter to cause a branch to a new location.
 #[derive(Debug)]
 pub struct InstructionBMI {
-    skip: i8,
+    target: u16,
     condition: bool,
 }
 
 impl OpCode for InstructionBMI {
     fn fetch(cpu: &mut CPU) -> Instruction {
         Instruction::BMI(Self {
-            skip: cpu.get_operand_address() as i8,
+            target: cpu.get_operand_address(),
             condition: cpu.status.intersects(Status::NEGATIVE),
         })
     }
 
     fn execute(self, cpu: &mut CPU) -> u8 {
-        cpu.branch(self.skip, self.condition);
+        cpu.branch(self.target, self.condition);
         self.cycles(false)
     }
 

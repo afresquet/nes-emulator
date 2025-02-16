@@ -1,5 +1,6 @@
 pub use instructions::*;
 
+use crate::trace::Trace;
 use crate::{AddressingMode, Bus, Mem, OpCode, Rom};
 use crate::{PROGRAM_START, STACK, STACK_SIZE};
 
@@ -33,14 +34,14 @@ bitflags::bitflags! {
 
 #[derive(Debug)]
 pub struct CPU {
-    register_a: u8,
-    register_x: u8,
-    register_y: u8,
-    status: Status,
-    program_counter: u16,
-    stack_pointer: u8,
-    bus: Bus,
-    current_instruction_register: u8,
+    pub(crate) register_a: u8,
+    pub(crate) register_x: u8,
+    pub(crate) register_y: u8,
+    pub(crate) status: Status,
+    pub(crate) program_counter: u16,
+    pub(crate) stack_pointer: u8,
+    pub(crate) bus: Bus,
+    pub(crate) current_instruction_register: u8,
 }
 
 impl CPU {
@@ -178,21 +179,21 @@ impl CPU {
         self.status.set(Status::NEGATIVE, result & 1 << 7 != 0);
     }
 
-    fn get_addressing_mode(&self) -> AddressingMode {
+    pub fn get_addressing_mode(&self) -> AddressingMode {
         AddressingMode::new(self.current_instruction_register).expect("valid instruction")
     }
 
-    fn get_operand_address(&mut self) -> u16 {
+    pub fn get_operand_address(&mut self) -> u16 {
         use AddressingMode as AM;
 
         let mode = self.get_addressing_mode();
 
         // Skip OpCode
-        let program_counter = self.program_counter + 1;
+        let program_counter = self.program_counter.wrapping_add(1);
 
         match mode {
             AM::Immediate => program_counter,
-            AM::ZeroPage | AM::Relative => self.mem_read(program_counter) as u16,
+            AM::ZeroPage => self.mem_read(program_counter) as u16,
             AM::ZeroPageX => self.mem_read(program_counter).wrapping_add(self.register_x) as u16,
             AM::ZeroPageY => self.mem_read(program_counter).wrapping_add(self.register_y) as u16,
             AM::Absolute => self.mem_read_u16(program_counter),
@@ -233,13 +234,19 @@ impl CPU {
                 self.mem_read_u16(pos as u16)
                     .wrapping_add(self.register_y as u16)
             }
+            AM::Relative => {
+                let skip = self.mem_read(program_counter);
+                self.program_counter
+                    .wrapping_add(mode.bytes())
+                    .wrapping_add_signed(skip as i16)
+            }
             mode => panic!("mode {mode:?} is not supported"),
         }
     }
 
-    pub fn branch(&mut self, skip: i8, condition: bool) {
+    pub fn branch(&mut self, target: u16, condition: bool) {
         if condition {
-            self.program_counter = self.program_counter.wrapping_add_signed(skip as i16);
+            self.program_counter = target;
         }
     }
 
@@ -279,6 +286,35 @@ impl CPU {
         self.bus.tick(2);
 
         self.program_counter = self.mem_read_u16(0xFFFA);
+    }
+
+    pub fn trace(&mut self) -> Trace {
+        use crate::trace::*;
+
+        let addressing_mode = self.get_addressing_mode();
+
+        Trace {
+            program_counter: self.program_counter,
+            opcode: OpCodeTrace {
+                code: self.current_instruction_register,
+                address: self.mem_read_u16(self.program_counter + 1),
+                len: addressing_mode.bytes(),
+            },
+            name: Instruction::name(self.current_instruction_register),
+            asm: InstructionTrace::new(self),
+            registers: RegistersTrace {
+                register_a: self.register_a,
+                register_x: self.register_x,
+                register_y: self.register_y,
+                status: self.status.bits(),
+                stack_pointer: self.stack_pointer,
+            },
+            clock_cycles: ClockCyclesTrace {
+                scanline: self.bus.ppu.scanline,
+                ppu_cycles: self.bus.ppu.cycles,
+                cycles: self.bus.cycles,
+            },
+        }
     }
 }
 

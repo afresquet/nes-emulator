@@ -48,6 +48,13 @@ pub fn instruction(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         }
     });
 
+    let opcode_name = fields.iter().map(|(name, _instruction, attr)| {
+        let string = name.to_string();
+        quote! {
+             #attr => #string
+        }
+    });
+
     quote! {
         impl OpCode for #name {
             fn fetch(cpu: &mut CPU) -> Instruction {
@@ -68,6 +75,15 @@ pub fn instruction(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
             fn cycles(&self, page_crossed: bool) -> u8 {
                 match self {
                     #(#cycles,)*
+                }
+            }
+        }
+
+        impl #name {
+            pub fn name(code: u8) -> &'static str {
+                match code {
+                    #(#opcode_name,)*
+                    _ => panic!("unsupported opcode: 0x{:02X}", code),
                 }
             }
         }
