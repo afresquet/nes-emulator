@@ -1,7 +1,7 @@
 pub use instructions::*;
 
 use crate::{AddressingMode, Bus, Mem, OpCode, Rom};
-use crate::{PROGRAM, PROGRAM_START, STACK, STACK_SIZE};
+use crate::{PROGRAM_START, STACK, STACK_SIZE};
 
 pub mod instructions;
 
@@ -44,46 +44,46 @@ pub struct CPU {
 }
 
 impl CPU {
-    pub fn new(rom: Rom) -> Self {
+    fn new_inner(rom: Rom) -> Self {
+        let mut bus = Bus::new(rom);
+
         Self {
             register_a: 0,
             register_x: 0,
             register_y: 0,
             status: Status::UNUSED,
-            program_counter: PROGRAM,
+            program_counter: bus.mem_read_u16(PROGRAM_START),
             stack_pointer: STACK_SIZE,
-            bus: Bus::new(rom),
+            bus,
             current_instruction_register: 0,
         }
+    }
+
+    pub fn new(rom: Rom) -> Self {
+        Self::new_inner(rom)
     }
 
     #[cfg(test)]
     pub fn new_test(program: &[u8]) -> Self {
         use crate::tests::test_rom;
 
-        Self {
-            register_a: 0,
-            register_x: 0,
-            register_y: 0,
-            status: Status::UNUSED,
-            program_counter: PROGRAM,
-            stack_pointer: STACK_SIZE,
-            bus: Bus::new(test_rom(program)),
-            current_instruction_register: 0,
-        }
+        Self::new_inner(test_rom(program))
+    }
+
+    fn swap_rom_inner(&mut self, rom: Rom) {
+        self.bus.insert_rom(rom);
+        self.reset_program_counter();
     }
 
     pub fn swap_rom(&mut self, rom: Rom) {
-        self.bus.insert_rom(rom);
-        self.reset_program_counter();
+        self.swap_rom_inner(rom);
     }
 
     #[cfg(test)]
     pub fn swap_test_rom(&mut self, program: &[u8]) {
         use crate::rom::tests::test_rom;
 
-        self.bus.insert_rom(test_rom(program));
-        self.reset_program_counter();
+        self.swap_rom_inner(test_rom(program));
     }
 
     pub fn stack_pull(&mut self) -> u8 {
