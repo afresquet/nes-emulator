@@ -92,7 +92,7 @@ impl ControlRegister {
         self.contains(Self::MASTER_SLAVE_SELECT)
     }
 
-    pub fn interrupt(&self) -> bool {
+    pub fn generate_vblank_nmi(&self) -> bool {
         self.contains(Self::GENERATE_NMI)
     }
 

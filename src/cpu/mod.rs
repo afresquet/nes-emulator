@@ -146,6 +146,10 @@ impl CPU {
                 return;
             }
 
+            if self.bus.poll_nmi_interrupt().is_some() {
+                self.nmi_interrupt();
+            }
+
             let instruction = Instruction::fetch(self);
 
             callback(self, &instruction);
@@ -261,6 +265,20 @@ impl CPU {
 
         self.register_a = result;
         self.update_zero_and_negative_flags(self.register_a);
+    }
+
+    fn nmi_interrupt(&mut self) {
+        self.stack_push_u16(self.program_counter);
+
+        let mut flag = self.status;
+        flag.set(Status::BREAK_COMMAND, false);
+        self.stack_push(flag.bits());
+
+        self.status.insert(Status::INTERRUPT_DISABLE);
+
+        self.bus.tick(2);
+
+        self.program_counter = self.mem_read_u16(0xFFFA);
     }
 }
 

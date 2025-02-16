@@ -20,6 +20,9 @@ pub struct PPU {
     pub data: DataRegister,
     pub oamdma: OAMDMARegister,
     internal_data_buf: u8,
+    scanline: u16,
+    cycles: usize,
+    nmi_interrupt: Option<()>,
 }
 
 impl PPU {
@@ -40,6 +43,9 @@ impl PPU {
             data: DataRegister::new(),
             oamdma: OAMDMARegister::new(),
             internal_data_buf: 0,
+            scanline: 0,
+            cycles: 0,
+            nmi_interrupt: None,
         }
     }
 
@@ -48,7 +54,11 @@ impl PPU {
     }
 
     pub fn write_to_ctrl(&mut self, value: u8) {
+        let before = self.ctrl.generate_vblank_nmi();
         self.ctrl.update(value);
+        if !before && self.ctrl.generate_vblank_nmi() && self.status.is_in_vblank() {
+            self.nmi_interrupt = Some(());
+        }
     }
 
     fn increment_vram_addr(&mut self) {
@@ -122,5 +132,33 @@ impl PPU {
             (Mirroring::Vertical, 2 | 3) | (Mirroring::Horizontal, 3) => vram_index - 0x800,
             _ => vram_index,
         }
+    }
+
+    pub fn tick(&mut self, cycles: u8) -> bool {
+        self.cycles += cycles as usize;
+
+        if self.cycles < 341 {
+            return false;
+        }
+
+        self.cycles -= 341;
+        self.scanline += 1;
+
+        if self.scanline == 241 && self.ctrl.generate_vblank_nmi() {
+            self.status.set_vblank_status(true);
+            self.nmi_interrupt = Some(());
+        }
+
+        if self.scanline >= 262 {
+            self.scanline = 0;
+            self.status.set_vblank_status(false);
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn poll_nmi_interrupt(&mut self) -> Option<()> {
+        self.nmi_interrupt.take()
     }
 }
