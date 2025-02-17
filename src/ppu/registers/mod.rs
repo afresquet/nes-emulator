@@ -18,7 +18,7 @@ pub use oam_dma::*;
 pub use scroll::*;
 pub use status::*;
 
-use std::ops::{Deref, DerefMut};
+use core::ops::{Deref, DerefMut};
 
 #[derive(Debug, Default, Clone, Copy)]
 pub struct ByteRegister(u8);

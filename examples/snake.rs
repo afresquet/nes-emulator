@@ -29,7 +29,8 @@ fn main() {
         .unwrap();
 
     //load the game
-    let rom = Rom::from_file("roms/snake.nes").unwrap();
+    let bytes = std::fs::read("roms/snake.nes").unwrap();
+    let rom = Rom::new(&bytes).unwrap();
     let mut cpu = CPU::new(rom);
 
     let mut screen_state = [0; 32 * 3 * 32];
@@ -37,9 +38,6 @@ fn main() {
 
     // run the game cycle
     cpu.run_with_callback(move |cpu| {
-        let trace = cpu.trace();
-        println!("{trace}");
-
         handle_user_input(cpu, &mut event_pump);
 
         cpu.mem_write(0xfe, rng.random_range(1..16));

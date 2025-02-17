@@ -1,5 +1,3 @@
-use std::path::Path;
-
 pub const HEADER_SIZE: usize = 16;
 pub const TAG: [u8; 4] = [0x4E, 0x45, 0x53, 0x1A];
 pub const PRG_ROM_PAGE_SIZE: usize = 16384;
@@ -68,15 +66,7 @@ pub struct Rom {
 }
 
 impl Rom {
-    pub fn from_file<P>(path: P) -> Result<Self, RomError>
-    where
-        P: AsRef<Path>,
-    {
-        let bytes = std::fs::read(path)?;
-        Self::from_bytes(&bytes)
-    }
-
-    pub fn from_bytes(bytes: &[u8]) -> Result<Self, RomError> {
+    pub fn new(bytes: &[u8]) -> Result<Self, RomError> {
         let raw = RawROM::from_bytes(bytes)?;
         Self::from_raw(raw)
     }
@@ -138,8 +128,6 @@ impl Rom {
 
 #[derive(Debug, thiserror::Error)]
 pub enum RomError {
-    #[error(transparent)]
-    IO(#[from] std::io::Error),
     #[error("The ROM length is shorter than {} bytes", HEADER_SIZE)]
     TooShort,
     #[error("The ROM is not in iNES file format")]
@@ -261,7 +249,7 @@ pub mod tests {
             chr_rom: vec![0; CHR_ROM_PAGE_SIZE],
         };
 
-        Rom::from_bytes(&rom.into_bytes()).unwrap()
+        Rom::new(&rom.into_bytes()).unwrap()
     }
 
     #[test]
@@ -331,7 +319,7 @@ pub mod tests {
             prg_rom: prg_rom.clone(),
             chr_rom: chr_rom.clone(),
         };
-        let rom = Rom::from_bytes(&mock.into_bytes()).unwrap();
+        let rom = Rom::new(&mock.into_bytes()).unwrap();
         assert_eq!(rom.prg_rom, prg_rom);
         assert_eq!(rom.chr_rom, chr_rom);
         assert_eq!(rom.mapper, 0b0110_1011);

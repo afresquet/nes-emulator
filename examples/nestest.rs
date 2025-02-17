@@ -3,7 +3,8 @@ use nes_emulator::CPU;
 
 fn main() {
     //load the game
-    let rom = Rom::from_file("roms/nestest.nes").unwrap();
+    let bytes = std::fs::read("roms/nestest.nes").unwrap();
+    let rom = Rom::new(&bytes).unwrap();
     let mut cpu = CPU::new(rom);
 
     // run the game cycle

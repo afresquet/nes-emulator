@@ -1,4 +1,4 @@
-use std::ops::BitAnd;
+use core::ops::BitAnd;
 
 pub const PPUCTRL: u16 = 0x2000;
 
