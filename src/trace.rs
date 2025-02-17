@@ -104,8 +104,8 @@ impl InstructionTrace {
         };
 
         let address = match mode.bytes() {
-            2 => cpu.mem_read(cpu.program_counter) as u16,
-            3 => cpu.mem_read_u16(cpu.program_counter),
+            2 => cpu.mem_read(cpu.program_counter + 1) as u16,
+            3 => cpu.mem_read_u16(cpu.program_counter + 1),
             _ => unreachable!("already returned from accumulator and implied"),
         };
 

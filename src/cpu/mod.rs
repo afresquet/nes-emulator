@@ -256,7 +256,7 @@ impl CPU {
                 (deref, page_cross(deref, deref_base))
             }
             AM::Relative => {
-                let skip = self.mem_read(program_counter);
+                let skip = self.mem_read(program_counter) as i8;
                 let base = self.program_counter.wrapping_add(mode.bytes());
                 let addr = base.wrapping_add_signed(skip as i16);
                 (addr, page_cross(base, addr))
