@@ -36,7 +36,7 @@ fn main() {
     let mut rng = rand::rng();
 
     // run the game cycle
-    cpu.run_with_callback(move |cpu, _| {
+    cpu.run_with_callback(move |cpu| {
         let trace = cpu.trace();
         println!("{trace}");
 

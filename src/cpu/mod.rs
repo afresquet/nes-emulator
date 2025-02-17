@@ -135,12 +135,12 @@ impl CPU {
     }
 
     pub fn run(&mut self) {
-        self.run_with_callback(|_, _| {});
+        self.run_with_callback(|_| {});
     }
 
     pub fn run_with_callback<F>(&mut self, mut callback: F)
     where
-        F: FnMut(&mut Self, &Instruction),
+        F: FnMut(&mut Self),
     {
         loop {
             if self.status.intersects(Status::BREAK_COMMAND) {
@@ -151,9 +151,9 @@ impl CPU {
                 self.nmi_interrupt();
             }
 
-            let instruction = Instruction::fetch(self);
+            callback(self);
 
-            callback(self, &instruction);
+            let instruction = Instruction::fetch(self);
 
             self.program_counter = self
                 .program_counter

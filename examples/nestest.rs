@@ -7,7 +7,7 @@ fn main() {
     let mut cpu = CPU::new(rom);
 
     // run the game cycle
-    cpu.run_with_callback(move |cpu, _| {
+    cpu.run_with_callback(move |cpu| {
         let trace = cpu.trace();
         println!("{trace}");
     });
