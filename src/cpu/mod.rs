@@ -1,7 +1,7 @@
 pub use instructions::*;
 
 use crate::trace::Trace;
-use crate::{AddressingMode, Bus, Mem, OpCode, Rom};
+use crate::{AddressingMode, Bus, Interrupt, Mem, OpCode, Rom};
 use crate::{PROGRAM_START, STACK, STACK_SIZE};
 
 pub mod instructions;
@@ -148,7 +148,7 @@ impl CPU {
             }
 
             if self.bus.poll_nmi_interrupt().is_some() {
-                self.nmi_interrupt();
+                self.interrupt(Interrupt::NMI);
             }
 
             callback(self);
@@ -295,7 +295,7 @@ impl CPU {
         self.update_zero_and_negative_flags(self.register_a);
     }
 
-    fn nmi_interrupt(&mut self) {
+    fn interrupt(&mut self, interrupt: Interrupt) {
         self.stack_push_u16(self.program_counter);
 
         let mut flag = self.status;
@@ -304,9 +304,9 @@ impl CPU {
 
         self.status.insert(Status::INTERRUPT_DISABLE);
 
-        self.bus.tick(2);
+        self.bus.tick(interrupt.cpu_cycles);
 
-        self.program_counter = self.mem_read_u16(0xFFFA);
+        self.program_counter = self.mem_read_u16(interrupt.handler_addr);
     }
 
     pub fn trace(&mut self) -> Trace {
