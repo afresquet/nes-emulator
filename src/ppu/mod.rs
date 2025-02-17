@@ -49,10 +49,6 @@ impl PPU {
         }
     }
 
-    pub fn write_to_addr(&mut self, value: u8) {
-        self.addr.update(value);
-    }
-
     pub fn write_to_ctrl(&mut self, value: u8) {
         let before = self.ctrl.generate_vblank_nmi();
         self.ctrl.update(value);
@@ -61,8 +57,8 @@ impl PPU {
         }
     }
 
-    fn increment_vram_addr(&mut self) {
-        self.addr.increment(self.ctrl.vram_addr_increment());
+    pub fn write_to_mask(&mut self, value: u8) {
+        self.mask.update(value);
     }
 
     pub fn read_status(&mut self) -> u8 {
@@ -71,6 +67,26 @@ impl PPU {
         self.addr.reset_latch();
         self.scroll.reset_latch();
         data
+    }
+
+    pub fn write_to_oam_addr(&mut self, value: u8) {
+        *self.oam_addr = value;
+    }
+
+    pub fn read_oam_data(&mut self) -> u8 {
+        self.oam_data[*self.oam_addr as usize]
+    }
+
+    pub fn write_to_oam_data(&mut self, value: u8) {
+        self.oam_data[*self.oam_addr as usize] = value;
+    }
+
+    pub fn write_to_scroll(&mut self, value: u8) {
+        self.scroll.write(value);
+    }
+
+    pub fn write_to_addr(&mut self, value: u8) {
+        self.addr.update(value);
     }
 
     pub fn read_data(&mut self) -> u8 {
@@ -120,6 +136,10 @@ impl PPU {
             }
             _ => panic!("unexpected access to mirrored space {}", addr),
         }
+    }
+
+    fn increment_vram_addr(&mut self) {
+        self.addr.increment(self.ctrl.vram_addr_increment());
     }
 
     // Horizontal:

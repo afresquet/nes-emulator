@@ -55,7 +55,7 @@ impl Mem for Bus {
         match addr {
             // RAM
             RAM..=RAM_MIRRORS_END => {
-                let mirror_down_addr = addr & 0b00000111_11111111;
+                let mirror_down_addr = addr & 0b0111_1111_1111;
                 self.cpu_vram[mirror_down_addr as usize]
             }
 
@@ -64,26 +64,24 @@ impl Mem for Bus {
                 panic!("Attempt to read from write-only PPU address {:x}", addr);
             }
             PPUSTATUS => self.ppu.read_status(),
+            OAMDATA => self.ppu.read_oam_data(),
             PPUDATA => self.ppu.read_data(),
             PPU_REGISTERS..=PPU_REGISTERS_MIRRORS_END => {
-                let mirror_down_addr = addr & 0b00100000_00000111;
+                let mirror_down_addr = addr & 0b0010_0000_0000_0111;
                 self.mem_read(mirror_down_addr)
             }
 
-            // Program
+            // PROGRAM
             PROGRAM..=PROGRAM_END => {
-                addr -= 0x8000;
-                if self.prg_rom.len() == 0x4000 && addr >= 0x4000 {
+                addr -= PROGRAM;
+                if self.prg_rom.len() == PROGRAM as usize / 2 && addr >= PROGRAM / 2 {
                     // mirror if needed
-                    addr %= 0x4000;
+                    addr %= PROGRAM / 2;
                 }
                 self.prg_rom[addr as usize]
             }
 
-            _ => {
-                println!("Ignoring mem access at {}", addr);
-                0
-            }
+            _ => 0,
         }
     }
 
@@ -91,7 +89,7 @@ impl Mem for Bus {
         match addr {
             // RAM
             RAM..=RAM_MIRRORS_END => {
-                let mirror_down_addr = addr & 0b11111111111;
+                let mirror_down_addr = addr & 0b0111_1111_1111;
                 self.cpu_vram[mirror_down_addr as usize] = data;
             }
 
@@ -99,25 +97,22 @@ impl Mem for Bus {
             PPUCTRL => {
                 self.ppu.write_to_ctrl(data);
             }
-            PPUADDR => {
-                self.ppu.write_to_addr(data);
-            }
-            PPUDATA => {
-                self.ppu.write_data(data);
-            }
-            0x2008..=PPU_REGISTERS_MIRRORS_END => {
-                let mirror_down_addr = addr & 0b00100000_00000111;
+            PPUMASK => self.ppu.write_to_mask(data),
+            PPUSTATUS => panic!("Attempted to write to PPU Status register"),
+            OAMADDR => self.ppu.write_to_oam_addr(data),
+            OAMDATA => self.ppu.write_to_oam_data(data),
+            PPUSCROLL => self.ppu.write_to_scroll(data),
+            PPUADDR => self.ppu.write_to_addr(data),
+            PPUDATA => self.ppu.write_data(data),
+            PPU_REGISTERS..=PPU_REGISTERS_MIRRORS_END => {
+                let mirror_down_addr = addr & 0b0010_0000_0000_0111;
                 self.mem_write(mirror_down_addr, data);
             }
 
             // PROGRAM
-            PROGRAM..=PROGRAM_END => {
-                panic!("Attempted to write to cartridge ROM space");
-            }
+            PROGRAM..=PROGRAM_END => panic!("Attempted to write to cartridge ROM space"),
 
-            _ => {
-                println!("Ignoring mem write-access at {}", addr);
-            }
+            _ => (),
         }
     }
 }

@@ -36,4 +36,8 @@ impl MaskRegister {
     pub fn new() -> Self {
         Default::default()
     }
+
+    pub fn update(&mut self, value: u8) {
+        *self = Self::from_bits_truncate(value);
+    }
 }

@@ -12,7 +12,7 @@ impl ScrollRegister {
         Default::default()
     }
 
-    pub fn update(&mut self, value: u8) {
+    pub fn write(&mut self, value: u8) {
         if self.latch {
             self.y = value;
         } else {
