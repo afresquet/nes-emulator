@@ -41,6 +41,6 @@ mod tests {
         assert_eq!(Status::from_bits_retain(status), Status::UNUSED);
         let program_counter = cpu.stack_pull_u16();
         assert_eq!(program_counter, PROGRAM + 1);
-        assert!(cpu.status.intersects(Status::BREAK_COMMAND));
+        assert!(cpu.status.contains(Status::BREAK_COMMAND));
     }
 }

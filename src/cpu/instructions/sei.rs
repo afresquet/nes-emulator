@@ -30,6 +30,6 @@ mod tests {
     fn sei() {
         let mut cpu = CPU::new_test(&[SEI, BRK]);
         cpu.run();
-        assert!(cpu.status.intersects(Status::INTERRUPT_DISABLE));
+        assert!(cpu.status.contains(Status::INTERRUPT_DISABLE));
     }
 }

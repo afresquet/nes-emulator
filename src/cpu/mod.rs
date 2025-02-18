@@ -143,7 +143,7 @@ impl CPU {
         F: FnMut(&mut Self),
     {
         loop {
-            if self.status.intersects(Status::BREAK_COMMAND) {
+            if self.status.contains(Status::BREAK_COMMAND) {
                 return;
             }
 
@@ -182,7 +182,7 @@ impl CPU {
     }
 
     pub fn get_addressing_mode(&self) -> AddressingMode {
-        AddressingMode::new(self.current_instruction_register).expect("valid instruction")
+        AddressingMode::new(self.current_instruction_register)
     }
 
     /// (address, page_crossed)

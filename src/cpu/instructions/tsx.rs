@@ -35,21 +35,21 @@ mod tests {
         cpu.stack_push(0x05);
         cpu.run();
         assert_eq!(cpu.register_x, 0x05);
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
 
         // Zero Flag
         cpu.reset();
         cpu.stack_push(0);
         cpu.run();
-        assert!(cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
+        assert!(cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
 
         // Negative Flag
         cpu.reset();
         cpu.stack_push(0x80);
         cpu.run();
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(cpu.status.intersects(Status::NEGATIVE));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(cpu.status.contains(Status::NEGATIVE));
     }
 }

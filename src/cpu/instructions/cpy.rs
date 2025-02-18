@@ -55,24 +55,24 @@ mod tests {
 
         // Carry Flag
         cpu.run();
-        assert!(cpu.status.intersects(Status::CARRY));
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
+        assert!(cpu.status.contains(Status::CARRY));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
 
         // Zero Flag
         cpu.swap_test_rom(&[instruction, zero, BRK]);
         cpu.reset_status();
         cpu.run();
-        assert!(cpu.status.intersects(Status::CARRY));
-        assert!(cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
+        assert!(cpu.status.contains(Status::CARRY));
+        assert!(cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
 
         // Negative Flag
         cpu.swap_test_rom(&[instruction, negative, BRK]);
         cpu.reset_status();
         cpu.run();
-        assert!(!cpu.status.intersects(Status::CARRY));
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(cpu.status.intersects(Status::NEGATIVE));
+        assert!(!cpu.status.contains(Status::CARRY));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(cpu.status.contains(Status::NEGATIVE));
     }
 }

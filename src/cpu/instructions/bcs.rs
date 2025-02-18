@@ -15,7 +15,7 @@ impl OpCode for InstructionBCS {
         let (target, page_crossed) = cpu.get_operand_address();
         Instruction::BCS(Self {
             target,
-            condition: cpu.status.intersects(Status::CARRY),
+            condition: cpu.status.contains(Status::CARRY),
             page_crossed,
         })
     }

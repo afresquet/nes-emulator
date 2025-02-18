@@ -8,8 +8,8 @@ pub const INC_ABSOLUTEX: u8 = 0xFE;
 /// Adds one to the value held at a specified memory location setting the zero and negative flags as appropriate.
 #[derive(Debug)]
 pub struct InstructionINC {
-    addr: u16,
-    addressing_mode: AddressingMode,
+    pub(crate) addr: u16,
+    pub(crate) addressing_mode: AddressingMode,
 }
 
 impl OpCode for InstructionINC {
@@ -55,8 +55,8 @@ mod tests {
         // Increments
         cpu.run();
         assert_eq!(cpu.mem_read(target), 1);
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
 
         // Overflow
         cpu.swap_test_rom(&[instruction, addr, BRK]);
@@ -64,8 +64,8 @@ mod tests {
         cpu.mem_write(target, u8::MAX);
         cpu.run();
         assert_eq!(cpu.mem_read(target), 0);
-        assert!(cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
+        assert!(cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
 
         // Zero Flag
         cpu.swap_test_rom(&[instruction, addr, BRK]);
@@ -73,8 +73,8 @@ mod tests {
         cpu.mem_write(target, u8::MAX);
         cpu.run();
         assert_eq!(cpu.mem_read(target), 0);
-        assert!(cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
+        assert!(cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
 
         // Negative Flag
         cpu.swap_test_rom(&[instruction, addr, BRK]);
@@ -82,7 +82,7 @@ mod tests {
         cpu.mem_write(target, u8::MAX - 1);
         cpu.run();
         assert_eq!(cpu.mem_read(target), u8::MAX);
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(cpu.status.intersects(Status::NEGATIVE));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(cpu.status.contains(Status::NEGATIVE));
     }
 }

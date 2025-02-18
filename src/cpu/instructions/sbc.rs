@@ -1,6 +1,7 @@
 use crate::{AddressingMode, Instruction, Mem, OpCode, CPU};
 
 pub const SBC_IMMEDIATE: u8 = 0xE9;
+pub const SBC_IMMEDIATE2: u8 = 0xEB;
 pub const SBC_ZEROPAGE: u8 = 0xE5;
 pub const SBC_ZEROPAGEX: u8 = 0xF5;
 pub const SBC_ABSOLUTE: u8 = 0xED;
@@ -13,9 +14,9 @@ pub const SBC_INDIRECTY: u8 = 0xF1;
 /// If overflow occurs the carry bit is clear, this enables multiple byte subtraction to be performed.
 #[derive(Debug)]
 pub struct InstructionSBC {
-    addr: u16,
-    addressing_mode: AddressingMode,
-    page_crossed: bool,
+    pub(crate) addr: u16,
+    pub(crate) addressing_mode: AddressingMode,
+    pub(crate) page_crossed: bool,
 }
 
 impl OpCode for InstructionSBC {
@@ -54,6 +55,7 @@ mod tests {
     use super::*;
 
     #[test_case(&[SBC_IMMEDIATE, 0x40, BRK] ; "immediate")]
+    #[test_case(&[SBC_IMMEDIATE2, 0x40, BRK] ; "immediate_2")]
     #[test_case(&[SBC_ZEROPAGE, 0x10, BRK] ; "zero_page")]
     #[test_case(&[SBC_ZEROPAGEX, 0x00, BRK] ; "zero_page_x")]
     #[test_case(&[SBC_ABSOLUTE, 0x1A, BRK] ; "absolute")]
@@ -74,10 +76,10 @@ mod tests {
         // From 0
         cpu.run();
         assert_eq!(cpu.register_a, 0xBF);
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(cpu.status.intersects(Status::NEGATIVE));
-        assert!(!cpu.status.intersects(Status::CARRY));
-        assert!(!cpu.status.intersects(Status::OVERFLOW));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(cpu.status.contains(Status::NEGATIVE));
+        assert!(!cpu.status.contains(Status::CARRY));
+        assert!(!cpu.status.contains(Status::OVERFLOW));
 
         // From existing value
         cpu.reset_status();
@@ -85,10 +87,10 @@ mod tests {
         cpu.register_a = 0x42;
         cpu.run();
         assert_eq!(cpu.register_a, 1);
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
-        assert!(cpu.status.intersects(Status::CARRY));
-        assert!(!cpu.status.intersects(Status::OVERFLOW));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
+        assert!(cpu.status.contains(Status::CARRY));
+        assert!(!cpu.status.contains(Status::OVERFLOW));
 
         // Carry Flag
         cpu.reset_status();
@@ -96,10 +98,10 @@ mod tests {
         cpu.register_a = 0x41;
         cpu.run();
         assert_eq!(cpu.register_a, 0);
-        assert!(cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
-        assert!(cpu.status.intersects(Status::CARRY));
-        assert!(!cpu.status.intersects(Status::OVERFLOW));
+        assert!(cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
+        assert!(cpu.status.contains(Status::CARRY));
+        assert!(!cpu.status.contains(Status::OVERFLOW));
 
         // Overflow Flag
         cpu.reset_status();
@@ -107,9 +109,9 @@ mod tests {
         cpu.register_a = 0x20;
         cpu.run();
         assert_eq!(cpu.register_a, 0xDF);
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(cpu.status.intersects(Status::NEGATIVE));
-        assert!(!cpu.status.intersects(Status::CARRY));
-        assert!(!cpu.status.intersects(Status::OVERFLOW));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(cpu.status.contains(Status::NEGATIVE));
+        assert!(!cpu.status.contains(Status::CARRY));
+        assert!(!cpu.status.contains(Status::OVERFLOW));
     }
 }

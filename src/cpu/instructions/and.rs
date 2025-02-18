@@ -12,9 +12,9 @@ pub const AND_INDIRECTY: u8 = 0x31;
 /// A logical AND is performed, bit by bit, on the accumulator contents using the contents of a byte of memory.
 #[derive(Debug)]
 pub struct InstructionAND {
-    addr: u16,
-    addressing_mode: AddressingMode,
-    page_crossed: bool,
+    pub addr: u16,
+    pub addressing_mode: AddressingMode,
+    pub page_crossed: bool,
 }
 
 impl OpCode for InstructionAND {
@@ -82,8 +82,8 @@ mod tests {
         // AND
         cpu.run();
         assert_eq!(cpu.register_a, 0b1010);
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
 
         // Zero Flag
         cpu.swap_test_rom(&[instruction, 0, BRK]);
@@ -91,8 +91,8 @@ mod tests {
         cpu.register_a = 0;
         cpu.run();
         assert_eq!(cpu.register_a, 0);
-        assert!(cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
+        assert!(cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
 
         // Negative Flag
         cpu.swap_test_rom(&[instruction, negative, BRK]);
@@ -100,7 +100,7 @@ mod tests {
         cpu.register_a = 0b1000_1010;
         cpu.run();
         assert_eq!(cpu.register_a, 0b1000_0000);
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(cpu.status.intersects(Status::NEGATIVE));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(cpu.status.contains(Status::NEGATIVE));
     }
 }

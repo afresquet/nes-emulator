@@ -12,9 +12,9 @@ pub const LDA_INDIRECTY: u8 = 0xB1;
 /// Loads a byte of memory into the accumulator setting the zero and negative flags as appropriate.
 #[derive(Debug)]
 pub struct InstructionLDA {
-    addr: u16,
-    addressing_mode: AddressingMode,
-    page_crossed: bool,
+    pub(crate) addr: u16,
+    pub(crate) addressing_mode: AddressingMode,
+    pub(crate) page_crossed: bool,
 }
 
 impl OpCode for InstructionLDA {
@@ -79,8 +79,8 @@ mod tests {
         // Load
         cpu.run();
         assert_eq!(cpu.register_a, 0x05);
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
 
         // Override
         cpu.reset_status();
@@ -88,21 +88,21 @@ mod tests {
         cpu.register_a = 0xFF;
         cpu.run();
         assert_eq!(cpu.register_a, 0x05);
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
 
         // Zero Flag
         cpu.swap_test_rom(&[instruction, zero, BRK]);
         cpu.reset_status();
         cpu.run();
-        assert!(cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
+        assert!(cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
 
         // Negative Flag
         cpu.swap_test_rom(&[instruction, negative, BRK]);
         cpu.reset_status();
         cpu.run();
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(cpu.status.intersects(Status::NEGATIVE));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(cpu.status.contains(Status::NEGATIVE));
     }
 }

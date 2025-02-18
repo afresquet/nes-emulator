@@ -30,6 +30,6 @@ mod tests {
     fn sed() {
         let mut cpu = CPU::new_test(&[SED, BRK]);
         cpu.run();
-        assert!(cpu.status.intersects(Status::DECIMAL));
+        assert!(cpu.status.contains(Status::DECIMAL));
     }
 }

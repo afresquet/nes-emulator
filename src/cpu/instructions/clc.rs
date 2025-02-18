@@ -31,6 +31,6 @@ mod tests {
         let mut cpu = CPU::new_test(&[CLC, BRK]);
         cpu.status.insert(Status::CARRY);
         cpu.run();
-        assert!(!cpu.status.intersects(Status::CARRY))
+        assert!(!cpu.status.contains(Status::CARRY))
     }
 }

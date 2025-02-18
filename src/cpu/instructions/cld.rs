@@ -31,6 +31,6 @@ mod tests {
         let mut cpu = CPU::new_test(&[CLD, BRK]);
         cpu.status.insert(Status::DECIMAL);
         cpu.run();
-        assert!(!cpu.status.intersects(Status::DECIMAL))
+        assert!(!cpu.status.contains(Status::DECIMAL))
     }
 }

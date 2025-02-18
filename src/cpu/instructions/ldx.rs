@@ -9,9 +9,9 @@ pub const LDX_ABSOLUTEY: u8 = 0xBE;
 /// Loads a byte of memory into the X register setting the zero and negative flags as appropriate.
 #[derive(Debug)]
 pub struct InstructionLDX {
-    addr: u16,
-    addressing_mode: AddressingMode,
-    page_crossed: bool,
+    pub(crate) addr: u16,
+    pub(crate) addressing_mode: AddressingMode,
+    pub(crate) page_crossed: bool,
 }
 
 impl OpCode for InstructionLDX {
@@ -67,8 +67,8 @@ mod tests {
         // Load
         cpu.run();
         assert_eq!(cpu.register_x, 0x05);
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
 
         // Override
         cpu.reset_status();
@@ -76,21 +76,21 @@ mod tests {
         cpu.register_x = 0xFF;
         cpu.run();
         assert_eq!(cpu.register_x, 0x05);
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
 
         // Zero Flag
         cpu.swap_test_rom(&[instruction, zero, BRK]);
         cpu.reset_status();
         cpu.run();
-        assert!(cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
+        assert!(cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
 
         // Negative Flag
         cpu.swap_test_rom(&[instruction, negative, BRK]);
         cpu.reset_status();
         cpu.run();
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(cpu.status.intersects(Status::NEGATIVE));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(cpu.status.contains(Status::NEGATIVE));
     }
 }

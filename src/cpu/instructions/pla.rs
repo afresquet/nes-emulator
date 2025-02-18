@@ -37,8 +37,8 @@ mod tests {
         // Push
         cpu.run();
         assert_eq!(cpu.register_a, 0x20);
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
 
         // Zero Flag
         cpu.reset();
@@ -46,16 +46,16 @@ mod tests {
         cpu.stack_push(0);
         cpu.run();
         assert_eq!(cpu.register_a, 0);
-        assert!(cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
+        assert!(cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
 
         // Negative Flag
         cpu.reset();
         cpu.stack_push(0b1000_0000);
         cpu.run();
         assert_eq!(cpu.register_a, 0b1000_0000);
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(cpu.status.intersects(Status::NEGATIVE));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(cpu.status.contains(Status::NEGATIVE));
     }
 
     #[test]

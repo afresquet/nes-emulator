@@ -67,8 +67,8 @@ mod tests {
         // Load
         cpu.run();
         assert_eq!(cpu.register_y, 0x05);
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
 
         // Override
         cpu.reset_status();
@@ -76,23 +76,23 @@ mod tests {
         cpu.register_y = 0xFF;
         cpu.run();
         assert_eq!(cpu.register_y, 0x05);
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
 
         // Zero Flag
         cpu.swap_test_rom(&[instruction, zero, BRK]);
         cpu.reset_status();
         cpu.reset_program_counter();
         cpu.run();
-        assert!(cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
+        assert!(cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
 
         // Negative Flag
         cpu.swap_test_rom(&[instruction, negative, BRK]);
         cpu.reset_status();
         cpu.reset_program_counter();
         cpu.run();
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(cpu.status.intersects(Status::NEGATIVE));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(cpu.status.contains(Status::NEGATIVE));
     }
 }

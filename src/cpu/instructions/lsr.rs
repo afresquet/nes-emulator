@@ -11,8 +11,8 @@ pub const LSR_ABSOLUTEX: u8 = 0x5E;
 /// Bit 7 is set to zero.
 #[derive(Debug)]
 pub struct InstructionLSR {
-    addr: Option<u16>,
-    addressing_mode: AddressingMode,
+    pub(crate) addr: Option<u16>,
+    pub(crate) addressing_mode: AddressingMode,
 }
 
 impl OpCode for InstructionLSR {
@@ -77,27 +77,27 @@ mod tests {
             cpu.register_a = 0b1010;
             cpu.run();
             assert_eq!(cpu.register_a, 0b0101);
-            assert!(!cpu.status.intersects(Status::ZERO));
-            assert!(!cpu.status.intersects(Status::NEGATIVE));
-            assert!(!cpu.status.intersects(Status::CARRY));
+            assert!(!cpu.status.contains(Status::ZERO));
+            assert!(!cpu.status.contains(Status::NEGATIVE));
+            assert!(!cpu.status.contains(Status::CARRY));
 
             // Carry Flag
             cpu.reset();
             cpu.register_a = 0b0101;
             cpu.run();
             assert_eq!(cpu.register_a, 0b0010);
-            assert!(!cpu.status.intersects(Status::ZERO));
-            assert!(!cpu.status.intersects(Status::NEGATIVE));
-            assert!(cpu.status.intersects(Status::CARRY));
+            assert!(!cpu.status.contains(Status::ZERO));
+            assert!(!cpu.status.contains(Status::NEGATIVE));
+            assert!(cpu.status.contains(Status::CARRY));
 
             // Zero Flag
             cpu.reset();
             cpu.register_a = 0b0001;
             cpu.run();
             assert_eq!(cpu.register_a, 0);
-            assert!(cpu.status.intersects(Status::ZERO));
-            assert!(!cpu.status.intersects(Status::NEGATIVE));
-            assert!(cpu.status.intersects(Status::CARRY));
+            assert!(cpu.status.contains(Status::ZERO));
+            assert!(!cpu.status.contains(Status::NEGATIVE));
+            assert!(cpu.status.contains(Status::CARRY));
         }
 
         #[test_case(LSR_ZEROPAGE, 0x40 ; "zero_page")]
@@ -113,9 +113,9 @@ mod tests {
             cpu.mem_write(0x40, 0b1010);
             cpu.run();
             assert_eq!(cpu.mem_read(0x40), 0b0101);
-            assert!(!cpu.status.intersects(Status::ZERO));
-            assert!(!cpu.status.intersects(Status::NEGATIVE));
-            assert!(!cpu.status.intersects(Status::CARRY));
+            assert!(!cpu.status.contains(Status::ZERO));
+            assert!(!cpu.status.contains(Status::NEGATIVE));
+            assert!(!cpu.status.contains(Status::CARRY));
 
             // Carry Flag
             cpu.reset_status();
@@ -123,9 +123,9 @@ mod tests {
             cpu.mem_write(0x40, 0b0101);
             cpu.run();
             assert_eq!(cpu.mem_read(0x40), 0b0010);
-            assert!(!cpu.status.intersects(Status::ZERO));
-            assert!(!cpu.status.intersects(Status::NEGATIVE));
-            assert!(cpu.status.intersects(Status::CARRY));
+            assert!(!cpu.status.contains(Status::ZERO));
+            assert!(!cpu.status.contains(Status::NEGATIVE));
+            assert!(cpu.status.contains(Status::CARRY));
 
             // Zero Flag
             cpu.reset_status();
@@ -133,9 +133,9 @@ mod tests {
             cpu.mem_write(0x40, 0b0001);
             cpu.run();
             assert_eq!(cpu.mem_read(0x40), 0);
-            assert!(cpu.status.intersects(Status::ZERO));
-            assert!(!cpu.status.intersects(Status::NEGATIVE));
-            assert!(cpu.status.intersects(Status::CARRY));
+            assert!(cpu.status.contains(Status::ZERO));
+            assert!(!cpu.status.contains(Status::NEGATIVE));
+            assert!(cpu.status.contains(Status::CARRY));
         }
     }
 }

@@ -30,6 +30,6 @@ mod tests {
     fn sec() {
         let mut cpu = CPU::new_test(&[SEC, BRK]);
         cpu.run();
-        assert!(cpu.status.intersects(Status::CARRY));
+        assert!(cpu.status.contains(Status::CARRY));
     }
 }

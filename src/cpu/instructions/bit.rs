@@ -60,26 +60,26 @@ mod tests {
         // Zero Flag
         cpu.register_a = 0b0100_1000;
         cpu.run();
-        assert!(cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::OVERFLOW));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
+        assert!(cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::OVERFLOW));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
 
         // Overflow Flag
         cpu.swap_test_rom(&[instruction, 0x20, BRK]);
         cpu.reset_status();
         cpu.register_a = 0b0110_0101;
         cpu.run();
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(cpu.status.intersects(Status::OVERFLOW));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(cpu.status.contains(Status::OVERFLOW));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
 
         // Negative Flag
         cpu.swap_test_rom(&[instruction, 0x30, BRK]);
         cpu.reset_status();
         cpu.register_a = 0b1100_0011;
         cpu.run();
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::OVERFLOW));
-        assert!(cpu.status.intersects(Status::NEGATIVE));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::OVERFLOW));
+        assert!(cpu.status.contains(Status::NEGATIVE));
     }
 }

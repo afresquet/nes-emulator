@@ -9,12 +9,13 @@ pub const ADC_ABSOLUTEY: u8 = 0x79;
 pub const ADC_INDIRECTX: u8 = 0x61;
 pub const ADC_INDIRECTY: u8 = 0x71;
 
-/// This instruction adds the contents of a memory location to the accumulator together with the carry bit. If overflow occurs the carry bit is set, this enables multiple byte addition to be performed.
+/// This instruction adds the contents of a memory location to the accumulator together with the carry bit.
+/// If overflow occurs the carry bit is set, this enables multiple byte addition to be performed.
 #[derive(Debug)]
 pub struct InstructionADC {
-    addr: u16,
-    addressing_mode: AddressingMode,
-    page_crossed: bool,
+    pub(crate) addr: u16,
+    pub(crate) addressing_mode: AddressingMode,
+    pub(crate) page_crossed: bool,
 }
 
 impl OpCode for InstructionADC {
@@ -73,10 +74,10 @@ mod tests {
         // From 0
         cpu.run();
         assert_eq!(cpu.register_a, 0x40);
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
-        assert!(!cpu.status.intersects(Status::CARRY));
-        assert!(!cpu.status.intersects(Status::OVERFLOW));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
+        assert!(!cpu.status.contains(Status::CARRY));
+        assert!(!cpu.status.contains(Status::OVERFLOW));
 
         // From existing value
         cpu.reset_status();
@@ -84,10 +85,10 @@ mod tests {
         cpu.register_a = 0x01;
         cpu.run();
         assert_eq!(cpu.register_a, 0x41);
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
-        assert!(!cpu.status.intersects(Status::CARRY));
-        assert!(!cpu.status.intersects(Status::OVERFLOW));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
+        assert!(!cpu.status.contains(Status::CARRY));
+        assert!(!cpu.status.contains(Status::OVERFLOW));
 
         // u8::MAX
         cpu.reset_status();
@@ -95,10 +96,10 @@ mod tests {
         cpu.register_a = 0xBF;
         cpu.run();
         assert_eq!(cpu.register_a, 0xFF);
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(cpu.status.intersects(Status::NEGATIVE));
-        assert!(!cpu.status.intersects(Status::CARRY));
-        assert!(!cpu.status.intersects(Status::OVERFLOW));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(cpu.status.contains(Status::NEGATIVE));
+        assert!(!cpu.status.contains(Status::CARRY));
+        assert!(!cpu.status.contains(Status::OVERFLOW));
 
         // Carry Flag
         cpu.reset_status();
@@ -106,10 +107,10 @@ mod tests {
         cpu.register_a = 0xC0;
         cpu.run();
         assert_eq!(cpu.register_a, 0x00);
-        assert!(cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
-        assert!(cpu.status.intersects(Status::CARRY));
-        assert!(!cpu.status.intersects(Status::OVERFLOW));
+        assert!(cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
+        assert!(cpu.status.contains(Status::CARRY));
+        assert!(!cpu.status.contains(Status::OVERFLOW));
 
         // Overflow Flag
         cpu.reset_status();
@@ -117,9 +118,9 @@ mod tests {
         cpu.register_a = 0x40;
         cpu.run();
         assert_eq!(cpu.register_a, 0x80);
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(cpu.status.intersects(Status::NEGATIVE));
-        assert!(!cpu.status.intersects(Status::CARRY));
-        assert!(cpu.status.intersects(Status::OVERFLOW));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(cpu.status.contains(Status::NEGATIVE));
+        assert!(!cpu.status.contains(Status::CARRY));
+        assert!(cpu.status.contains(Status::OVERFLOW));
     }
 }

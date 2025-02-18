@@ -34,8 +34,8 @@ mod tests {
         // Increments
         cpu.run();
         assert_eq!(cpu.register_x, 1);
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
 
         // Overflow
         cpu.swap_test_rom(&[INX, INX, BRK]);
@@ -43,8 +43,8 @@ mod tests {
         cpu.register_x = u8::MAX;
         cpu.run();
         assert_eq!(cpu.register_x, 1);
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
 
         // Zero Flag
         cpu.swap_test_rom(&[INX, BRK]);
@@ -52,8 +52,8 @@ mod tests {
         cpu.register_x = u8::MAX;
         cpu.run();
         assert_eq!(cpu.register_x, 0);
-        assert!(cpu.status.intersects(Status::ZERO));
-        assert!(!cpu.status.intersects(Status::NEGATIVE));
+        assert!(cpu.status.contains(Status::ZERO));
+        assert!(!cpu.status.contains(Status::NEGATIVE));
 
         // Negative Flag
         cpu.swap_test_rom(&[INX, BRK]);
@@ -61,7 +61,7 @@ mod tests {
         cpu.register_x = u8::MAX - 1;
         cpu.run();
         assert_eq!(cpu.register_x, u8::MAX);
-        assert!(!cpu.status.intersects(Status::ZERO));
-        assert!(cpu.status.intersects(Status::NEGATIVE));
+        assert!(!cpu.status.contains(Status::ZERO));
+        assert!(cpu.status.contains(Status::NEGATIVE));
     }
 }

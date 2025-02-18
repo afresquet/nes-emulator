@@ -62,7 +62,6 @@ pub fn instruction(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
                 match cpu.current_instruction_register {
                     #(#fetch,)*
-                    _ => panic!("unsupported opcode: 0x{:02X}", cpu.current_instruction_register),
                 }
             }
 
@@ -83,7 +82,6 @@ pub fn instruction(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
             pub fn name(code: u8) -> &'static str {
                 match code {
                     #(#opcode_name,)*
-                    _ => panic!("unsupported opcode: 0x{:02X}", code),
                 }
             }
         }

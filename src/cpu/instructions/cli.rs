@@ -31,6 +31,6 @@ mod tests {
         let mut cpu = CPU::new_test(&[CLI, BRK]);
         cpu.status.insert(Status::INTERRUPT_DISABLE);
         cpu.run();
-        assert!(!cpu.status.intersects(Status::INTERRUPT_DISABLE))
+        assert!(!cpu.status.contains(Status::INTERRUPT_DISABLE))
     }
 }

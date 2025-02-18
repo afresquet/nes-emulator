@@ -15,7 +15,7 @@ impl OpCode for InstructionBEQ {
         let (target, page_crossed) = cpu.get_operand_address();
         Instruction::BEQ(Self {
             target,
-            condition: cpu.status.intersects(Status::ZERO),
+            condition: cpu.status.contains(Status::ZERO),
             page_crossed,
         })
     }

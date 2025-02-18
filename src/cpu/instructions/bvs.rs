@@ -15,7 +15,7 @@ impl OpCode for InstructionBVS {
         let (target, page_crossed) = cpu.get_operand_address();
         Instruction::BVS(Self {
             target,
-            condition: cpu.status.intersects(Status::OVERFLOW),
+            condition: cpu.status.contains(Status::OVERFLOW),
             page_crossed,
         })
     }

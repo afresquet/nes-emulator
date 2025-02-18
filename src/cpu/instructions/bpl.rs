@@ -15,7 +15,7 @@ impl OpCode for InstructionBPL {
         let (target, page_crossed) = cpu.get_operand_address();
         Instruction::BPL(Self {
             target,
-            condition: !cpu.status.intersects(Status::NEGATIVE),
+            condition: !cpu.status.contains(Status::NEGATIVE),
             page_crossed,
         })
     }

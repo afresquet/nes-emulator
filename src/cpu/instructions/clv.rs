@@ -31,6 +31,6 @@ mod tests {
         let mut cpu = CPU::new_test(&[CLV, BRK]);
         cpu.status.insert(Status::OVERFLOW);
         cpu.run();
-        assert!(!cpu.status.intersects(Status::OVERFLOW))
+        assert!(!cpu.status.contains(Status::OVERFLOW))
     }
 }
