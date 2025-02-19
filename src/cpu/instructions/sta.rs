@@ -31,7 +31,7 @@ impl OpCode for InstructionSTA {
         match self.addressing_mode {
             AddressingMode::ZeroPage => 3,
             AddressingMode::ZeroPageX | AddressingMode::Absolute => 4,
-            AddressingMode::AbsoluteX | AddressingMode::AbsoluteY => 6,
+            AddressingMode::AbsoluteX | AddressingMode::AbsoluteY => 5,
             AddressingMode::IndirectX | AddressingMode::IndirectY => 6,
             _ => unreachable!(),
         }

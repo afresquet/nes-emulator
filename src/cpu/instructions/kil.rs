@@ -19,7 +19,7 @@ pub struct InstructionKIL;
 
 impl OpCode for InstructionKIL {
     fn fetch(_cpu: &mut CPU) -> Instruction {
-        Instruction::KIL(Self)
+        Instruction::JAM(Self)
     }
 
     fn execute(self, _cpu: &mut CPU) {
@@ -54,10 +54,10 @@ mod tests {
     fn nop(instruction: u8, bytes: u16) {
         let mut cpu = CPU::new_test(&[instruction, BRK]);
         cpu.run();
-        assert_eq!(cpu.program_counter, PROGRAM +1 /* from BRK */ + bytes);
+        assert_eq!(cpu.program_counter, PROGRAM + bytes);
         assert_eq!(cpu.register_a, 0);
         assert_eq!(cpu.register_x, 0);
         assert_eq!(cpu.register_y, 0);
-        assert_eq!(cpu.status, Status::UNUSED | Status::BREAK_COMMAND);
+        assert_eq!(cpu.status, Status::INTERRUPT_DISABLE | Status::UNUSED);
     }
 }

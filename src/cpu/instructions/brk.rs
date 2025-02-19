@@ -38,7 +38,10 @@ mod tests {
         // Break
         cpu.run();
         let status = cpu.stack_pull();
-        assert_eq!(Status::from_bits_retain(status), Status::UNUSED);
+        assert_eq!(
+            Status::from_bits_retain(status),
+            Status::UNUSED | Status::INTERRUPT_DISABLE
+        );
         let program_counter = cpu.stack_pull_u16();
         assert_eq!(program_counter, PROGRAM + 1);
         assert!(cpu.status.contains(Status::BREAK_COMMAND));

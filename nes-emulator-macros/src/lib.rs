@@ -58,9 +58,7 @@ pub fn instruction(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     quote! {
         impl OpCode for #name {
             fn fetch(cpu: &mut CPU) -> Instruction {
-                cpu.current_instruction_register = cpu.mem_read(cpu.program_counter);
-
-                match cpu.current_instruction_register {
+                match cpu.mem_read(cpu.program_counter) {
                     #(#fetch,)*
                 }
             }

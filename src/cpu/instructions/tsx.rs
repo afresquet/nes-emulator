@@ -12,7 +12,7 @@ impl OpCode for InstructionTSX {
     }
 
     fn execute(self, cpu: &mut CPU) {
-        cpu.register_x = cpu.stack_pull();
+        cpu.register_x = cpu.stack_pointer;
         cpu.update_zero_and_negative_flags(cpu.register_x);
     }
 
@@ -23,7 +23,7 @@ impl OpCode for InstructionTSX {
 
 #[cfg(test)]
 mod tests {
-    use crate::{instructions::BRK, Status};
+    use crate::{instructions::BRK, Status, STACK_SIZE};
 
     use super::*;
 
@@ -32,23 +32,8 @@ mod tests {
         let mut cpu = CPU::new_test(&[TSX, BRK]);
 
         // Transfer
-        cpu.stack_push(0x05);
         cpu.run();
-        assert_eq!(cpu.register_x, 0x05);
-        assert!(!cpu.status.contains(Status::ZERO));
-        assert!(!cpu.status.contains(Status::NEGATIVE));
-
-        // Zero Flag
-        cpu.reset();
-        cpu.stack_push(0);
-        cpu.run();
-        assert!(cpu.status.contains(Status::ZERO));
-        assert!(!cpu.status.contains(Status::NEGATIVE));
-
-        // Negative Flag
-        cpu.reset();
-        cpu.stack_push(0x80);
-        cpu.run();
+        assert_eq!(cpu.register_x, STACK_SIZE - 2);
         assert!(!cpu.status.contains(Status::ZERO));
         assert!(cpu.status.contains(Status::NEGATIVE));
     }

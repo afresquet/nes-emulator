@@ -17,7 +17,7 @@ pub struct InstructionLSR {
 
 impl OpCode for InstructionLSR {
     fn fetch(cpu: &mut CPU) -> Instruction {
-        let addr = (cpu.current_instruction_register != LSR_ACCUMULATOR)
+        let addr = (cpu.mem_read(cpu.program_counter) != LSR_ACCUMULATOR)
             .then(|| cpu.get_operand_address().0);
 
         Instruction::LSR(Self {

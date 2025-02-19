@@ -15,7 +15,7 @@ pub struct InstructionAAC {
 impl OpCode for InstructionAAC {
     fn fetch(cpu: &mut CPU) -> Instruction {
         let (addr, page_crossed) = cpu.get_operand_address();
-        Instruction::AAC(Self {
+        Instruction::ANC(Self {
             and: InstructionAND {
                 addr,
                 addressing_mode: cpu.get_addressing_mode(),

@@ -1,8 +1,8 @@
-use crate::{Instruction, OpCode, CPU};
+use crate::{Instruction, OpCode, Status, CPU};
 
 pub const PHP: u8 = 0x08;
 
-/// Pushes a copy of the status flags on to the stack.
+/// Pushes a copy of the status flags on to the stack with the B flag set.
 #[derive(Debug)]
 pub struct InstructionPHP;
 
@@ -12,7 +12,8 @@ impl OpCode for InstructionPHP {
     }
 
     fn execute(self, cpu: &mut CPU) {
-        cpu.stack_push(cpu.status.bits());
+        let status = cpu.status.union(Status::BREAK_COMMAND | Status::UNUSED);
+        cpu.stack_push(status.bits());
     }
 
     fn cycles(&self) -> u8 {
@@ -36,7 +37,7 @@ mod tests {
         cpu.run();
         cpu.stack_pull(); // BRK Status
         cpu.stack_pull_u16(); // BRK Program Counter
-        assert_eq!(cpu.stack_pull(), 0b1010_1010);
+        assert_eq!(cpu.stack_pull(), 0b1011_1010);
     }
 
     #[test]

@@ -25,7 +25,7 @@ impl OpCode for InstructionISC {
     fn fetch(cpu: &mut CPU) -> Instruction {
         let (addr, page_crossed) = cpu.get_operand_address();
         let addressing_mode = cpu.get_addressing_mode();
-        Instruction::ISC(Self {
+        Instruction::ISB(Self {
             inc: InstructionINC {
                 addr,
                 addressing_mode,

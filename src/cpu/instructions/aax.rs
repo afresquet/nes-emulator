@@ -2,8 +2,8 @@ use crate::{AddressingMode, Instruction, Mem, OpCode, CPU};
 
 pub const AAX_ZEROPAGE: u8 = 0x87;
 pub const AAX_ZEROPAGEY: u8 = 0x97;
-pub const AAX_ABSOLUTE: u8 = 0x83;
-pub const AAX_INDIRECTX: u8 = 0x8F;
+pub const AAX_ABSOLUTE: u8 = 0x8F;
+pub const AAX_INDIRECTX: u8 = 0x83;
 
 /// A logical AND is performed, bit by bit, on the accumulator contents using the contents of the X register.
 /// The result is stored in memory.
@@ -15,7 +15,7 @@ pub struct InstructionAAX {
 
 impl OpCode for InstructionAAX {
     fn fetch(cpu: &mut CPU) -> Instruction {
-        Instruction::AAX(Self {
+        Instruction::SAX(Self {
             addr: cpu.get_operand_address().0,
             addressing_mode: cpu.get_addressing_mode(),
         })
@@ -24,7 +24,6 @@ impl OpCode for InstructionAAX {
     fn execute(self, cpu: &mut CPU) {
         let result = cpu.register_a & cpu.register_x;
         cpu.mem_write(self.addr, result);
-        cpu.update_zero_and_negative_flags(result);
     }
 
     fn cycles(&self) -> u8 {
@@ -41,14 +40,14 @@ impl OpCode for InstructionAAX {
 mod tests {
     use test_case::test_case;
 
-    use crate::{instructions::BRK, Status};
+    use crate::instructions::BRK;
 
     use super::*;
 
     #[test_case(AAX_ZEROPAGE, 0x10, 0x10 ; "zero_page")]
     #[test_case(AAX_ZEROPAGEY, 0x0C, 0x0C ; "zero_page_y")]
-    #[test_case(AAX_ABSOLUTE, 0x10, 0x10 ; "absolute")]
-    #[test_case(AAX_INDIRECTX, 0x16, 0xA0 ; "indirect_x")]
+    #[test_case(AAX_INDIRECTX, 0x16, 0xA0 ; "absolute")]
+    #[test_case(AAX_ABSOLUTE, 0x10, 0x10 ; "indirect_x")]
     fn aax(instruction: u8, addr: u8, negative: u8) {
         // Setup
         let mut cpu = CPU::new_test(&[instruction, addr, BRK]);
@@ -60,8 +59,6 @@ mod tests {
         cpu.register_x = 0b0000_1010;
         cpu.run();
         assert_eq!(cpu.mem_read(0x10), 0b1010);
-        assert!(!cpu.status.contains(Status::ZERO));
-        assert!(!cpu.status.contains(Status::NEGATIVE));
 
         // Zero Flag
         cpu.swap_test_rom(&[instruction, addr, BRK]);
@@ -70,8 +67,6 @@ mod tests {
         cpu.register_x = 0b1010;
         cpu.run();
         assert_eq!(cpu.mem_read(0x10), 0);
-        assert!(cpu.status.contains(Status::ZERO));
-        assert!(!cpu.status.contains(Status::NEGATIVE));
 
         // Negative Flag
         cpu.swap_test_rom(&[instruction, negative, BRK]);
@@ -80,7 +75,5 @@ mod tests {
         cpu.register_x = 0b1000_0000;
         cpu.run();
         assert_eq!(cpu.mem_read(0x10), 0b1000_0000);
-        assert!(!cpu.status.contains(Status::ZERO));
-        assert!(cpu.status.contains(Status::NEGATIVE));
     }
 }

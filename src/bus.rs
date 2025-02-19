@@ -17,14 +17,14 @@ impl Bus {
             cpu_vram: [0; 2048],
             prg_rom: rom.prg_rom,
             ppu: PPU::new(rom.chr_rom, rom.screen_mirroring),
-            cycles: 0,
+            cycles: 7,
         }
     }
 
     pub fn insert_rom(&mut self, rom: Rom) {
         self.prg_rom = rom.prg_rom;
         self.ppu = PPU::new(rom.chr_rom, rom.screen_mirroring);
-        self.cycles = 0;
+        self.cycles = 7;
     }
 
     pub fn tick(&mut self, cycles: u8) {
@@ -81,7 +81,7 @@ impl Mem for Bus {
                 self.prg_rom[addr as usize]
             }
 
-            _ => 0,
+            _ => panic!("Unhandled read of memory"),
         }
     }
 
@@ -112,7 +112,7 @@ impl Mem for Bus {
             // PROGRAM
             PROGRAM..=PROGRAM_END => panic!("Attempted to write to cartridge ROM space"),
 
-            _ => (),
+            _ => panic!("Unhandled write of memory"),
         }
     }
 }

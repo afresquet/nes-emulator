@@ -16,7 +16,7 @@ impl OpCode for InstructionJSR {
     }
 
     fn execute(self, cpu: &mut CPU) {
-        cpu.stack_push_u16(cpu.program_counter - 1);
+        cpu.stack_push_u16(cpu.program_counter.wrapping_sub(1));
         cpu.program_counter = self.addr;
     }
 

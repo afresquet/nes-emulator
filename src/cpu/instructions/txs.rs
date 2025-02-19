@@ -12,7 +12,7 @@ impl OpCode for InstructionTXS {
     }
 
     fn execute(self, cpu: &mut CPU) {
-        cpu.stack_push(cpu.register_x);
+        cpu.stack_pointer = cpu.register_x;
     }
 
     fn cycles(&self) -> u8 {
@@ -36,6 +36,6 @@ mod tests {
         cpu.run();
         cpu.stack_pull(); // BRK Status
         cpu.stack_pull_u16(); // BRK Program Counter
-        assert_eq!(cpu.stack_pull(), 0x05);
+        assert_eq!(cpu.stack_pointer, 0x05);
     }
 }

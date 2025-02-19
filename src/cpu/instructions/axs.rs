@@ -11,7 +11,7 @@ pub struct InstructionAXS {
 
 impl OpCode for InstructionAXS {
     fn fetch(cpu: &mut CPU) -> Instruction {
-        Instruction::AXS(Self {
+        Instruction::SBX(Self {
             addr: cpu.get_operand_address().0,
         })
     }

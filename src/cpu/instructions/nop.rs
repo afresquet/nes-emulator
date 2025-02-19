@@ -1,4 +1,4 @@
-use crate::{Instruction, OpCode, CPU};
+use crate::{Instruction, Mem, OpCode, CPU};
 
 pub const DOP_IMMEDIATE1: u8 = 0x80;
 pub const DOP_IMMEDIATE2: u8 = 0x82;
@@ -38,7 +38,7 @@ pub struct InstructionNOP {
 
 impl OpCode for InstructionNOP {
     fn fetch(cpu: &mut CPU) -> Instruction {
-        let opcode = cpu.current_instruction_register;
+        let opcode = cpu.mem_read(cpu.program_counter);
         let page_cross = match opcode {
             TOP_ABSOLUTEX1 | TOP_ABSOLUTEX2 | TOP_ABSOLUTEX3 | TOP_ABSOLUTEX4 | TOP_ABSOLUTEX5
             | TOP_ABSOLUTEX6 => cpu.get_operand_address().1,
@@ -111,6 +111,9 @@ mod tests {
         assert_eq!(cpu.register_a, 0);
         assert_eq!(cpu.register_x, 0);
         assert_eq!(cpu.register_y, 0);
-        assert_eq!(cpu.status, Status::UNUSED | Status::BREAK_COMMAND);
+        assert_eq!(
+            cpu.status,
+            Status::INTERRUPT_DISABLE | Status::UNUSED | Status::BREAK_COMMAND
+        );
     }
 }

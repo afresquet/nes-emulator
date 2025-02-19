@@ -14,6 +14,8 @@ impl OpCode for InstructionRTI {
 
     fn execute(self, cpu: &mut CPU) {
         cpu.status = Status::from_bits_retain(cpu.stack_pull());
+        cpu.status.remove(Status::BREAK_COMMAND);
+        cpu.status.insert(Status::UNUSED);
         cpu.program_counter = cpu.stack_pull_u16();
     }
 

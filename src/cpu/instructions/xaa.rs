@@ -14,7 +14,7 @@ pub struct InstructionXAA {
 impl OpCode for InstructionXAA {
     fn fetch(cpu: &mut CPU) -> Instruction {
         let (addr, page_crossed) = cpu.get_operand_address();
-        Instruction::XAA(Self {
+        Instruction::ANE(Self {
             txa: InstructionTXA,
             and: InstructionAND {
                 addr,

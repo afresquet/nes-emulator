@@ -14,7 +14,7 @@ pub struct InstructionLAR {
 impl OpCode for InstructionLAR {
     fn fetch(cpu: &mut CPU) -> Instruction {
         let (addr, page_crossed) = cpu.get_operand_address();
-        Instruction::LAR(Self { addr, page_crossed })
+        Instruction::LAE(Self { addr, page_crossed })
     }
 
     fn execute(self, cpu: &mut CPU) {

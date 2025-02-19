@@ -16,7 +16,7 @@ pub struct InstructionROR {
 
 impl OpCode for InstructionROR {
     fn fetch(cpu: &mut CPU) -> Instruction {
-        let addr = (cpu.current_instruction_register != ROR_ACCUMULATOR)
+        let addr = (cpu.mem_read(cpu.program_counter) != ROR_ACCUMULATOR)
             .then(|| cpu.get_operand_address().0);
 
         Instruction::ROR(Self {

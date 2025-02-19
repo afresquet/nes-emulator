@@ -38,10 +38,9 @@ pub struct CPU {
     pub(crate) register_x: u8,
     pub(crate) register_y: u8,
     pub(crate) status: Status,
-    pub(crate) program_counter: u16,
+    pub program_counter: u16,
     pub(crate) stack_pointer: u8,
     pub(crate) bus: Bus,
-    pub(crate) current_instruction_register: u8,
 }
 
 impl CPU {
@@ -52,11 +51,10 @@ impl CPU {
             register_a: 0,
             register_x: 0,
             register_y: 0,
-            status: Status::UNUSED,
+            status: Status::UNUSED | Status::INTERRUPT_DISABLE,
             program_counter: bus.mem_read_u16(PROGRAM_START),
-            stack_pointer: STACK_SIZE,
+            stack_pointer: STACK_SIZE - 2,
             bus,
-            current_instruction_register: 0,
         }
     }
 
@@ -98,15 +96,15 @@ impl CPU {
     }
 
     pub fn stack_pull_u16(&mut self) -> u16 {
-        let hi = self.stack_pull();
         let lo = self.stack_pull();
+        let hi = self.stack_pull();
         u16::from_le_bytes([lo, hi])
     }
 
     pub fn stack_push_u16(&mut self, data: u16) {
         let [lo, hi] = data.to_le_bytes();
-        self.stack_push(lo);
         self.stack_push(hi);
+        self.stack_push(lo);
     }
 
     pub fn reset_registers(&mut self) {
@@ -116,7 +114,7 @@ impl CPU {
     }
 
     pub fn reset_status(&mut self) {
-        self.status = Status::UNUSED;
+        self.status = Status::UNUSED | Status::INTERRUPT_DISABLE;
     }
 
     pub fn reset_program_counter(&mut self) {
@@ -124,7 +122,7 @@ impl CPU {
     }
 
     pub fn reset_stack_pointer(&mut self) {
-        self.stack_pointer = STACK_SIZE;
+        self.stack_pointer = STACK_SIZE - 2;
     }
 
     pub fn reset(&mut self) {
@@ -143,10 +141,6 @@ impl CPU {
         F: FnMut(&mut Self),
     {
         loop {
-            if self.status.contains(Status::BREAK_COMMAND) {
-                return;
-            }
-
             if self.bus.poll_nmi_interrupt().is_some() {
                 self.interrupt(Interrupt::NMI);
             }
@@ -154,6 +148,8 @@ impl CPU {
             callback(self);
 
             let instruction = Instruction::fetch(self);
+
+            let stop = matches!(instruction, Instruction::BRK(_) | Instruction::JAM(_));
 
             self.program_counter = self
                 .program_counter
@@ -164,6 +160,10 @@ impl CPU {
             instruction.execute(self);
 
             self.bus.tick(cycles);
+
+            if stop {
+                return;
+            }
         }
     }
 
@@ -181,8 +181,8 @@ impl CPU {
         self.status.set(Status::NEGATIVE, result & 1 << 7 != 0);
     }
 
-    pub fn get_addressing_mode(&self) -> AddressingMode {
-        AddressingMode::new(self.current_instruction_register)
+    pub fn get_addressing_mode(&mut self) -> AddressingMode {
+        AddressingMode::new(self.mem_read(self.program_counter))
     }
 
     /// (address, page_crossed)
@@ -237,7 +237,7 @@ impl CPU {
                 // leading to an incorrect destination address of $3400.
                 let addr = if base & 0xFF == 0xFF {
                     let lo = self.mem_read(base);
-                    let hi = self.mem_read(base + 0xFF00);
+                    let hi = self.mem_read(base & 0xFF00);
                     u16::from_le_bytes([lo, hi])
                 } else {
                     self.mem_read_u16(base)
@@ -247,11 +247,15 @@ impl CPU {
             }
             AM::IndirectX => {
                 let pos = self.mem_read(program_counter).wrapping_add(self.register_x);
-                (self.mem_read_u16(pos as u16), false)
+                let lo = self.mem_read(pos as u16);
+                let hi = self.mem_read(pos.wrapping_add(1) as u16);
+                (u16::from_le_bytes([lo, hi]), false)
             }
             AM::IndirectY => {
                 let base = self.mem_read(program_counter);
-                let deref_base = self.mem_read_u16(base as u16);
+                let lo = self.mem_read(base as u16);
+                let hi = self.mem_read(base.wrapping_add(1) as u16);
+                let deref_base = u16::from_le_bytes([lo, hi]);
                 let deref = deref_base.wrapping_add(self.register_y as u16);
                 (deref, page_cross(deref, deref_base))
             }
@@ -272,7 +276,7 @@ impl CPU {
     }
 
     pub fn compare(&mut self, data: u8, value: u8) {
-        self.status.set(Status::CARRY, value >= data);
+        self.status.set(Status::CARRY, data <= value);
 
         self.update_zero_and_negative_flags(value.wrapping_sub(data));
     }
@@ -317,11 +321,11 @@ impl CPU {
         Trace {
             program_counter: self.program_counter,
             opcode: OpCodeTrace {
-                code: self.current_instruction_register,
+                code: self.mem_read(self.program_counter),
                 address: self.mem_read_u16(self.program_counter + 1),
                 len: addressing_mode.bytes(),
             },
-            name: Instruction::name(self.current_instruction_register),
+            name: Instruction::name(self.mem_read(self.program_counter)),
             asm: InstructionTrace::new(self),
             registers: RegistersTrace {
                 register_a: self.register_a,

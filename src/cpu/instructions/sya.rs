@@ -12,7 +12,7 @@ pub struct InstructionSYA {
 
 impl OpCode for InstructionSYA {
     fn fetch(cpu: &mut CPU) -> Instruction {
-        Instruction::SYA(Self {
+        Instruction::SHY(Self {
             addr: cpu.get_operand_address().0,
         })
     }

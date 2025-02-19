@@ -44,7 +44,7 @@ impl PPU {
             oamdma: OAMDMARegister::new(),
             internal_data_buf: 0,
             scanline: 0,
-            cycles: 0,
+            cycles: 21,
             nmi_interrupt: None,
         }
     }

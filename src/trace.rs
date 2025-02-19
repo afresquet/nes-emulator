@@ -1,6 +1,6 @@
 use core::fmt::Display;
 
-use crate::{AddressingMode, Mem, CPU};
+use crate::{is_unofficial_opcode, AddressingMode, Mem, CPU, JMP_ABSOLUTE, JSR};
 
 pub struct Trace {
     pub program_counter: u16,
@@ -22,11 +22,17 @@ impl Display for Trace {
             clock_cycles,
         } = self;
 
+        let unofficial = if is_unofficial_opcode(opcode.code) {
+            "*"
+        } else {
+            " "
+        };
+
         // D136  E1 80     SBC ($80,X) @ 80 = 0200 = 40    A:40 X:00 Y:6C P:65 SP:FB PPU: 31,250 CYC:3607
         // PC    OpCode    Assembly                        Registers                 Clock Cycles
         write!(
             f,
-            "{program_counter:04X} {opcode}  {name} {asm}  {registers} {clock_cycles}",
+            "{program_counter:04X}  {opcode} {unofficial}{name} {asm}  {registers} {clock_cycles}",
         )
     }
 }
@@ -108,6 +114,12 @@ impl InstructionTrace {
             3 => cpu.mem_read_u16(cpu.program_counter + 1),
             _ => unreachable!("already returned from accumulator and implied"),
         };
+
+        // Special cases
+        match cpu.mem_read(cpu.program_counter) {
+            JMP_ABSOLUTE | JSR => return Self::Relative(address),
+            _ => (),
+        }
 
         match mode {
             AddressingMode::Immediate => Self::Immediate(address as u8),
@@ -206,13 +218,17 @@ impl Display for InstructionTrace {
                 padding,
             } => write!(
                 f,
-                "${before:0width$X},{register:?} @ {after:0width$X} = {value:02X}         {empty:<pad$}",
+                "${before:0width$X},{register:?} @ {after:0width$X} = {value:02X}       {empty:<pad$}",
                 width = padding,
                 empty = "",
-                pad = padding % 4,
+                pad = match padding {
+                    2 => 4,
+                    4 => 0,
+                    _ => unreachable!(),
+                },
             ),
             InstructionTrace::Indirect { address, target } => {
-                write!(f, "(${address:04X}) = {target:04X}                ")
+                write!(f, "(${address:04X}) = {target:04X}            ")
             }
             InstructionTrace::IndirectPlusRegister {
                 before,
@@ -223,11 +239,12 @@ impl Display for InstructionTrace {
             } => match register {
                 Register::X => write!(
                     f,
-                    "(${before:02X},{register:?}) @ {after:02X} = {target:04X} = {value:02X}    ",
+                    "(${before:02X},{register:?}) @ {:02X} = {target:04X} = {value:02X}  ",
+                    *after as u8
                 ),
                 Register::Y => write!(
                     f,
-                    "(${before:02X}),{register:?} = {after:04X} @ {target:04X} = {value:02X}  ",
+                    "(${before:02X}),{register:?} = {after:04X} @ {target:04X} = {value:02X}",
                 ),
             },
             InstructionTrace::Relative(address) => write!(f, "${address:04X}                     "),

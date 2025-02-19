@@ -17,7 +17,7 @@ pub struct InstructionASL {
 
 impl OpCode for InstructionASL {
     fn fetch(cpu: &mut CPU) -> Instruction {
-        let addr = (cpu.current_instruction_register != ASL_ACCUMULATOR)
+        let addr = (cpu.mem_read(cpu.program_counter) != ASL_ACCUMULATOR)
             .then(|| cpu.get_operand_address().0);
 
         Instruction::ASL(Self {

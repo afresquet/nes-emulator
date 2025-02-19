@@ -13,7 +13,7 @@ pub struct InstructionAXA {
 
 impl OpCode for InstructionAXA {
     fn fetch(cpu: &mut CPU) -> Instruction {
-        Instruction::AXA(Self {
+        Instruction::SHA(Self {
             addr: cpu.get_operand_address().0,
             addressing_mode: cpu.get_addressing_mode(),
         })

@@ -12,7 +12,7 @@ pub struct InstructionXAS {
 
 impl OpCode for InstructionXAS {
     fn fetch(cpu: &mut CPU) -> Instruction {
-        Instruction::XAS(Self {
+        Instruction::SHS(Self {
             addr: cpu.get_operand_address().0,
         })
     }

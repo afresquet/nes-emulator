@@ -3,7 +3,7 @@ use crate::{Instruction, OpCode, Status, CPU};
 pub const PLP: u8 = 0x28;
 
 /// Pulls an 8 bit value from the stack and into the processor flags.
-/// The flags will take on new states as determined by the value pulled.
+/// The flags will take on new states as determined by the value pulled, removing the B flag.
 #[derive(Debug)]
 pub struct InstructionPLP;
 
@@ -13,8 +13,9 @@ impl OpCode for InstructionPLP {
     }
 
     fn execute(self, cpu: &mut CPU) {
-        let status = cpu.stack_pull();
-        cpu.status = Status::from_bits_retain(status);
+        cpu.status = Status::from_bits_truncate(cpu.stack_pull());
+        cpu.status.remove(Status::BREAK_COMMAND);
+        cpu.status.insert(Status::UNUSED);
     }
 
     fn cycles(&self) -> u8 {
@@ -36,7 +37,7 @@ mod tests {
 
         // Push
         cpu.run();
-        assert_eq!(cpu.status, Status::from_bits_truncate(0b0101_0101));
+        assert_eq!(cpu.status, Status::from_bits_truncate(0b0111_0101));
     }
 
     #[test]

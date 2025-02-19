@@ -15,7 +15,7 @@ pub struct InstructionATX {
 impl OpCode for InstructionATX {
     fn fetch(cpu: &mut CPU) -> Instruction {
         let (addr, page_crossed) = cpu.get_operand_address();
-        Instruction::ATX(Self {
+        Instruction::LXA(Self {
             and: InstructionAND {
                 addr,
                 addressing_mode: cpu.get_addressing_mode(),

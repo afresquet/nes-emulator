@@ -12,7 +12,7 @@ pub struct InstructionSXA {
 
 impl OpCode for InstructionSXA {
     fn fetch(cpu: &mut CPU) -> Instruction {
-        Instruction::SXA(Self {
+        Instruction::SHX(Self {
             addr: cpu.get_operand_address().0,
         })
     }

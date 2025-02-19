@@ -30,7 +30,7 @@ impl AddressingMode {
     pub fn new(instruction: u8) -> Self {
         use AddressingMode as AM;
 
-        let addressing_mode = match instruction {
+        match instruction {
             AAC_IMMEDIATE1 | AAC_IMMEDIATE2 | ADC_IMMEDIATE | AND_IMMEDIATE | ARR_IMMEDIATE
             | ASR_IMMEDIATE | ATX_IMMEDIATE | AXS_IMMEDIATE | CMP_IMMEDIATE | CPX_IMMEDIATE
             | CPY_IMMEDIATE | DOP_IMMEDIATE1 | DOP_IMMEDIATE2 | DOP_IMMEDIATE3 | DOP_IMMEDIATE4
@@ -104,9 +104,7 @@ impl AddressingMode {
             | NOP_IMPLIED5 | NOP_IMPLIED6 | pha::PHA | php::PHP | pla::PLA | plp::PLP | rti::RTI
             | rts::RTS | sec::SEC | sed::SED | sei::SEI | tax::TAX | tay::TAY | tsx::TSX | txa::TXA
             | txs::TXS | tya::TYA => AM::Implied,
-        };
-
-        addressing_mode
+        }
     }
 
     pub fn bytes(&self) -> u16 {
